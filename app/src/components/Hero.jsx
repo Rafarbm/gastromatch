@@ -1,14 +1,56 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Icone from "./Icone";
 
 const INTERVALO_MS = 6000;
+const ESPIAR_PX = 32; // faixa da próxima seção que fica visível, indicando que há mais conteúdo
+const ALTURA_MINIMA_PX = 420;
+
+// Altura = espaço livre da primeira dobra abaixo do ponto onde o Hero começa.
+// Recalcula ao redimensionar a janela e quando algo acima dele muda de tamanho
+// (ex.: o convite de localização some).
+function useAlturaPrimeiraDobra(ref) {
+  const [altura, setAltura] = useState(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const medir = () => {
+      const topo = el.getBoundingClientRect().top + window.scrollY;
+      setAltura(Math.max(ALTURA_MINIMA_PX, window.innerHeight - topo - ESPIAR_PX));
+    };
+    medir();
+    const observador = new ResizeObserver(medir);
+    const acima = [document.querySelector("header"), el.closest("section")?.previousElementSibling].filter(Boolean);
+    acima.forEach((n) => observador.observe(n));
+
+    // No celular a barra de endereço some/aparece ao rolar e muda a altura da
+    // janela; ignorar essas variações evita o Hero "pulando" durante a rolagem.
+    let ultima = { largura: window.innerWidth, altura: window.innerHeight };
+    const aoRedimensionar = () => {
+      const mudouLargura = window.innerWidth !== ultima.largura;
+      const mudouMuitoAltura = Math.abs(window.innerHeight - ultima.altura) > 150;
+      if (!mudouLargura && !mudouMuitoAltura) return;
+      ultima = { largura: window.innerWidth, altura: window.innerHeight };
+      medir();
+    };
+    window.addEventListener("resize", aoRedimensionar);
+    return () => {
+      observador.disconnect();
+      window.removeEventListener("resize", aoRedimensionar);
+    };
+  }, [ref]);
+
+  return altura;
+}
 
 // Carrossel do Hero: cada slide tem imagem, título, descrição e CTA próprios.
 // Pausa ao passar o mouse/focar e respeita "reduzir movimento" do sistema.
 export default function Hero({ slides }) {
   const [atual, setAtual] = useState(0);
   const [pausado, setPausado] = useState(false);
+  const palco = useRef(null);
+  const altura = useAlturaPrimeiraDobra(palco);
   const total = slides.length;
 
   const ir = useCallback((i) => setAtual((i + total) % total), [total]);
@@ -32,8 +74,9 @@ export default function Hero({ slides }) {
       onFocus={() => setPausado(true)}
       onBlur={() => setPausado(false)}
     >
-      {/* Largura total da tela; o texto continua alinhado à grade do site. */}
-      <div className="relative overflow-hidden bg-ink h-[70vh] min-h-105 max-h-160">
+      {/* Largura total e quase toda a primeira dobra. A classe CSS é só a altura
+          inicial; o valor exato vem da medição em useAlturaPrimeiraDobra. */}
+      <div ref={palco} style={altura ? { height: altura } : undefined} className="relative overflow-hidden bg-ink h-[calc(100svh-14rem)] md:h-[calc(100svh-10rem)] min-h-105">
         {slides.map((s, i) => (
           <div
             key={s.titulo}
