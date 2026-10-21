@@ -83,7 +83,11 @@ function Rodape() {
 
 export default function Layout() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Chaves obrigatórias: scrollTo pode retornar uma Promise, e o React trataria
+  // esse retorno como função de limpeza (erro "destroy is not a function").
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen flex flex-col">

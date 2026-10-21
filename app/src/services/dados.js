@@ -108,9 +108,17 @@ export function cupomValido(c, hoje = hojeISO()) {
 // ---------- consultas ----------
 
 // Hoje os restaurantes vivem em "usuarios" (legado). Ver alerta de PII na auditoria.
-export async function listarRestaurantes() {
-  const snap = await getDocs(query(collection(db, "usuarios"), where("tipo", "==", "restaurante")));
-  return snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo);
+// A lista é guardada em memória durante a sessão para evitar consultas repetidas.
+let cacheRestaurantes = null;
+
+export function listarRestaurantes() {
+  cacheRestaurantes ??= getDocs(query(collection(db, "usuarios"), where("tipo", "==", "restaurante")))
+    .then((snap) => snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo))
+    .catch((erro) => {
+      cacheRestaurantes = null;
+      throw erro;
+    });
+  return cacheRestaurantes;
 }
 
 export async function obterRestaurante(id) {
@@ -151,6 +159,14 @@ export async function obterConteudoRestaurante(id) {
 export async function listarPromocoes() {
   const snap = await getDocs(collection(db, "promocoes"));
   return snap.docs.map((d) => normalizarPromocao(d.id, d.data()));
+}
+
+export async function obterSuperEvento() {
+  const snap = await getDoc(doc(db, "configuracoes", "super_evento"));
+  if (!snap.exists()) return null;
+  const ev = normalizarEvento(snap.id, snap.data());
+  const hoje = hojeISO();
+  return ev.fim >= hoje ? { ...ev, subtitulo: snap.data().subtitulo || "" } : null;
 }
 
 export async function listarEventos() {

@@ -4,9 +4,12 @@ import "@fontsource-variable/fraunces";
 import "@fontsource-variable/inter";
 import "./index.css";
 import App from "./App";
+import LimiteErro from "./components/LimiteErro";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    <LimiteErro>
+      <App />
+    </LimiteErro>
   </StrictMode>,
 );

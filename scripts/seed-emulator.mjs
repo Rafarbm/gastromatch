@@ -226,7 +226,8 @@ async function main() {
     for (const [j, [titulo, categoria, preco]] of r.pratos.entries()) {
       await gravar(`menus/${r.chave}-${j}`, {
         restauranteId: uid[r.chave], restaurante: r.nome, cozinha: r.cozinha,
-        titulo, categoria, preco, imagem: r.fotos[j % r.fotos.length],
+        // Só o prato principal recebe foto: as fotos demo são do restaurante, não de cada prato.
+        titulo, categoria, preco, imagem: categoria === "Prato Principal" ? r.fotos[0] : "",
         descricao: "Prato fictício de demonstração.", criadoEm: agora,
       });
     }

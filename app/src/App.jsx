@@ -2,6 +2,11 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import { LocalidadeProvider } from "./contexts/LocalidadeContext";
 import EmConstrucao from "./pages/EmConstrucao";
+import Home from "./pages/Home";
+import Catalogo from "./pages/Catalogo";
+import Restaurante from "./pages/Restaurante";
+import Promocoes from "./pages/Promocoes";
+import Eventos from "./pages/Eventos";
 
 export default function App() {
   return (
@@ -9,12 +14,12 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
-            <Route index element={<EmConstrucao titulo="Início" />} />
-            <Route path="restaurantes" element={<EmConstrucao titulo="Restaurantes" />} />
-            <Route path="restaurantes/:id" element={<EmConstrucao titulo="Restaurante" />} />
+            <Route index element={<Home />} />
+            <Route path="restaurantes" element={<Catalogo />} />
+            <Route path="restaurantes/:id" element={<Restaurante />} />
             <Route path="recomendar" element={<EmConstrucao titulo="Recomendar" />} />
-            <Route path="promocoes" element={<EmConstrucao titulo="Promoções" />} />
-            <Route path="eventos" element={<EmConstrucao titulo="Eventos" />} />
+            <Route path="promocoes" element={<Promocoes />} />
+            <Route path="eventos" element={<Eventos />} />
             <Route path="*" element={<EmConstrucao titulo="Página não encontrada" />} />
           </Route>
         </Routes>
