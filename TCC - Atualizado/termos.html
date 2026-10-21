@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Termos e Privacidade — GastroMatch</title>
+
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <!-- CSS local do projeto -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased flex flex-col justify-between">
+
+  <!-- Header Padronizado -->
+  <header class="mx-auto max-w-6xl w-full px-5 sm:px-8">
+    <nav class="flex items-center justify-between py-6">
+      <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-inksoft">
+        <a href="index.html" class="hover:text-terra transition-colors">Início</a>
+        <a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a>
+        <a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a>
+        <a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a>
+      </div>
+
+      <a href="cadastro.html" class="text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra transition-colors">
+        Voltar ao Cadastro
+      </a>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="mx-auto max-w-4xl w-full px-5 py-8">
+
+    <!-- Cabeçalho -->
+    <div class="text-center mb-8">
+      <h1 id="terms-title" class="font-display font-semibold text-4xl text-ink">Termos e Condições</h1>
+      <p id="terms-subtitle" class="mt-2 text-sm text-inksoft">Transparência e segurança para todos os usuários e estabelecimentos parceiros</p>
+    </div>
+
+    <!-- Seletor de Abas -->
+    <div class="grid grid-cols-3 gap-2 p-1.5 bg-paper rounded-2xl ring-1 ring-ink/10 shadow-clay mb-8">
+      <button type="button" id="tab-cliente" class="py-3 text-xs sm:text-sm font-semibold rounded-xl bg-cream text-terra shadow-sm cursor-pointer transition-all text-center">
+        Termos para Clientes
+      </button>
+      <button type="button" id="tab-parceiro" class="py-3 text-xs sm:text-sm font-semibold rounded-xl text-inksoft hover:text-ink transition-all cursor-pointer text-center">
+        Termos para Parceiros
+      </button>
+      <button type="button" id="tab-privacidade" class="py-3 text-xs sm:text-sm font-semibold rounded-xl text-inksoft hover:text-ink transition-all cursor-pointer text-center">
+        Política de Privacidade
+      </button>
+    </div>
+
+    <!-- CONTAINER DE CONTEÚDO DOS TERMOS -->
+    <div class="rounded-[28px] bg-paper p-8 sm:p-12 ring-1 ring-ink/5 shadow-clay text-sm text-inksoft leading-relaxed space-y-6">
+
+      <!-- SEÇÃO 1: TERMOS DE USO DO CLIENTE -->
+      <div id="content-cliente" class="space-y-6">
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">1. Aceitação dos Termos</h2>
+          <p>Ao criar uma conta ou utilizar a plataforma GastroMatch para navegação, reservas e compra de bilhetes ou menus degustação, o usuário declara ter lido, compreendido e aceito integralmente estes Termos de Uso.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">2. Reservas e Validade de Experiências</h2>
+          <p>As reservas e os vouchers de menus promocionais ou eventos adquiridos pelo GastroMatch possuem data, horário e tolerância especificados no momento da confirmação. O não comparecimento no horário estabelecido poderá resultar no cancelamento automático da reserva sem reembolso.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">3. Cancelamentos e Reembolsos</h2>
+          <p>O cliente poderá solicitar o cancelamento de ingressos para eventos gastronômicos com até 48 horas de antecedência em relação ao horário do evento. Para menus com preços fixos e reservas em restaurantes, o cancelamento sem custos deve ser efetuado com no mínimo 2 horas de antecedência através da plataforma.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">4. Conduta e Responsabilidade</h2>
+          <p>O cliente compromete-se a fornecer informações exatas em seu cadastro. Avaliações e comentários sobre pratos ou estabelecimentos devem ser fundamentados em experiências reais e respeitar os padrões de civilidade da plataforma.</p>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 2: TERMOS DE USO DO PARCEIRO -->
+      <div id="content-parceiro" class="hidden space-y-6">
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">1. Cadastro de Estabelecimento e Elegibilidade</h2>
+          <p>A adesão como restaurante parceiro está sujeita à verificação dos dados cadastrais (CNPJ ativo, endereço físico e representação legal habilitada). O GastroMatch reserva-se o direito de recusar parceiros que não atendam aos critérios de qualidade e higiene estipulados.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">2. Menus Exclusivos e Garantia de Preço</h2>
+          <p>O restaurante parceiro compromete-se a honrar os itens do menu degustação, combos ou eventos cadastrados no painel administrativo, garantindo que o preço ofertado na plataforma seja respeitado no atendimento presencial sem cobranças abusivas não discriminadas.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">3. Gestão de Vagas e Mesas</h2>
+          <p>É de responsabilidade do restaurante manter o limite de vagas para reservas e venda de convites atualizado no painel do parceiro para evitar ocorrências de overbooking ou recusa de clientes confirmados.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">4. Repasse e Taxas de Serviço</h2>
+          <p>Os repasses referentes a bilhetes de eventos e serviços contratados pelo sistema de pagamento integrado serão efetuados de acordo com o prazo contratual estipulado no painel do parceiro (D+15 ou D+30), descontadas as tarifas de serviço acordadas.</p>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3: POLÍTICA DE PRIVACIDADE -->
+      <div id="content-privacidade" class="hidden space-y-6">
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">1. Coleta de Dados Pessoais</h2>
+          <p>O GastroMatch coleta dados essenciais como Nome, E-mail, Telefone/WhatsApp, Histórico de Reservas e Dados do Dispositivo para viabilizar a prestação dos serviços de agendamento e personalização de recomendações gastronômicas (Lei Geral de Proteção de Dados - LGPD).</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">2. Compartilhamento de Informações</h2>
+          <p>Seus dados de contato (Nome e Telefone) são compartilhados com o restaurante escolhido no momento da confirmação de reserva para possibilitar o atendimento presencial. Nunca vendemos ou comercializamos dados pessoais com terceiros para fins publicitários independentes.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">3. Segurança e Armazenamento</h2>
+          <p>Utilizamos protocolos de criptografia e padrões rigorosos de segurança para armazenar informações cadastrais e transações bancárias. As senhas de acesso são mantidas em hashes protegidos e inacessíveis para terceiros ou funcionários.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink mb-2">4. Direitos do Titular (LGPD)</h2>
+          <p>Você pode solicitar a qualquer momento a alteração, exportação ou exclusão definitiva de seus dados da nossa base ativando a solicitação no seu perfil ou entrando em contato pelo e-mail <a href="mailto:contato@gastromatch.com.br" class="text-terra hover:underline">contato@gastromatch.com.br</a>.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer GastroMatch -->
+  <footer class="w-full pt-8 pb-10 mt-auto">
+    <div class="mx-auto max-w-6xl px-5 sm:px-8">
+
+      <!-- Linha Superior -->
+      <div class="border-t border-ink/10 pt-8">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; flex-wrap: nowrap;">
+
+          <!-- Coluna 1 -->
+          <div style="flex: 1 1 240px; max-width: 260px;" class="space-y-3">
+            <a href="index.html" class="font-display font-semibold text-2xl tracking-tight text-ink block">
+              GastroMatch<span class="text-terra">.</span>
+            </a>
+            <p class="text-xs text-inksoft leading-relaxed">
+              Conectando você às melhores experiências gastronômicas do Brasil com menus exclusivos e preços especiais.
+            </p>
+          </div>
+
+          <!-- Coluna 2 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Navegação</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="index.html" class="hover:text-terra transition-colors">Início</a>
+              <a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a>
+              <a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a>
+              <a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a>
+            </div>
+          </div>
+
+          <!-- Coluna 3 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Restaurantes</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="cadastro.html?tipo=restaurante" class="hover:text-terra transition-colors">Cadastrar Restaurante</a>
+              <a href="central-de-ajuda.html" class="hover:text-terra transition-colors">Suporte</a>
+            </div>
+          </div>
+
+          <!-- Coluna 4 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Usuários</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="cadastro.html" class="hover:text-terra transition-colors">Criar Conta</a>
+              <a href="login.html" class="hover:text-terra transition-colors">Entrar</a>
+            </div>
+          </div>
+
+          <!-- Coluna 5 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Contato</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="mailto:contato@gastromatch.com.br" class="hover:text-terra transition-colors">contato@gastromatch.com.br</a>
+              <a href="tel:61983833456" class="hover:text-terra transition-colors">(61) 98383-3456</a>
+              <a href="central-de-ajuda.html" class="hover:text-terra transition-colors">Central de Ajuda</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Linha Inferior -->
+      <div class="mt-8 pt-6 border-t border-ink/10 text-xs text-inksoft">
+        <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Script de Alternância das Abas de Termos -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const tabCliente = document.getElementById('tab-cliente');
+      const tabParceiro = document.getElementById('tab-parceiro');
+      const tabPrivacidade = document.getElementById('tab-privacidade');
+
+      const contentCliente = document.getElementById('content-cliente');
+      const contentParceiro = document.getElementById('content-parceiro');
+      const contentPrivacidade = document.getElementById('content-privacidade');
+
+      const title = document.getElementById('terms-title');
+
+      const activeClass = 'py-3 text-xs sm:text-sm font-semibold rounded-xl bg-cream text-terra shadow-sm cursor-pointer transition-all text-center';
+      const inactiveClass = 'py-3 text-xs sm:text-sm font-semibold rounded-xl text-inksoft hover:text-ink transition-all cursor-pointer text-center';
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const tipoURL = urlParams.get('tipo');
+
+      function ativarAbaCliente() {
+        tabCliente.className = activeClass;
+        tabParceiro.className = inactiveClass;
+        tabPrivacidade.className = inactiveClass;
+
+        contentCliente.classList.remove('hidden');
+        contentParceiro.classList.add('hidden');
+        contentPrivacidade.classList.add('hidden');
+
+        title.textContent = 'Termos e Condições';
+      }
+
+      function ativarAbaParceiro() {
+        tabParceiro.className = activeClass;
+        tabCliente.className = inactiveClass;
+        tabPrivacidade.className = inactiveClass;
+
+        contentParceiro.classList.remove('hidden');
+        contentCliente.classList.add('hidden');
+        contentPrivacidade.classList.add('hidden');
+
+        title.textContent = 'Termos de Uso do Parceiro';
+      }
+
+      function ativarAbaPrivacidade() {
+        tabPrivacidade.className = activeClass;
+        tabCliente.className = inactiveClass;
+        tabParceiro.className = inactiveClass;
+
+        contentPrivacidade.classList.remove('hidden');
+        contentCliente.classList.add('hidden');
+        contentParceiro.classList.add('hidden');
+
+        title.textContent = 'Política de Privacidade';
+      }
+
+      tabCliente.addEventListener('click', ativarAbaCliente);
+      tabParceiro.addEventListener('click', ativarAbaParceiro);
+      tabPrivacidade.addEventListener('click', ativarAbaPrivacidade);
+
+      if (tipoURL === 'parceiro') {
+        ativarAbaParceiro();
+      } else if (tipoURL === 'privacidade') {
+        ativarAbaPrivacidade();
+      } else {
+        ativarAbaCliente();
+      }
+    });
+  </script>
+
+</body>
+
+</html>

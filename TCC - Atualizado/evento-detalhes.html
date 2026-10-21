@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detalhes do Evento — GastroMatch</title>
+
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <!-- CSS local -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Fontes do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+
+    <style>
+        #barra-progresso {
+            width: 0%;
+            transition: width 0.05s linear;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased">
+
+    <!-- Header Padronizado Exato -->
+    <header class="mx-auto max-w-6xl px-5 sm:px-8">
+        <nav class="flex items-center justify-between py-5">
+            <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+                    <li><a href="index.html" class="hover:text-terra transition-colors">Menus</a></li>
+                    <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                    <li><a href="eventos.html" class="text-terra font-semibold">Eventos</a></li>
+                    <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                </ul>
+            </div>
+
+            <div id="nav-auth-container" class="flex items-center gap-3">
+                <a href="login.html" class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+                    Entrar
+                </a>
+                <a href="cadastro.html" class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+                    Fazer Cadastro
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="mx-auto max-w-6xl px-5 sm:px-8 pt-4 pb-20">
+
+        <!-- Botão Voltar Dinâmico -->
+        <div class="mb-6">
+            <a id="btn-voltar-dinamico" href="eventos.html" class="inline-flex items-center gap-2 text-xs font-semibold text-inksoft hover:text-terra transition-colors">
+                <span class="material-symbols-outlined text-base">arrow_back</span>
+                <span id="texto-voltar-dinamico">Voltar para Eventos</span>
+            </a>
+        </div>
+
+        <!-- Hero Section -->
+        <section class="relative rounded-[32px] overflow-hidden bg-paper shadow-clay ring-1 ring-ink/5 p-6 sm:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+                <!-- Imagem do Evento -->
+                <div class="lg:col-span-5 relative">
+                    <img id="evento-foto" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800" alt="Evento" class="w-full aspect-[4/3] rounded-[24px] object-cover shadow-sm">
+                </div>
+
+                <!-- Informações Detalhadas -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <span id="evento-tag" class="inline-flex items-center rounded-full bg-terra/10 text-terra text-xs font-semibold px-3 py-1">
+                            Evento Ativo
+                        </span>
+                        <div class="flex items-center gap-1.5 bg-paper px-3 py-1 rounded-full ring-1 ring-ink/10 text-xs font-bold text-ink">
+                            <span class="material-symbols-outlined text-base text-amber-500 fill-1">star</span>
+                            <span id="restaurante-avaliacao">4.9</span>
+                            <span id="restaurante-total-avaliacoes" class="text-inksoft font-normal">(120 avaliações)</span>
+                        </div>
+                    </div>
+
+                    <h1 id="evento-titulo" class="font-display font-semibold text-3xl sm:text-5xl text-ink leading-tight">
+                        Carregando...
+                    </h1>
+
+                    <p id="evento-descricao" class="text-sm sm:text-base text-inksoft leading-relaxed">
+                        A carregar detalhes do evento informado...
+                    </p>
+
+                    <!-- Estrutura de Informações com Dias em cima e Horas em baixo -->
+                    <div class="pt-2 border-t border-ink/10 space-y-2 text-xs text-inksoft">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-terra text-lg" id="icone-localizacao">location_on</span>
+                                <span id="container-endereco-ou-participantes">
+                                    <span id="restaurante-endereco">A carregar endereço...</span>
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-terra text-lg">storefront</span>
+                                <span id="evento-organizador">Organizador: ---</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-1 border-t border-ink/5">
+                            <span class="material-symbols-outlined text-terra text-lg">event</span>
+                            <span id="evento-periodo">Período: ---</span>
+                        </div>
+
+                        <!-- Dias em cima -->
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-terra text-lg">calendar_today</span>
+                            <span id="restaurante-dias">Dias de Funcionamento: A carregar...</span>
+                        </div>
+
+                        <!-- Horas em baixo -->
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-terra text-lg">schedule</span>
+                            <span id="restaurante-horario">Horário: A carregar...</span>
+                        </div>
+                    </div>
+
+                    <!-- Botão Interativo "Salvar Presença / Evento" com Press & Hold -->
+                    <div class="pt-4 flex flex-col gap-3">
+                        <div class="relative overflow-hidden rounded-full w-full sm:w-auto">
+                            <button id="btn-resgatar" type="button" class="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-3 px-6 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors shadow-sm cursor-pointer select-none">
+                                <span class="material-symbols-outlined text-lg">event_available</span>
+                                <span id="texto-botao">Mantenha pressionado para salvar evento</span>
+                            </button>
+                            <div id="barra-progresso" class="absolute bottom-0 left-0 h-1 bg-amber-400 pointer-events-none"></div>
+                        </div>
+
+                        <!-- Mini Card de Sucesso -->
+                        <div id="mini-card-sucesso" class="hidden rounded-2xl bg-emerald-50 ring-1 ring-emerald-500/20 p-4 shadow-sm flex items-start gap-3 transition-all duration-300 max-w-md">
+                            <div class="grid place-items-center size-8 rounded-full bg-emerald-500 text-cream shrink-0">
+                                <span class="material-symbols-outlined text-lg">check_circle</span>
+                            </div>
+                            <div class="space-y-1">
+                                <h4 class="font-display font-semibold text-sm text-emerald-900">Presença Confirmada com Sucesso!</h4>
+                                <p class="text-xs text-emerald-700 leading-relaxed">Redirecionando para os seus itens salvos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: Restaurantes Participantes (Eventos GastroMatch) -->
+    <div id="modal-participantes" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-paper rounded-[32px] p-6 sm:p-8 max-w-md w-full shadow-2xl ring-1 ring-ink/10 space-y-4 relative max-h-[80vh] overflow-y-auto">
+            <button type="button" onclick="fecharModalParticipantes()" class="absolute top-6 right-6 text-inksoft hover:text-ink cursor-pointer">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            <h3 class="font-display font-semibold text-xl text-ink">Restaurantes Participantes</h3>
+            <p class="text-xs text-inksoft">Restaurantes parceiros GastroMatch alinhados a este evento:</p>
+            <div id="lista-restaurantes-participantes" class="space-y-3 pt-2">
+                <p class="text-xs text-inksoft text-center py-4">A carregar parceiros...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full pt-12 pb-10 mt-16 border-t border-ink/10">
+        <div class="mx-auto max-w-6xl px-5 sm:px-8 text-center text-xs text-inksoft">
+            <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- SCRIPT UNIFICADO -->
+    <script type="module">
+        import { db, observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+        import { doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        let usuarioAtual = null;
+        let dadosEventoCache = null;
+        let resgateExistenteId = null;
+
+        // Função do Modal de Participantes com link para a página do restaurante
+        window.abrirModalParticipantes = async () => {
+            const modal = document.getElementById('modal-participantes');
+            const lista = document.getElementById('lista-restaurantes-participantes');
+            if (!modal || !lista) return;
+
+            modal.classList.remove('hidden');
+            lista.innerHTML = `<p class="text-xs text-inksoft text-center py-4">A carregar parceiros...</p>`;
+
+            const ids = dadosEventoCache?.restaurantesParticipantes || [];
+            if (ids.length === 0) {
+                lista.innerHTML = `<p class="text-xs text-inksoft text-center py-4">Nenhum restaurante filiado até o momento.</p>`;
+                return;
+            }
+
+            lista.innerHTML = '';
+            for (const restId of ids) {
+                try {
+                    const rSnap = await getDoc(doc(db, "usuarios", restId));
+                    if (rSnap.exists()) {
+                        const rData = rSnap.data();
+                        lista.innerHTML += `
+                            <div class="p-3 bg-cream rounded-2xl ring-1 ring-ink/5 flex items-center justify-between gap-3">
+                                <div>
+                                    <h4 class="font-display font-semibold text-sm text-ink">${rData.nomeRestaurante || rData.nome || 'Restaurante Parceiro'}</h4>
+                                    <p class="text-[11px] text-inksoft">${rData.cozinha || 'Cozinha'} • ${rData.endereco || 'Brasília'}</p>
+                                </div>
+                                <a href="pagina-restaurante.html?id=${restId}" class="rounded-full bg-terra text-cream text-xs font-semibold py-1.5 px-3 hover:bg-terradeep transition-colors no-underline shrink-0">
+                                    Ver Perfil
+                                </a>
+                            </div>
+                        `;
+                    }
+                } catch (e) { console.error(e); }
+            }
+        };
+
+        window.fecharModalParticipantes = () => {
+            const modal = document.getElementById('modal-participantes');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        // Ajusta o botão "Voltar" dependendo do parâmetro 'origem' na URL
+        const paramsURL = new URLSearchParams(window.location.search);
+        if (paramsURL.get('origem') === 'painel') {
+            const btnVoltar = document.getElementById('btn-voltar-dinamico');
+            const textoVoltar = document.getElementById('texto-voltar-dinamico');
+            if (btnVoltar && textoVoltar) {
+                btnVoltar.href = 'painel-restaurante.html';
+                textoVoltar.textContent = 'Voltar para o Painel Restaurante';
+            }
+        }
+
+        // --- 1. RENDERIZAÇÃO DO HEADER DINÂMICO E AUTENTICAÇÃO ---
+        const navAuthContainer = document.querySelector('header nav .flex.items-center.gap-3') || document.querySelector('header nav');
+        const navLinksList = document.getElementById('nav-links');
+
+        if (navAuthContainer) {
+            navAuthContainer.style.setProperty('position', 'relative', 'important');
+            navAuthContainer.style.setProperty('overflow', 'visible', 'important');
+            navAuthContainer.style.setProperty('min-width', 'max-content', 'important');
+
+            observarEstadoAutenticacao(async ({ logado, user, dadosUsuario }) => {
+                if (logado && user) {
+                    usuarioAtual = { uid: user.uid, email: user.email, ...dadosUsuario };
+
+                    if (typeof verificarSeJaSalvo === 'function' && dadosEventoCache) {
+                        await verificarSeJaSalvo();
+                    }
+
+                    // Identificação do Tipo de Conta
+                    const isSuporte = user.email && user.email.endsWith('@sugama.com');
+                    const isRestaurante = dadosUsuario?.tipo === 'restaurante';
+
+                    // 1. Atualização dos Links da Navbar
+                    if (navLinksList) {
+                        if (isSuporte) {
+                            navLinksList.innerHTML = `
+                                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                                <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                                <li><a href="suporte.html" class="text-terra font-semibold">Painel Suporte</a></li>
+                            `;
+                        } else if (isRestaurante) {
+                            navLinksList.innerHTML = `
+                                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                                <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                                <li><a href="painel-restaurante.html" class="hover:text-terra transition-colors">Painel Restaurante</a></li>
+                            `;
+                        } else {
+                            navLinksList.innerHTML = `
+                                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                                <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                                <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                                <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+                            `;
+                        }
+                    }
+
+                    // 2. Definição do Nome / Rótulo de Exibição
+                    let nomeExibicao = 'Usuário';
+                    let subrotuloHTML = '';
+
+                    if (isSuporte) {
+                        nomeExibicao = 'Suporte';
+                        subrotuloHTML = '<span class="text-[10px] uppercase font-bold text-terra block">Administração</span>';
+                    } else if (isRestaurante) {
+                        const nomeBruto = dadosUsuario?.nomeRestaurante || dadosUsuario?.nomeResponsavel || user?.email?.split('@')[0];
+                        const primeironome = nomeBruto.trim().split(' ')[0];
+                        nomeExibicao = primeironome.charAt(0).toUpperCase() + primeironome.slice(1).toLowerCase();
+                        subrotuloHTML = '<span class="text-[10px] uppercase font-bold text-terra block">Conta Parceiro</span>';
+                    } else {
+                        const nomeBruto = dadosUsuario?.nome || user?.email?.split('@')[0] || 'Usuário';
+                        const primeironome = nomeBruto.trim().split(' ')[0];
+                        nomeExibicao = primeironome.charAt(0).toUpperCase() + primeironome.slice(1).toLowerCase();
+                    }
+
+                    // 3. Botões Internos do Dropdown
+                    let botoesDropdownHTML = '';
+
+                    if (isSuporte) {
+                        botoesDropdownHTML = `
+                            <a href="suporte.html" class="flex items-center justify-center rounded-full bg-terra text-xs font-bold text-cream hover:bg-terradeep transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                              Painel Suporte
+                            </a>
+                            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+                              Sair da conta
+                            </button>
+                        `;
+                    } else if (isRestaurante) {
+                        botoesDropdownHTML = `
+                            <a href="painel-restaurante.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                              Painel Restaurante
+                            </a>
+                            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+                              Sair da conta
+                            </button>
+                        `;
+                    } else {
+                        botoesDropdownHTML = `
+                            <a href="perfil-usuario.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                              Ver perfil
+                            </a>
+                            <a href="salvos.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                              Salvos
+                            </a>
+                            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+                              Sair da conta
+                            </button>
+                        `;
+                    }
+
+                    // 4. Renderização no HTML
+                    navAuthContainer.innerHTML = `
+                        <div style="position: relative !important; display: inline-block !important; width: auto !important; overflow: visible !important;">
+                          <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all duration-200 cursor-pointer shadow-sm focus:outline-none">
+                            <span class="text-sm font-semibold text-ink group-hover:text-cream transition-colors whitespace-nowrap">
+                              ${nomeExibicao}
+                            </span>
+                            <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                          </button>
+
+                          <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50 transition-all duration-200" 
+                               style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; min-width: 240px !important; width: 240px !important; padding: 20px !important; box-sizing: border-box !important;">
+                            <div style="padding-left: 4px; padding-right: 4px;">
+                              <p class="text-base font-bold text-ink truncate" style="margin: 0 !important; font-size: 1rem !important; font-weight: 700 !important; color: #2B2725 !important;">${user.email}</p>
+                              ${subrotuloHTML}
+                            </div>
+                            <div style="margin-top: 12px !important; margin-bottom: 16px !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important; width: 100% !important;"></div>
+                            <div style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important;">
+                              ${botoesDropdownHTML}
+                            </div>
+                          </div>
+                        </div>
+                    `;
+
+                    // Eventos do Dropdown e Logout
+                    const btnDropdown = document.getElementById('btn-user-dropdown');
+                    const dropdownMenu = document.getElementById('dropdown-menu');
+                    const arrowIcon = document.getElementById('arrow-icon');
+
+                    if (btnDropdown) {
+                        btnDropdown.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            dropdownMenu.classList.toggle('hidden');
+                            if (arrowIcon) arrowIcon.classList.toggle('rotate-180');
+                        });
+                    }
+
+                    document.addEventListener('click', (e) => {
+                        if (dropdownMenu && !dropdownMenu.contains(e.target) && !btnDropdown.contains(e.target)) {
+                            dropdownMenu.classList.add('hidden');
+                            if (arrowIcon) arrowIcon.classList.remove('rotate-180');
+                        }
+                    });
+
+                    const btnSair = document.getElementById('btn-sair');
+                    if (btnSair) {
+                        btnSair.addEventListener('click', fazerLogout);
+                    }
+
+                } else {
+                    usuarioAtual = null;
+                }
+            });
+        }
+
+        // --- 2. CARREGAMENTO DOS DADOS DO EVENTO ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            const eventoId = paramsURL.get('id');
+
+            if (!eventoId) {
+                document.getElementById('evento-titulo').textContent = "Evento não encontrado";
+                document.getElementById('evento-descricao').textContent = "Nenhum ID de evento especificado na URL.";
+                return;
+            }
+
+            try {
+                let eventoSnap = null;
+
+                if (eventoId === 'super_evento_ativo') {
+                    eventoSnap = await getDoc(doc(db, "configuracoes", "super_evento"));
+                } else {
+                    eventoSnap = await getDoc(doc(db, "eventos", eventoId));
+                }
+
+                if (!eventoSnap.exists()) {
+                    document.getElementById('evento-titulo').textContent = "Evento não encontrado";
+                    return;
+                }
+
+                dadosEventoCache = { id: eventoSnap.id, ...eventoSnap.data() };
+
+                document.getElementById('evento-titulo').textContent = dadosEventoCache.titulo || dadosEventoCache.nome || "Evento Especial";
+
+                const textoDescricao = dadosEventoCache.descricao || dadosEventoCache.condicoes || "Sem descrição informada.";
+                document.getElementById('evento-descricao').textContent = textoDescricao;
+
+                function formatarDataBR(dataStr) {
+                    if (!dataStr) return '';
+                    if (!dataStr.includes('-')) return dataStr;
+                    const partes = dataStr.split('T')[0].split('-');
+                    if (partes.length === 3) {
+                        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+                    }
+                    return dataStr;
+                }
+
+                const inicio = formatarDataBR(dadosEventoCache.dataInicio || dadosEventoCache.inicio || dadosEventoCache.startDate || dadosEventoCache.data || '');
+                const fim = formatarDataBR(dadosEventoCache.dataFim || dadosEventoCache.fim || dadosEventoCache.endDate || '');
+                const periodoFormatado = inicio && fim ? `${inicio} até ${fim}` : (inicio || 'Data a confirmar');
+
+                document.getElementById('evento-periodo').textContent = `Período: ${periodoFormatado}`;
+
+                // Verifica se é um evento oficial da plataforma GastroMatch (Criado pelo Suporte)
+                const eEventoOficial = dadosEventoCache.tipoEvento === 'geral_plataforma' || eventoId === 'super_evento_ativo' || dadosEventoCache.isSuper;
+
+                const elOrganizador = document.getElementById('evento-organizador');
+
+                if (eEventoOficial) {
+                    if (elOrganizador) {
+                        elOrganizador.textContent = "Organizador: GastroMatch";
+                    }
+                    document.getElementById('icone-localizacao').textContent = "group";
+                    document.getElementById('container-endereco-ou-participantes').innerHTML = `
+                        <button type="button" onclick="abrirModalParticipantes()" class="text-terra font-semibold hover:underline cursor-pointer">
+                            Ver restaurantes participantes (${(dadosEventoCache.restaurantesParticipantes || []).length})
+                        </button>
+                    `;
+                } else {
+                    // Evento de Restaurante Único/Individual
+                    const restId = dadosEventoCache.restauranteId;
+                    const nomeRest = dadosEventoCache.restauranteNome || dadosEventoCache.restaurante || 'Parceiro GastroMatch';
+
+                    if (elOrganizador) {
+                        if (restId) {
+                            elOrganizador.innerHTML = `
+                                Organizador: 
+                                <a href="pagina-restaurante.html?id=${restId}" class="inline-flex items-center gap-1 text-terra font-semibold no-underline cursor-pointer">
+                                    <span class="material-symbols-outlined text-sm">storefront</span> ${nomeRest}
+                                </a>
+                            `;
+                        } else {
+                            elOrganizador.textContent = `Organizador: ${nomeRest}`;
+                        }
+                    }
+                }
+
+                if (dadosEventoCache.foto || dadosEventoCache.imagem) {
+                    document.getElementById('evento-foto').src = dadosEventoCache.foto || dadosEventoCache.imagem;
+                }
+
+                // Exibição dos Dias
+                const diasStr = (dadosEventoCache.diasValidos && dadosEventoCache.diasValidos.length > 0)
+                    ? dadosEventoCache.diasValidos.join(', ')
+                    : "Todos os dias";
+                document.getElementById('restaurante-dias').textContent = `Dias de Funcionamento: ${diasStr}`;
+
+                // Exibição do Horário
+                let horaTexto = "Horário livre / Não informado";
+                if (dadosEventoCache.horaInicio && dadosEventoCache.horaFim) {
+                    horaTexto = `Das ${dadosEventoCache.horaInicio} às ${dadosEventoCache.horaFim}`;
+                }
+
+                // Se não for evento oficial, busca detalhes do perfil do restaurante (Endereço, Nota, etc.)
+                if (!eEventoOficial && dadosEventoCache.restauranteId) {
+                    const restDocRef = doc(db, "usuarios", dadosEventoCache.restauranteId);
+                    const restSnap = await getDoc(restDocRef);
+
+                    if (restSnap.exists()) {
+                        const restData = restSnap.data();
+                        const nomeReal = restData.nomeRestaurante || restData.nome || 'Parceiro GastroMatch';
+
+                        if (elOrganizador) {
+                            elOrganizador.innerHTML = `
+                                Organizador: 
+                                <a href="pagina-restaurante.html?id=${dadosEventoCache.restauranteId}" class="inline-flex items-center gap-1 text-terra font-semibold no-underline cursor-pointer">
+                                    <span class="material-symbols-outlined text-sm">storefront</span> ${nomeReal}
+                                </a>
+                            `;
+                        }
+
+                        const elEndereco = document.getElementById('restaurante-endereco');
+                        if (elEndereco) elEndereco.textContent = restData.endereco || "Endereço não informado";
+
+                        if (horaTexto === "Horário livre / Não informado") {
+                            horaTexto = restData.horario || restData.horarioFuncionamento || "Horário livre / Não informado";
+                        }
+
+                        if (restData.avaliacao) {
+                            document.getElementById('restaurante-avaliacao').textContent = restData.avaliacao;
+                        }
+                        if (restData.totalAvaliacoes || restData.numAvaliacoes) {
+                            document.getElementById('restaurante-total-avaliacoes').textContent = `(${restData.totalAvaliacoes || restData.numAvaliacoes} avaliações)`;
+                        }
+                    }
+                }
+
+                document.getElementById('restaurante-horario').textContent = `Horário: ${horaTexto}`;
+
+                if (usuarioAtual) {
+                    await verificarSeJaSalvo();
+                }
+
+            } catch (error) {
+                console.error("Erro ao carregar os dados do evento:", error);
+            }
+        });
+
+        // --- 3. VERIFICAÇÃO DE EVENTO SALVO ---
+        async function verificarSeJaSalvo() {
+            if (!usuarioAtual || !dadosEventoCache) return;
+
+            try {
+                const q = query(
+                    collection(db, "salvos"),
+                    where("usuarioId", "==", usuarioAtual.uid),
+                    where("eventoId", "==", dadosEventoCache.id)
+                );
+                const querySnapshot = await getDocs(q);
+
+                const btnResgatar = document.getElementById('btn-resgatar');
+                const textoBotao = document.getElementById('texto-botao');
+                const barraProgresso = document.getElementById('barra-progresso');
+
+                if (!querySnapshot.empty) {
+                    resgateExistenteId = querySnapshot.docs[0].id;
+                    btnResgatar.className = "relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-red-600 text-cream text-sm font-semibold py-3 px-6 ring-1 ring-red-700/30 hover:bg-red-700 transition-colors shadow-sm cursor-pointer select-none";
+                    textoBotao.textContent = "Mantenha pressionado para cancelar presença";
+                    if (barraProgresso) barraProgresso.className = "absolute bottom-0 left-0 h-1 bg-amber-200 pointer-events-none";
+                } else {
+                    resgateExistenteId = null;
+                    btnResgatar.className = "relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-3 px-6 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors shadow-sm cursor-pointer select-none";
+                    textoBotao.textContent = "Mantenha pressionado para salvar evento";
+                    if (barraProgresso) barraProgresso.className = "absolute bottom-0 left-0 h-1 bg-amber-400 pointer-events-none";
+                }
+            } catch (error) {
+                console.error("Erro ao verificar evento salvo:", error);
+            }
+        }
+
+        // --- 4. AÇÃO DE PRESSIONAR PARA SALVAR / CANCELAR EVENTO ---
+        const btnResgatar = document.getElementById('btn-resgatar');
+        const barraProgresso = document.getElementById('barra-progresso');
+        const textoBotao = document.getElementById('texto-botao');
+        const miniCardSucesso = document.getElementById('mini-card-sucesso');
+
+        let timerPressao = null;
+        let intervaloProgresso = null;
+        let tempoInicio = 0;
+        const tempoNecessario = 1500;
+
+        function iniciarPressao(e) {
+            if (e.cancelable) e.preventDefault();
+
+            if (!usuarioAtual) {
+                alert("Você precisa estar cadastrado e com sessão iniciada para realizar esta ação.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const acaoTexto = resgateExistenteId ? "Segure para cancelar..." : "Segure para salvar...";
+            textoBotao.textContent = acaoTexto;
+            tempoInicio = Date.now();
+            barraProgresso.style.width = "0%";
+
+            intervaloProgresso = setInterval(() => {
+                let tempoDecorrido = Date.now() - tempoInicio;
+                let porcentagem = (tempoDecorrido / tempoNecessario) * 100;
+                if (porcentagem > 100) porcentagem = 100;
+                barraProgresso.style.width = `${porcentagem}%`;
+            }, 30);
+
+            timerPressao = setTimeout(() => {
+                if (resgateExistenteId) {
+                    executarCancelamentoSalvar();
+                } else {
+                    executarSalvarEvento();
+                }
+            }, tempoNecessario);
+        }
+
+        function cancelarPressao() {
+            if (timerPressao) clearTimeout(timerPressao);
+            if (intervaloProgresso) clearInterval(intervaloProgresso);
+            barraProgresso.style.width = "0%";
+
+            if (!textoBotao.textContent.includes("Sucesso") && !textoBotao.textContent.includes("Cancelado")) {
+                textoBotao.textContent = resgateExistenteId ? "Mantenha pressionado para cancelar presença" : "Mantenha pressionado para salvar evento";
+            }
+        }
+
+        async function executarSalvarEvento() {
+            cancelarPressao();
+
+            try {
+                const dadosSalvar = {
+                    usuarioId: usuarioAtual.uid,
+                    usuarioEmail: usuarioAtual.email,
+                    usuarioNome: usuarioAtual.nome || usuarioAtual.email.split('@')[0],
+                    eventoId: dadosEventoCache.id,
+                    titulo: dadosEventoCache.titulo || dadosEventoCache.nome,
+                    descricao: dadosEventoCache.descricao || dadosEventoCache.condicoes,
+                    foto: dadosEventoCache.foto || dadosEventoCache.imagem || "",
+                    restauranteId: dadosEventoCache.restauranteId || "",
+                    restauranteNome: dadosEventoCache.restauranteNome || dadosEventoCache.restaurante || "Parceiro",
+                    dataResgate: serverTimestamp()
+                };
+
+                const docRef = await addDoc(collection(db, "salvos"), dadosSalvar);
+                resgateExistenteId = docRef.id;
+
+                btnResgatar.classList.remove('bg-terra', 'hover:bg-terradeep');
+                btnResgatar.classList.add('bg-emerald-600');
+                textoBotao.textContent = "✔ Evento Salvo";
+
+                if (miniCardSucesso) {
+                    miniCardSucesso.querySelector('h4').textContent = "Presença Confirmada com Sucesso!";
+                    miniCardSucesso.querySelector('p').textContent = "Redirecionando para os seus itens salvos...";
+                    miniCardSucesso.classList.remove('hidden');
+                }
+
+                setTimeout(() => {
+                    window.location.href = "salvos.html";
+                }, 1500);
+
+            } catch (error) {
+                console.error("Erro ao salvar evento:", error);
+                alert("Ocorreu um erro ao salvar. Tente novamente.");
+            }
+        }
+
+        async function executarCancelamentoSalvar() {
+            cancelarPressao();
+
+            try {
+                if (!resgateExistenteId) return;
+
+                await deleteDoc(doc(db, "salvos", resgateExistenteId));
+                resgateExistenteId = null;
+
+                textoBotao.textContent = "✖ Presença Cancelada";
+                btnResgatar.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btnResgatar.classList.add('bg-zinc-600');
+
+                if (miniCardSucesso) {
+                    miniCardSucesso.querySelector('h4').textContent = "Presença Cancelada";
+                    miniCardSucesso.querySelector('p').textContent = "O evento foi removido dos seus salvos.";
+                    miniCardSucesso.classList.remove('hidden');
+                }
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+
+            } catch (error) {
+                console.error("Erro ao cancelar salvamento:", error);
+                alert("Ocorreu um erro ao cancelar. Tente novamente.");
+            }
+        }
+
+        if (btnResgatar) {
+            btnResgatar.addEventListener('mousedown', iniciarPressao);
+            btnResgatar.addEventListener('mouseup', cancelarPressao);
+            btnResgatar.addEventListener('mouseleave', cancelarPressao);
+
+            btnResgatar.addEventListener('touchstart', iniciarPressao, { passive: false });
+            btnResgatar.addEventListener('touchend', cancelarPressao);
+            btnResgatar.addEventListener('touchcancel', cancelarPressao);
+        }
+    </script>
+</body>
+
+</html>

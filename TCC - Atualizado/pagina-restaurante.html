@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detalhes do Restaurante — GastroMatch</title>
+
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <!-- CSS local complementar -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased flex flex-col justify-between">
+
+  <!-- Header Padronizado com Suporte Dinâmico a Autenticação -->
+  <header class="mx-auto max-w-6xl px-5 sm:px-8 w-full">
+    <nav class="flex items-center justify-between py-5 border-b border-ink/10">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+      </div>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-ink">
+        <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+          <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+          <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+          <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+          <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como funciona</a></li>
+        </ul>
+      </div>
+      <div id="nav-auth-container" class="flex items-center gap-3">
+        <a href="index.html" class="rounded-full bg-paper px-4 py-2 text-xs font-semibold text-ink ring-1 ring-ink/10 hover:bg-cream transition-colors">
+          Voltar ao Início
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="mx-auto max-w-6xl px-5 sm:px-8 py-10 space-y-12 w-full">
+
+    <!-- 1. CABEÇALHO DO RESTAURANTE -->
+    <section id="detalhes-header-restaurante" class="rounded-[32px] bg-paper p-6 sm:p-10 ring-1 ring-ink/5 shadow-clay space-y-6">
+      <div class="animate-pulse space-y-4">
+        <div class="h-8 bg-cream rounded-xl w-1/3"></div>
+        <div class="h-4 bg-cream rounded-xl w-1/2"></div>
+      </div>
+    </section>
+
+    <!-- 2. INFORMAÇÕES (FUNCIONAMENTO E DESCRIÇÃO) -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="md:col-span-2 rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay space-y-4">
+        <h3 class="font-display font-semibold text-xl text-ink">Sobre o Restaurante</h3>
+        <p id="rest-descricao" class="text-xs text-inksoft leading-relaxed">Carregando descrição...</p>
+      </div>
+
+      <div class="rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay space-y-4">
+        <h3 class="font-display font-semibold text-xl text-ink">Funcionamento</h3>
+        <div id="rest-horarios" class="space-y-2 text-xs text-inksoft">
+          <p>Carregando horários...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MENUS / CARDÁPIO -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-semibold text-2xl text-ink">Menus Exclusivos</h3>
+      </div>
+      <div id="lista-menus-restaurante" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <p class="text-xs text-inksoft">A carregar menus...</p>
+      </div>
+    </section>
+
+    <!-- 4. PROMOÇÕES -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-semibold text-2xl text-ink">Promoções Ativas</h3>
+      </div>
+      <div id="lista-promocoes-restaurante" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <p class="text-xs text-inksoft">A carregar promoções...</p>
+      </div>
+    </section>
+
+    <!-- 5. CUPONS -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-semibold text-2xl text-ink">Cupons Disponíveis</h3>
+      </div>
+      <div id="lista-cupons-restaurante" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <p class="text-xs text-inksoft">A carregar cupons...</p>
+      </div>
+    </section>
+
+    <!-- 6. EVENTOS (PARTICIPANDO) -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-semibold text-2xl text-ink">Eventos em que Participa</h3>
+      </div>
+      <div id="lista-eventos-restaurante" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <p class="text-xs text-inksoft">A carregar eventos...</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full pt-8 pb-10 mt-auto border-t border-ink/10">
+    <div class="mx-auto max-w-6xl px-5 sm:px-8 text-xs text-inksoft flex justify-between items-center">
+      <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+      <a href="index.html" class="hover:text-terra transition-colors">Voltar para a página inicial</a>
+    </div>
+  </footer>
+
+  <!-- Script para carregar os dados detalhados -->
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const params = new URLSearchParams(window.location.search);
+      const restauranteId = params.get('id');
+
+      if (!restauranteId) {
+        document.getElementById('detalhes-header-restaurante').innerHTML = `
+          <h2 class="font-display font-semibold text-2xl text-red-600">Restaurante não especificado.</h2>
+          <p class="text-xs text-inksoft">Volte à página inicial ou ao painel e selecione um restaurante válido.</p>
+        `;
+        return;
+      }
+
+      try {
+        // 1. Buscar Dados do Restaurante
+        const docRef = doc(db, "usuarios", restauranteId);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          document.getElementById('detalhes-header-restaurante').innerHTML = `
+            <h2 class="font-display font-semibold text-2xl text-red-600">Restaurante não encontrado.</h2>
+          `;
+          return;
+        }
+
+        const dados = docSnap.data();
+
+        // Renderizar Cabeçalho
+        document.getElementById('detalhes-header-restaurante').innerHTML = `
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-terra bg-terra/10 px-2.5 py-1 rounded-full">${dados.cozinha || 'Gastronomia Variada'}</span>
+              <h1 class="font-display font-semibold text-3xl sm:text-4xl text-ink mt-2">${dados.nomeRestaurante || 'Restaurante'}</h1>
+              <p class="text-xs text-inksoft mt-1">Endereço: ${dados.endereco || 'Não informado'} | Tel: ${dados.telefone || 'Não informado'}</p>
+            </div>
+          </div>
+        `;
+
+        // Renderizar Descrição
+        document.getElementById('rest-descricao').textContent = dados.descricao || "Este restaurante ainda não adicionou uma descrição detalhada sobre sua história e especialidades.";
+
+        // Renderizar Horários
+        const containerHorarios = document.getElementById('rest-horarios');
+
+        const diasSemana = dados.diasSemana || '';
+        const inicioSemana = dados.inicioSemana || '';
+        const fimSemana = dados.fimSemana || '';
+
+        const diasFim = dados.diasFim || '';
+        const inicioFds = dados.inicioFds || '';
+        const fimFds = dados.fimFds || '';
+
+        containerHorarios.innerHTML = '';
+
+        if (diasSemana || inicioSemana || fimSemana) {
+          containerHorarios.innerHTML += `
+    <div class="border-b border-ink/5 pb-2">
+      <p class="font-semibold text-ink">${diasSemana || 'Dias da semana'}</p>
+      <p class="mt-1">
+        ${inicioSemana || '--:--'} às ${fimSemana || '--:--'}
+      </p>
+    </div>
+  `;
+        }
+
+        if (diasFim || inicioFds || fimFds) {
+          containerHorarios.innerHTML += `
+    <div class="border-b border-ink/5 pb-2">
+      <p class="font-semibold text-ink">${diasFim || 'Fim de semana'}</p>
+      <p class="mt-1">
+        ${inicioFds || '--:--'} às ${fimFds || '--:--'}
+      </p>
+    </div>
+  `;
+        }
+
+        if (!containerHorarios.innerHTML) {
+          containerHorarios.innerHTML = `
+    <p class="text-xs text-inksoft">
+      Horários de atendimento não informados.
+    </p>
+  `;
+        }
+
+        // 2. Buscar Menus
+        const qMenus = query(collection(db, "menus"), where("restauranteId", "==", restauranteId));
+        const snapMenus = await getDocs(qMenus);
+        const containerMenus = document.getElementById('lista-menus-restaurante');
+        containerMenus.innerHTML = snapMenus.empty ? '<p class="text-xs text-inksoft col-span-full">Nenhum menu cadastrado no momento.</p>' : '';
+        snapMenus.forEach(m => {
+          const item = m.data();
+          containerMenus.innerHTML += `
+            <div class="rounded-2xl bg-paper p-5 ring-1 ring-ink/5 space-y-2 shadow-sm">
+              <h4 class="font-display font-semibold text-lg text-ink">${item.titulo || item.nome}</h4>
+              <p class="text-xs text-inksoft">${item.descricao || ''}</p>
+              <p class="text-sm font-bold text-terra">R$ ${item.preco || '0,00'}</p>
+            </div>
+          `;
+        });
+
+        // 3. Buscar Promoções
+        const qPromos = query(collection(db, "promocoes"), where("restauranteId", "==", restauranteId));
+        const snapPromos = await getDocs(qPromos);
+        const containerPromos = document.getElementById('lista-promocoes-restaurante');
+        containerPromos.innerHTML = snapPromos.empty ? '<p class="text-xs text-inksoft col-span-full">Nenhuma promoção ativa no momento.</p>' : '';
+        snapPromos.forEach(p => {
+          const item = p.data();
+          containerPromos.innerHTML += `
+            <div class="rounded-2xl bg-paper p-5 ring-1 ring-ink/5 space-y-2 shadow-sm">
+              <h4 class="font-display font-semibold text-lg text-ink">${item.titulo}</h4>
+              <p class="text-xs text-inksoft">${item.descricao || ''}</p>
+              <span class="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">Desconto: ${item.desconto || 'Especial'}</span>
+            </div>
+          `;
+        });
+
+        // 4. Buscar Cupons
+        const qCupons = query(collection(db, "cupons"), where("restauranteId", "==", restauranteId));
+        const snapCupons = await getDocs(qCupons);
+        const containerCupons = document.getElementById('lista-cupons-restaurante');
+        containerCupons.innerHTML = snapCupons.empty ? '<p class="text-xs text-inksoft col-span-full">Nenhum cupom disponível no momento.</p>' : '';
+        snapCupons.forEach(c => {
+          const item = c.data();
+          containerCupons.innerHTML += `
+            <div class="rounded-2xl bg-paper p-5 ring-1 ring-ink/5 space-y-2 shadow-sm border border-dashed border-terra/30">
+              <span class="text-[10px] font-bold text-terra uppercase tracking-wider">Cupom de Desconto</span>
+              <h4 class="font-display font-semibold text-lg text-ink font-mono">${item.codigo}</h4>
+              <p class="text-xs text-inksoft">${item.descricao || ''}</p>
+            </div>
+          `;
+        });
+
+        // 5. Buscar Eventos (próprios do restaurante ou globais em que participa)
+        const qEventosRest = query(collection(db, "eventos"), where("restauranteId", "==", restauranteId));
+        const snapEventosRest = await getDocs(qEventosRest);
+
+        // Também buscar eventos gerais que combinem com a cozinha ou vibe
+        const snapEventosGerais = await getDocs(collection(db, "eventos"));
+        const eventosGlobais = snapEventosGerais.docs.map(d => ({ id: d.id, ...d.data() })).filter(ev => ev.tipoEvento === 'geral_plataforma');
+
+        const containerEventos = document.getElementById('lista-eventos-restaurante');
+        const todosEventosRestaurante = [
+          ...snapEventosRest.docs.map(d => ({ id: d.id, ...d.data() })),
+          ...eventosGlobais // Opcional: exibe os globais da plataforma para contexto
+        ];
+
+        containerEventos.innerHTML = todosEventosRestaurante.length === 0 ? '<p class="text-xs text-inksoft col-span-full">Não está a participar de eventos no momento.</p>' : '';
+        todosEventosRestaurante.forEach(ev => {
+          const isGlobal = ev.tipoEvento === 'geral_plataforma';
+          containerEventos.innerHTML += `
+            <div class="rounded-2xl bg-paper p-5 ring-1 ring-ink/5 space-y-2 shadow-sm">
+              <span class="text-[9px] font-bold ${isGlobal ? 'text-indigo-700 bg-indigo-50' : 'text-terra bg-terra/10'} px-2 py-0.5 rounded-full uppercase">${isGlobal ? 'Evento Global' : 'Evento do Restaurante'}</span>
+              <h4 class="font-display font-semibold text-base text-ink">${ev.titulo}</h4>
+              <p class="text-xs text-terra font-semibold">Período: ${ev.inicio || ev.dataInicio || ''} até ${ev.fim || ev.dataFim || ''}</p>
+              <p class="text-xs text-ink">${ev.descricao || ''}</p>
+            </div>
+          `;
+        });
+
+      } catch (err) {
+        console.error("Erro ao carregar os detalhes do restaurante:", err);
+      }
+    });
+  </script>
+
+  <!-- Script de Autenticação Dinâmica para o Cabeçalho -->
+  <script type="module">
+    import { observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+
+    observarEstadoAutenticacao(({ logado, user, dadosUsuario }) => {
+      const navAuthContainer = document.getElementById('nav-auth-container');
+      const navLinksList = document.getElementById('nav-links');
+
+      if (!navAuthContainer) return;
+
+      // Verifica se é uma conta de suporte/administração
+      const isSuporte = user && user.email && user.email.endsWith("@sugama.com");
+
+      if (logado && user) {
+        if (isSuporte) {
+          // Menu de navegação para Suporte
+          if (navLinksList) {
+            navLinksList.innerHTML = `
+            <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+            <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+            <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+            <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como funciona</a></li>
+            <li><a href="suporte.html" class="text-terra font-semibold">Painel Suporte</a></li>
+          `;
+          }
+          // Área direita: E-mail de suporte + Botão Sair
+          navAuthContainer.innerHTML = `
+          <span class="text-xs font-medium text-inksoft">${user.email}</span>
+          <button type="button" id="btn-sair-header" class="rounded-full bg-paper px-4 py-2 text-xs font-semibold text-red-600 ring-1 ring-ink/10 hover:bg-red-50 transition-colors cursor-pointer">
+            Sair
+          </button>
+        `;
+          document.getElementById('btn-sair-header')?.addEventListener('click', fazerLogout);
+
+        } else if (dadosUsuario?.tipo === 'restaurante') {
+          // Caso seja uma conta de Restaurante
+          if (navLinksList) {
+            navLinksList.innerHTML = `
+            <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+            <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+            <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+            <li><a href="painel-restaurante.html" class="text-terra font-semibold">Painel Restaurante</a></li>
+          `;
+          }
+          const nomeRestaurante = dadosUsuario?.nomeRestaurante || user?.email?.split('@')[0] || 'Restaurante';
+          navAuthContainer.innerHTML = `
+          <span class="text-xs font-medium text-inksoft">${nomeRestaurante}</span>
+          <button type="button" id="btn-sair-header" class="rounded-full bg-paper px-4 py-2 text-xs font-semibold text-red-600 ring-1 ring-ink/10 hover:bg-red-50 transition-colors cursor-pointer">
+            Sair
+          </button>
+        `;
+          document.getElementById('btn-sair-header')?.addEventListener('click', fazerLogout);
+
+        } else {
+          // Caso seja um Utilizador / Cliente comum
+          if (navLinksList) {
+            navLinksList.innerHTML = `
+            <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+            <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+            <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+            <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como funciona</a></li>
+            <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+          `;
+          }
+          const nomeUsuario = dadosUsuario?.nome || user?.email?.split('@')[0] || 'Utilizador';
+          navAuthContainer.innerHTML = `
+          <span class="text-xs font-medium text-inksoft">${nomeUsuario}</span>
+          <button type="button" id="btn-sair-header" class="rounded-full bg-paper px-4 py-2 text-xs font-semibold text-red-600 ring-1 ring-ink/10 hover:bg-red-50 transition-colors cursor-pointer">
+            Sair
+          </button>
+        `;
+          document.getElementById('btn-sair-header')?.addEventListener('click', fazerLogout);
+        }
+      } else {
+        // Caso não esteja autenticado
+        if (navLinksList) {
+          navLinksList.innerHTML = `
+          <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+          <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+          <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+          <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como funciona</a></li>
+        `;
+        }
+        navAuthContainer.innerHTML = `
+        <a href="index.html" class="rounded-full bg-paper px-4 py-2 text-xs font-semibold text-ink ring-1 ring-ink/10 hover:bg-cream transition-colors">
+          Voltar ao Início
+        </a>
+      `;
+      }
+    });
+  </script>
+
+</body>
+
+</html>

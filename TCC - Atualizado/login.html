@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Entrar — GastroMatch</title>
+
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <!-- CSS local do projeto -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Fontes do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased flex flex-col justify-between">
+
+    <!-- Header Mínimo -->
+    <header class="mx-auto max-w-6xl w-full px-5 sm:px-8">
+        <nav class="flex items-center justify-between py-6">
+            <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+            <a href="index.html" class="text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra transition-colors">
+                Voltar para o início
+            </a>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Centralizado de Login -->
+    <main class="mx-auto max-w-md w-full px-5 py-8">
+
+        <div class="rounded-[28px] bg-paper p-8 sm:p-10 ring-1 ring-ink/5 shadow-clay">
+
+            <!-- Cabeçalho do Card -->
+            <div class="text-center mb-8">
+                <h1 class="font-display font-semibold text-3xl text-ink">Acesse sua conta</h1>
+                <p class="mt-2 text-sm text-inksoft">Entre para gerenciar suas reservas e menus favoritos</p>
+            </div>
+
+            <!-- Formulário de Login -->
+            <form action="#" method="POST" class="space-y-4">
+
+                <!-- Campo E-mail -->
+                <div>
+                    <label for="email" class="block text-xs font-semibold text-ink mb-1.5">E-mail</label>
+                    <input type="email" id="email" required placeholder="seu@email.com" class="w-full rounded-2xl bg-cream px-4 py-3 text-sm text-ink placeholder:text-inksoft/60 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra/40">
+                </div>
+
+                <!-- Campo Senha -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="password" class="block text-xs font-semibold text-ink">Senha</label>
+                        <a href="esqueceu-senha.html" class="text-xs text-terra hover:underline">Esqueceu a senha?</a>
+                    </div>
+                    <input type="password" id="password" required placeholder="••••••••" class="w-full rounded-2xl bg-cream px-4 py-3 text-sm text-ink placeholder:text-inksoft/60 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra/40">
+                </div>
+
+                <!-- Opção Lembrar de mim -->
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="remember" class="rounded border-ink/20 text-terra focus:ring-terra">
+                    <label for="remember" class="text-xs text-inksoft cursor-pointer">Lembrar-me neste dispositivo</label>
+                </div>
+
+                <!-- Botão de Submissão -->
+                <button type="submit" class="w-full mt-2 inline-flex items-center justify-center rounded-2xl bg-terra text-cream font-semibold text-sm py-3.5 px-6 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors cursor-pointer shadow-sm">
+                    Entrar na Conta
+                </button>
+
+            </form>
+
+            <!-- Rodapé do Card (Link Cadastro) -->
+            <div class="mt-8 pt-6 border-t border-ink/10 text-center">
+                <p class="text-xs text-inksoft">
+                    Ainda não tem uma conta?
+                    <a href="/cadastro.html" class="font-semibold text-terra hover:underline">Cadastre-se gratuitamente</a>
+                </p>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer GastroMatch -->
+    <footer class="w-full pt-8 pb-10 mt-auto">
+        <div class="mx-auto max-w-6xl px-5 sm:px-8">
+
+            <!-- Linha Superior -->
+            <div class="border-t border-ink/10 pt-8">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; flex-wrap: nowrap;">
+
+                    <!-- Coluna 1 -->
+                    <div style="flex: 1 1 240px; max-width: 260px;" class="space-y-3">
+                        <a href="index.html" class="font-display font-semibold text-2xl tracking-tight text-ink block">
+                            GastroMatch<span class="text-terra">.</span>
+                        </a>
+                        <p class="text-xs text-inksoft leading-relaxed">
+                            Conectando você às melhores experiências gastronômicas do Brasil com menus exclusivos e preços especiais.
+                        </p>
+                    </div>
+
+                    <!-- Coluna 2 -->
+                    <div style="flex: 0 0 auto;" class="space-y-2">
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Navegação</h4>
+                        <div class="flex flex-col gap-2 text-xs text-inksoft">
+                            <a href="index.html" class="hover:text-terra transition-colors">Início</a>
+                            <a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a>
+                            <a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a>
+                            <a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 3 -->
+                    <div style="flex: 0 0 auto;" class="space-y-2">
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Restaurantes</h4>
+                        <div class="flex flex-col gap-2 text-xs text-inksoft">
+                            <a href="#" class="hover:text-terra transition-colors">Cadastrar Restaurante</a>
+                            <a href="#" class="hover:text-terra transition-colors">Área do Parceiro</a>
+                            <a href="#" class="hover:text-terra transition-colors">Suporte</a>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 4 -->
+                    <div style="flex: 0 0 auto;" class="space-y-2">
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Usuários</h4>
+                        <div class="flex flex-col gap-2 text-xs text-inksoft">
+                            <a href="/cadastro.html" class="hover:text-terra transition-colors">Criar Conta</a>
+                            <a href="/login.html" class="hover:text-terra transition-colors">Entrar</a>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 5 -->
+                    <div style="flex: 0 0 auto;" class="space-y-2">
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Contato</h4>
+                        <div class="flex flex-col gap-2 text-xs text-inksoft">
+                            <a href="mailto:contato@gastromatch.com.br" class="hover:text-terra transition-colors">contato@gastromatch.com.br</a>
+                            <a href="tel:61983833456" class="hover:text-terra transition-colors">(61) 98383-3456</a>
+                            <a href="central-de-ajuda.html" class="hover:text-terra transition-colors">Central de Ajuda</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Linha Inferior -->
+            <div class="mt-8 pt-6 border-t border-ink/10 text-xs text-inksoft">
+                <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+            </div>
+
+        </div>
+    </footer>
+
+    <script type="module">
+        import { auth } from './firebase-config.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const formLogin = document.querySelector('form');
+        if (formLogin) {
+            formLogin.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // Redirecionamento inteligente baseado no domínio do e-mail
+                    if (user.email && user.email.endsWith("@sugama.com")) {
+                        window.location.href = "suporte.html";
+                    } else {
+                        window.location.href = "index.html";
+                    }
+                } catch (error) {
+                    alert("Falha no login: Verifique o e-mail e a palavra-passe.");
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meu Perfil — GastroMatch</title>
+
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <!-- CSS local -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased">
+
+  <!-- Header Padronizado com todos os links -->
+  <header class="mx-auto max-w-6xl px-5 sm:px-8">
+    <nav class="flex items-center justify-between py-5">
+      <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+          <li><a href="index.html" class="hover:text-terra transition-colors">Menus</a></li>
+          <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+          <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+          <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+          <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+        </ul>
+      </div>
+
+      <div id="nav-auth-container" class="flex items-center gap-3">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal do Perfil -->
+  <main class="mx-auto max-w-6xl px-5 sm:px-8 pt-6 pb-20">
+
+    <!-- Cabeçalho da Página -->
+    <div class="mb-8">
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-terra/10 text-terra text-xs font-semibold px-3 py-1">
+        Área do Utilizador
+      </span>
+      <h1 id="boas-vindas-usuario" class="mt-2 font-display font-semibold text-3xl sm:text-4xl text-ink">
+        Meu Perfil & Favoritos
+      </h1>
+      <p class="mt-1 text-sm text-inksoft">Gerencie os seus dados pessoais, menus guardados e cupons ativos.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- Formulário de Edição de Dados Pessoais (Col 5) -->
+      <section class="lg:col-span-5 space-y-6">
+        <div class="rounded-[28px] bg-paper p-6 ring-1 ring-ink/5 shadow-clay space-y-4">
+          <h2 class="font-display font-semibold text-xl text-ink pb-3 border-b border-ink/10">
+            Dados Pessoais
+          </h2>
+
+          <form id="form-perfil-usuario" class="space-y-4 text-sm">
+            <div>
+              <label class="block font-semibold text-ink mb-1">Nome Completo</label>
+              <input type="text" id="input-nome" required class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Ex: Maria Silva">
+            </div>
+
+            <div>
+              <label class="block font-semibold text-ink mb-1">E-mail <span class="text-xs font-normal text-inksoft">(Não alterável)</span></label>
+              <input type="email" id="input-email" disabled class="w-full rounded-2xl bg-cream/50 px-4 py-3 ring-1 ring-ink/10 text-inksoft cursor-not-allowed">
+            </div>
+
+            <div>
+              <label class="block font-semibold text-ink mb-1">Telemóvel / WhatsApp</label>
+              <input type="tel" id="input-telefone" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="(61) 99999-8888">
+            </div>
+
+            <button type="submit" class="w-full rounded-full bg-ink text-cream font-semibold py-3 px-4 hover:bg-terra transition-colors shadow-sm cursor-pointer">
+              Salvar Alterações
+            </button>
+          </form>
+        </div>
+
+        <!-- Botão de Excluir Conta -->
+        <div class="rounded-[28px] bg-red-50/50 p-6 ring-1 ring-red-500/10 space-y-3">
+          <h2 class="font-display font-semibold text-lg text-red-600">
+            Zona de Perigo
+          </h2>
+          <p class="text-xs text-inksoft">Ao excluir a sua conta, os seus dados deixarão de estar acessíveis na plataforma.</p>
+          <button type="button" id="btn-excluir-conta" class="w-full rounded-full bg-red-50 text-red-600 font-semibold py-3 px-4 ring-1 ring-red-200 hover:bg-red-100 transition-colors shadow-sm cursor-pointer text-xs">
+            Excluir a minha conta
+          </button>
+        </div>
+      </section>
+
+      <!-- Coluna da Direita (Col 7) contendo os Mini Cards e as Listas -->
+      <section class="lg:col-span-7 space-y-6">
+
+        <!-- Mini Cards de Contagem no Perfil -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="rounded-[28px] bg-paper p-6 ring-1 ring-ink/5 shadow-clay flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-[0.12em] text-terra">Menus e Pratos</span>
+              <p id="contador-menus-perfil" class="mt-1 font-display font-semibold text-3xl text-ink">0</p>
+            </div>
+            <div class="size-12 rounded-2xl bg-terra/10 grid place-items-center text-terra">
+              <span class="material-symbols-outlined text-xl">bookmark_added</span>
+            </div>
+          </div>
+          <div class="rounded-[28px] bg-paper p-6 ring-1 ring-ink/5 shadow-clay flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-[0.12em] text-terra">Cupons e Promoções</span>
+              <p id="contador-promos-perfil" class="mt-1 font-display font-semibold text-3xl text-ink">0</p>
+            </div>
+            <div class="size-12 rounded-2xl bg-terra/10 grid place-items-center text-terra">
+              <span class="material-symbols-outlined text-xl">local_activity</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Menus e Pratos Guardados -->
+        <div class="rounded-[28px] bg-paper p-6 ring-1 ring-ink/5 shadow-clay space-y-4">
+          <h2 class="font-display font-semibold text-xl text-ink pb-3 border-b border-ink/10">
+            Menus e Pratos Guardados
+          </h2>
+          <div id="lista-favoritos-usuario" class="space-y-3">
+            <p class="text-xs text-inksoft text-center py-4">A carregar os seus favoritos...</p>
+          </div>
+        </div>
+
+        <!-- Lista de Cupons e Promoções Salvas -->
+        <div class="rounded-[28px] bg-paper p-6 ring-1 ring-ink/5 shadow-clay space-y-4">
+          <h2 class="font-display font-semibold text-xl text-ink pb-3 border-b border-ink/10">
+            Meus Cupons e Promoções Salvas
+          </h2>
+          <div id="lista-cupons-usuario" class="space-y-3">
+            <p class="text-xs text-inksoft text-center py-4">Nenhum cupom guardado no momento.</p>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- SCRIPT UNIFICADO: PERFIL DO UTILIZADOR, MINI CARDS, LISTAGEM E SEGURANÇA -->
+  <script type="module">
+    import { observarEstadoAutenticacao, fazerLogout, db, auth } from './firebase-config.js';
+    import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { deleteUser } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const navAuthContainer = document.querySelector('header nav .flex.items-center.gap-3') || document.querySelector('header nav');
+    const navLinksList = document.getElementById('nav-links');
+
+    if (navLinksList) {
+      navLinksList.innerHTML = `
+        <li><a href="index.html" class="hover:text-terra transition-colors">Menus</a></li>
+        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+        <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+        <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+        <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+      `;
+    }
+
+    if (navAuthContainer) {
+      navAuthContainer.style.setProperty('position', 'relative', 'important');
+      navAuthContainer.style.setProperty('overflow', 'visible', 'important');
+      navAuthContainer.style.setProperty('min-width', 'max-content', 'important');
+
+      observarEstadoAutenticacao(async ({ logado, user, dadosUsuario }) => {
+        if (!logado) {
+          window.location.replace('login.html');
+          return;
+        }
+
+        const inputNome = document.getElementById('input-nome');
+        const inputEmail = document.getElementById('input-email');
+        const inputTelefone = document.getElementById('input-telefone');
+
+        if (inputNome) inputNome.value = dadosUsuario.nome || dadosUsuario.nomeCompleto || '';
+        if (inputEmail) inputEmail.value = user.email || '';
+        if (inputTelefone) inputTelefone.value = dadosUsuario.telefone || dadosUsuario.telemovel || '';
+
+        const primeiroNome = (dadosUsuario.nome || 'Utilizador').trim().split(' ')[0];
+        const nomeFormatado = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
+
+        const tituloBoasVindas = document.getElementById('boas-vindas-usuario');
+        if (tituloBoasVindas) {
+          tituloBoasVindas.textContent = `Olá, ${nomeFormatado}!`;
+        }
+
+        const listaFavoritos = document.getElementById('lista-favoritos-usuario');
+        const listaCupons = document.getElementById('lista-cupons-usuario');
+        const contadorMenusEl = document.getElementById('contador-menus-perfil');
+        const contadorPromosEl = document.getElementById('contador-promos-perfil');
+
+        try {
+          const qSalvos = query(collection(db, "salvos"), where("usuarioId", "==", user.uid));
+          const querySnapshot = await getDocs(qSalvos);
+
+          if (listaFavoritos) listaFavoritos.innerHTML = '';
+          if (listaCupons) listaCupons.innerHTML = '';
+
+          let totalMenus = 0;
+          let totalPromos = 0;
+
+          if (querySnapshot.empty) {
+            if (listaFavoritos) listaFavoritos.innerHTML = `<p class="text-xs text-inksoft text-center py-4">Nenhum menu ou prato guardado ainda.</p>`;
+            if (listaCupons) listaCupons.innerHTML = `<p class="text-xs text-inksoft text-center py-4">Nenhuma promoção ou cupom salvo no momento.</p>`;
+          } else {
+            querySnapshot.forEach((docSnap) => {
+              const item = docSnap.data();
+
+              if (item.promocaoId || item.titulo) {
+                totalPromos++;
+                if (listaCupons) {
+                  listaCupons.innerHTML += `
+                    <div class="rounded-2xl bg-cream p-3.5 ring-1 ring-ink/5 flex items-center justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <img src="${item.foto || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200'}" alt="${item.titulo}" class="size-12 rounded-xl object-cover shrink-0">
+                        <div>
+                          <span class="text-[10px] font-bold uppercase tracking-wider text-terra">${item.restauranteNome || 'Restaurante'}</span>
+                          <h4 class="font-display font-semibold text-sm text-ink">${item.titulo}</h4>
+                          <p class="text-xs text-inksoft line-clamp-1">${item.descricao || ''}</p>
+                        </div>
+                      </div>
+                      <a href="promocoes-detalhes.html?id=${item.promocaoId}" class="rounded-full bg-paper py-1.5 px-3 text-[11px] font-semibold text-ink ring-1 ring-ink/10 hover:bg-terra hover:text-cream transition-colors whitespace-nowrap">
+                        Ver Oferta
+                      </a>
+                    </div>
+                  `;
+                }
+              } else {
+                totalMenus++;
+                if (listaFavoritos) {
+                  listaFavoritos.innerHTML += `
+                    <div class="rounded-2xl bg-cream p-3.5 ring-1 ring-ink/5 flex items-center justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <img src="${item.imagem || 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=200'}" alt="${item.titulo}" class="size-12 rounded-xl object-cover shrink-0">
+                        <div>
+                          <span class="text-[10px] font-bold uppercase tracking-wider text-terra">${item.categoria || 'Menu'}</span>
+                          <h4 class="font-display font-semibold text-sm text-ink">${item.titulo}</h4>
+                          <p class="text-xs text-inksoft">R$ ${Number(item.preco || 0).toFixed(2).replace('.', ',')}</p>
+                        </div>
+                      </div>
+                      <a href="menu-detalhes.html?id=${item.id || ''}" class="rounded-full bg-paper py-1.5 px-3 text-[11px] font-semibold text-ink ring-1 ring-ink/10 hover:bg-terra hover:text-cream transition-colors whitespace-nowrap">
+                        Ver Prato
+                      </a>
+                    </div>
+                  `;
+                }
+              }
+            });
+          }
+
+          if (contadorMenusEl) contadorMenusEl.textContent = totalMenus;
+          if (contadorPromosEl) contadorPromosEl.textContent = totalPromos;
+
+        } catch (error) {
+          console.error("Erro ao carregar itens salvos:", error);
+        }
+
+        navAuthContainer.innerHTML = `
+          <div style="position: relative !important; display: inline-block !important; width: auto !important; overflow: visible !important;">
+            <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all duration-200 cursor-pointer shadow-sm focus:outline-none">
+              <span class="text-sm font-semibold text-ink group-hover:text-cream transition-colors whitespace-nowrap">
+                ${nomeFormatado}
+              </span>
+              <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+
+            <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50 transition-all duration-200" 
+                 style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; min-width: 240px !important; width: 240px !important; padding: 20px !important; box-sizing: border-box !important; position: absolute !important; right: 0 !important; top: 100% !important;">
+              <div style="padding-left: 4px; padding-right: 4px;">
+                <p class="text-base font-bold text-ink truncate" style="margin: 0 !important; font-size: 1rem !important; font-weight: 700 !important; color: #2B2725 !important;">${nomeFormatado}</p>
+                <span class="text-[10px] uppercase font-bold text-terra">Cliente GastroMatch</span>
+              </div>
+              <div style="margin-top: 12px !important; margin-bottom: 16px !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important; width: 100% !important;"></div>
+              <div style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important;">
+                <a href="perfil-usuario.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                  Meu Perfil
+                </a>
+                <a href="salvos.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                  Salvos
+                </a>
+                <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+                  Sair da conta
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const btnDropdown = document.getElementById('btn-user-dropdown');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const arrowIcon = document.getElementById('arrow-icon');
+
+        if (btnDropdown && dropdownMenu) {
+          btnDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+            if (arrowIcon) arrowIcon.classList.toggle('rotate-180');
+          });
+
+          document.addEventListener('click', (e) => {
+            if (dropdownMenu && !dropdownMenu.contains(e.target) && !btnDropdown.contains(e.target)) {
+              dropdownMenu.classList.add('hidden');
+              if (arrowIcon) arrowIcon.classList.remove('rotate-180');
+            }
+          });
+        }
+
+        const btnSair = document.getElementById('btn-sair');
+        if (btnSair) {
+          btnSair.addEventListener('click', fazerLogout);
+        }
+
+        const formPerfil = document.getElementById('form-perfil-usuario');
+        if (formPerfil) {
+          formPerfil.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnSalvar = formPerfil.querySelector('button[type="submit"]');
+            btnSalvar.textContent = "A salvar...";
+            btnSalvar.disabled = true;
+
+            try {
+              const novoNome = document.getElementById('input-nome').value;
+              const novoTelefone = document.getElementById('input-telefone').value;
+
+              await updateDoc(doc(db, "usuarios", user.uid), {
+                nome: novoNome,
+                telefone: novoTelefone
+              });
+
+              btnSalvar.textContent = "Salvar Alterações";
+              btnSalvar.disabled = false;
+              alert("Dados atualizados com sucesso!");
+            } catch (error) {
+              console.error("Erro ao atualizar:", error);
+              btnSalvar.textContent = "Salvar Alterações";
+              btnSalvar.disabled = false;
+            }
+          });
+        }
+
+        const btnExcluirConta = document.getElementById('btn-excluir-conta');
+        if (btnExcluirConneta = document.getElementById('btn-excluir-conta')) {
+          if (btnExcluirConta) {
+            btnExcluirConta.addEventListener('click', async () => {
+              const confirmou = confirm("Tem certeza de que deseja excluir permanentemente a sua conta? Esta ação não pode ser desfeita.");
+              if (!confirmou) return;
+
+              try {
+                btnExcluirConta.textContent = "A excluir...";
+                btnExcluirConta.disabled = true;
+
+                const userAuth = auth.currentUser;
+                if (userAuth) {
+                  await updateDoc(doc(db, "usuarios", userAuth.uid), {
+                    status: 'excluido',
+                    excluidoEm: new Date().toISOString()
+                  });
+                  await deleteUser(userAuth);
+                }
+
+                window.location.replace("index.html");
+              } catch (error) {
+                console.error("Erro ao excluir conta:", error);
+                try { await fazerLogout(); } catch (e) { }
+                window.location.replace("index.html");
+              }
+            });
+          }
+        }
+
+      });
+    }
+  </script>
+</body>
+
+</html>

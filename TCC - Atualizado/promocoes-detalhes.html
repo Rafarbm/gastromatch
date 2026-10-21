@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detalhes da Promoção — GastroMatch</title>
+
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <!-- CSS local -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+
+  <style>
+    #barra-progresso {
+      width: 0%;
+      transition: width 0.05s linear;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased">
+
+  <!-- Header Padronizado Exato -->
+  <header class="mx-auto max-w-6xl px-5 sm:px-8">
+    <nav class="flex items-center justify-between py-5">
+      <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+          <li><a href="index.html" class="hover:text-terra transition-colors">Menus</a></li>
+          <li><a href="promocoes.html" class="text-terra font-semibold">Promoções</a></li>
+          <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+          <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+        </ul>
+      </div>
+
+      <div id="nav-auth-container" class="flex items-center gap-3">
+        <a href="login.html" class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+          Entrar
+        </a>
+        <a href="cadastro.html" class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+          Fazer Cadastro
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="mx-auto max-w-6xl px-5 sm:px-8 pt-4 pb-20">
+
+    <!-- Botão Voltar Dinâmico -->
+    <div class="mb-6">
+      <a id="btn-voltar-dinamico" href="promocoes.html" class="inline-flex items-center gap-2 text-xs font-semibold text-inksoft hover:text-terra transition-colors">
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+        <span id="texto-voltar-dinamico">Voltar para Promoções</span>
+      </a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative rounded-[32px] overflow-hidden bg-paper shadow-clay ring-1 ring-ink/5 p-6 sm:p-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+        <!-- Imagem do Prato/Promoção -->
+        <div class="lg:col-span-5 relative">
+          <img id="promo-foto" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800" alt="Promoção" class="w-full aspect-[4/3] rounded-[24px] object-cover shadow-sm">
+        </div>
+
+        <!-- Informações Detalhadas -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <span id="promo-cozinha" class="inline-flex items-center rounded-full bg-terra/10 text-terra text-xs font-semibold px-3 py-1">
+              Promoção Ativa
+            </span>
+            <div class="flex items-center gap-1.5 bg-paper px-3 py-1 rounded-full ring-1 ring-ink/10 text-xs font-bold text-ink">
+              <span class="material-symbols-outlined text-base text-amber-500 fill-1">star</span>
+              <span id="restaurante-avaliacao">4.9</span>
+              <span id="restaurante-total-avaliacoes" class="text-inksoft font-normal">(120 avaliações)</span>
+            </div>
+          </div>
+
+          <div>
+            <h1 id="promo-titulo" class="font-display font-semibold text-3xl sm:text-5xl text-ink leading-tight">
+              Carregando...
+            </h1>
+            <!-- Nome do Restaurante com link clicável sem sublinhado -->
+            <p id="promocao-restaurante" class="text-sm font-semibold text-ink mt-1">
+              A carregar restaurante...
+            </p>
+          </div>
+
+          <p id="promo-descricao" class="text-sm sm:text-base text-inksoft leading-relaxed">
+            A carregar detalhes da oferta informada pelo restaurante...
+          </p>
+
+          <!-- Estrutura de Informações com Dias encima e Horas em baixo -->
+          <div class="pt-2 border-t border-ink/10 space-y-2 text-xs text-inksoft">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-terra text-lg">location_on</span>
+                <span id="restaurante-endereco">A carregar endereço...</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-terra text-lg">local_dining</span>
+                <span id="promo-prato-nome">Prato: ---</span>
+              </div>
+            </div>
+
+            <!-- Dias em cima -->
+            <div class="flex items-center gap-2 pt-1 border-t border-ink/5">
+              <span class="material-symbols-outlined text-terra text-lg">calendar_today</span>
+              <span id="restaurante-dias">Dias Válidos: A carregar...</span>
+            </div>
+
+            <!-- Horas em baixo -->
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-terra text-lg">schedule</span>
+              <span id="restaurante-horario">Horário: A carregar...</span>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1 border-t border-ink/5">
+              <span class="material-symbols-outlined text-terra text-lg">payments</span>
+              <span id="promo-preco-info">Condição: ---</span>
+            </div>
+          </div>
+
+          <!-- Botão Interativo "Resgatar Promoção" com Press & Hold -->
+          <div class="pt-4 flex flex-col gap-3">
+            <div class="relative overflow-hidden rounded-full w-full sm:w-auto">
+              <button id="btn-resgatar" type="button" class="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-3 px-6 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors shadow-sm cursor-pointer select-none">
+                <span class="material-symbols-outlined text-lg">local_activity</span>
+                <span id="texto-botao">Mantenha pressionado para resgatar</span>
+              </button>
+              <div id="barra-progresso" class="absolute bottom-0 left-0 h-1 bg-amber-400 pointer-events-none"></div>
+            </div>
+
+            <!-- Mini Card de Sucesso -->
+            <div id="mini-card-sucesso" class="hidden rounded-2xl bg-emerald-50 ring-1 ring-emerald-500/20 p-4 shadow-sm flex items-start gap-3 transition-all duration-300 max-w-md">
+              <div class="grid place-items-center size-8 rounded-full bg-emerald-500 text-cream shrink-0">
+                <span class="material-symbols-outlined text-lg">check_circle</span>
+              </div>
+              <div class="space-y-1">
+                <h4 class="font-display font-semibold text-sm text-emerald-900">Promoção Resgatada com Sucesso!</h4>
+                <p class="text-xs text-emerald-700 leading-relaxed">Redirecionando para os seus itens salvos...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full pt-12 pb-10 mt-16 border-t border-ink/10">
+    <div class="mx-auto max-w-6xl px-5 sm:px-8 text-center text-xs text-inksoft">
+      <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT UNIFICADO -->
+  <script type="module">
+    import { db, observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+    import { doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let usuarioAtual = null;
+    let dadosPromoCache = null;
+    let resgateExistenteId = null;
+
+    // Ajusta o botão "Voltar" dependendo do parâmetro 'origem' na URL
+    const paramsURL = new URLSearchParams(window.location.search);
+    if (paramsURL.get('origem') === 'painel') {
+      const btnVoltar = document.getElementById('btn-voltar-dinamico');
+      const textoVoltar = document.getElementById('texto-voltar-dinamico');
+      if (btnVoltar && textoVoltar) {
+        btnVoltar.href = 'painel-restaurante.html';
+        textoVoltar.textContent = 'Voltar para o Painel Restaurante';
+      }
+    }
+
+    // --- 1. RENDERIZAÇÃO DO HEADER DINÂMICO E AUTENTICAÇÃO ---
+    const navAuthContainer = document.querySelector('header nav .flex.items-center.gap-3') || document.querySelector('header nav');
+    const navLinksList = document.getElementById('nav-links');
+
+    if (navAuthContainer) {
+      navAuthContainer.style.setProperty('position', 'relative', 'important');
+      navAuthContainer.style.setProperty('overflow', 'visible', 'important');
+      navAuthContainer.style.setProperty('min-width', 'max-content', 'important');
+
+      observarEstadoAutenticacao(async ({ logado, user, dadosUsuario }) => {
+        if (logado && user) {
+          usuarioAtual = { uid: user.uid, email: user.email, ...dadosUsuario };
+
+          if (typeof verificarSeJaResgatou === 'function' && dadosPromoCache) {
+            await verificarSeJaResgatou();
+          }
+
+          // Identificação do Tipo de Conta
+          const isSuporte = user.email && user.email.endsWith('@sugama.com');
+          const isRestaurante = dadosUsuario?.tipo === 'restaurante';
+
+          // 1. Atualização dos Links da Navbar
+          if (navLinksList) {
+            if (isSuporte) {
+              navLinksList.innerHTML = `
+                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                <li><a href="suporte.html" class="text-terra font-semibold">Painel Suporte</a></li>
+              `;
+            } else if (isRestaurante) {
+              navLinksList.innerHTML = `
+                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                <li><a href="promocoes.html" class="text-terra font-semibold">Promoções</a></li>
+                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                <li><a href="painel-restaurante.html" class="hover:text-terra transition-colors">Painel Restaurante</a></li>
+              `;
+            } else {
+              navLinksList.innerHTML = `
+                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                <li><a href="promocoes.html" class="text-terra font-semibold">Promoções</a></li>
+                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+              `;
+            }
+          }
+
+          // 2. Definição do Nome / Rótulo de Exibição
+          let nomeExibicao = 'Usuário';
+          let subrotuloHTML = '';
+
+          if (isSuporte) {
+            nomeExibicao = 'Suporte';
+            subrotuloHTML = '<span class="text-[10px] uppercase font-bold text-terra block">Administração</span>';
+          } else if (isRestaurante) {
+            const nomeBruto = dadosUsuario?.nomeRestaurante || dadosUsuario?.nomeResponsavel || user?.email?.split('@')[0];
+            const primeironome = nomeBruto.trim().split(' ')[0];
+            nomeExibicao = primeironome.charAt(0).toUpperCase() + primeironome.slice(1).toLowerCase();
+            subrotuloHTML = '<span class="text-[10px] uppercase font-bold text-terra block">Conta Parceiro</span>';
+          } else {
+            const nomeBruto = dadosUsuario?.nome || user?.email?.split('@')[0] || 'Usuário';
+            const primeironome = nomeBruto.trim().split(' ')[0];
+            nomeExibicao = primeironome.charAt(0).toUpperCase() + primeironome.slice(1).toLowerCase();
+          }
+
+          // 3. Botões Internos do Dropdown
+          let botoesDropdownHTML = '';
+
+          if (isSuporte) {
+            botoesDropdownHTML = `
+              <a href="suporte.html" class="flex items-center justify-center rounded-full bg-terra text-xs font-bold text-cream hover:bg-terradeep transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                Painel Suporte
+              </a>
+              <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+                Sair da conta
+              </button>
+            `;
+          } else if (isRestaurante) {
+            botoesDropdownHTML = `
+              <a href="painel-restaurante.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                Painel Restaurante
+              </a>
+              <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+                Sair da conta
+              </button>
+            `;
+          } else {
+            botoesDropdownHTML = `
+              <a href="perfil-usuario.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                Ver perfil
+              </a>
+              <a href="salvos.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+                Salvos
+              </a>
+              <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+                Sair da conta
+              </button>
+            `;
+          }
+
+          // 4. Renderização no HTML
+          navAuthContainer.innerHTML = `
+            <div style="position: relative !important; display: inline-block !important; width: auto !important; overflow: visible !important;">
+              <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all duration-200 cursor-pointer shadow-sm focus:outline-none">
+                <span class="text-sm font-semibold text-ink group-hover:text-cream transition-colors whitespace-nowrap">
+                  ${nomeExibicao}
+                </span>
+                <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+
+              <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50 transition-all duration-200" 
+                   style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; min-width: 240px !important; width: 240px !important; padding: 20px !important; box-sizing: border-box !important;">
+                <div style="padding-left: 4px; padding-right: 4px;">
+                  <p class="text-base font-bold text-ink truncate" style="margin: 0 !important; font-size: 1rem !important; font-weight: 700 !important; color: #2B2725 !important;">${user.email}</p>
+                  ${subrotuloHTML}
+                </div>
+                <div style="margin-top: 12px !important; margin-bottom: 16px !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important; width: 100% !important;"></div>
+                <div style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important;">
+                  ${botoesDropdownHTML}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Eventos do Dropdown e Logout
+          const btnDropdown = document.getElementById('btn-user-dropdown');
+          const dropdownMenu = document.getElementById('dropdown-menu');
+          const arrowIcon = document.getElementById('arrow-icon');
+
+          if (btnDropdown) {
+            btnDropdown.addEventListener('click', (e) => {
+              e.stopPropagation();
+              dropdownMenu.classList.toggle('hidden');
+              if (arrowIcon) arrowIcon.classList.toggle('rotate-180');
+            });
+          }
+
+          document.addEventListener('click', (e) => {
+            if (dropdownMenu && !dropdownMenu.contains(e.target) && !btnDropdown.contains(e.target)) {
+              dropdownMenu.classList.add('hidden');
+              if (arrowIcon) arrowIcon.classList.remove('rotate-180');
+            }
+          });
+
+          const btnSair = document.getElementById('btn-sair');
+          if (btnSair) {
+            btnSair.addEventListener('click', fazerLogout);
+          }
+
+        } else {
+          usuarioAtual = null;
+        }
+      });
+    }
+
+    // --- 2. CARREGAMENTO DOS DADOS DA PROMOÇÃO ---
+    document.addEventListener("DOMContentLoaded", async () => {
+      const promoId = paramsURL.get('id');
+
+      if (!promoId) {
+        document.getElementById('promo-titulo').textContent = "Promoção não encontrada";
+        document.getElementById('promo-descricao').textContent = "Nenhum ID de promoção especificado na URL.";
+        return;
+      }
+
+      try {
+        const promoDocRef = doc(db, "promocoes", promoId);
+        const promoSnap = await getDoc(promoDocRef);
+
+        if (!promoSnap.exists()) {
+          document.getElementById('promo-titulo').textContent = "Promoção não encontrada";
+          return;
+        }
+
+        dadosPromoCache = { id: promoSnap.id, ...promoSnap.data() };
+
+        document.getElementById('promo-titulo').textContent = dadosPromoCache.titulo || "Oferta Especial";
+        document.getElementById('promo-descricao').textContent = dadosPromoCache.descricao || "Sem descrição informada.";
+
+        const valorFormatado = dadosPromoCache.valorPromocional ? (dadosPromoCache.valorPromocional.includes('R$') ? dadosPromoCache.valorPromocional : `R$ ${dadosPromoCache.valorPromocional}`) : 'Sob consulta';
+        document.getElementById('promo-preco-info').textContent = `Condição: ${valorFormatado}`;
+
+        if (dadosPromoCache.prato) {
+          document.getElementById('promo-prato-nome').textContent = `Prato: ${dadosPromoCache.prato}`;
+        }
+
+        if (dadosPromoCache.foto || dadosPromoCache.imagem) {
+          document.getElementById('promo-foto').src = dadosPromoCache.foto || dadosPromoCache.imagem;
+        }
+
+        if (dadosPromoCache.cozinha) {
+          document.getElementById('promo-cozinha').textContent = dadosPromoCache.cozinha;
+        }
+
+        // Construção Separação de Dias em cima e Horas em baixo
+        const diasStr = dadosPromoCache.diasValidos && dadosPromoCache.diasValidos.length > 0 ? dadosPromoCache.diasValidos.join(', ') : "Todos os dias";
+        document.getElementById('restaurante-dias').textContent = `Dias Válidos: ${diasStr}`;
+
+        let horaTexto = "Horário não informado";
+        if (dadosPromoCache.horaInicio && dadosPromoCache.horaFim) {
+          horaTexto = `Das ${dadosPromoCache.horaInicio} às ${dadosPromoCache.horaFim}`;
+        }
+
+        // Preenchimento do elemento do Restaurante com link clicável (Sem sublinhado)
+        const elRestaurante = document.getElementById('promocao-restaurante');
+
+        if (dadosPromoCache.restauranteId) {
+          const restSnap = await getDoc(doc(db, "usuarios", dadosPromoCache.restauranteId));
+          const nomeRest = (restSnap.exists() && (restSnap.data().nomeRestaurante || restSnap.data().nome))
+            ? (restSnap.data().nomeRestaurante || restSnap.data().nome)
+            : (dadosPromoCache.restaurante || 'Parceiro GastroMatch');
+
+          if (elRestaurante) {
+            elRestaurante.innerHTML = `
+              <a href="pagina-restaurante.html?id=${dadosPromoCache.restauranteId}" class="inline-flex items-center gap-1 text-terra font-semibold no-underline cursor-pointer">
+                <span class="material-symbols-outlined text-base">storefront</span> ${nomeRest}
+              </a>
+            `;
+          }
+
+          if (restSnap.exists()) {
+            const restData = restSnap.data();
+            document.getElementById('restaurante-endereco').textContent = restData.endereco || "Endereço não informado";
+
+            if (horaTexto === "Horário não informado") {
+              horaTexto = restData.horario || restData.horarioFuncionamento || "Horário não informado";
+            }
+
+            if (restData.avaliacao) {
+              document.getElementById('restaurante-avaliacao').textContent = restData.avaliacao;
+            }
+            if (restData.totalAvaliacoes || restData.numAvaliacoes) {
+              document.getElementById('restaurante-total-avaliacoes').textContent = `(${restData.totalAvaliacoes || restData.numAvaliacoes} avaliações)`;
+            }
+          }
+        } else if (elRestaurante) {
+          const nomeRest = dadosPromoCache.restaurante || 'Parceiro GastroMatch';
+          elRestaurante.innerHTML = `
+            <span class="inline-flex items-center gap-1 text-terra font-semibold">
+              <span class="material-symbols-outlined text-base">storefront</span> ${nomeRest}
+            </span>
+          `;
+        }
+
+        document.getElementById('restaurante-horario').textContent = `Horário: ${horaTexto}`;
+
+        if (usuarioAtual) {
+          await verificarSeJaResgatou();
+        }
+
+      } catch (error) {
+        console.error("Erro ao carregar os dados:", error);
+      }
+    });
+
+    // --- 3. VERIFICAÇÃO DE RESGATE ---
+    async function verificarSeJaResgatou() {
+      if (!usuarioAtual || !dadosPromoCache) return;
+
+      try {
+        const q = query(
+          collection(db, "salvos"),
+          where("usuarioId", "==", usuarioAtual.uid),
+          where("promocaoId", "==", dadosPromoCache.id)
+        );
+        const querySnapshot = await getDocs(q);
+
+        const btnResgatar = document.getElementById('btn-resgatar');
+        const textoBotao = document.getElementById('texto-botao');
+        const barraProgresso = document.getElementById('barra-progresso');
+
+        if (!querySnapshot.empty) {
+          resgateExistenteId = querySnapshot.docs[0].id;
+          btnResgatar.className = "relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-red-600 text-cream text-sm font-semibold py-3 px-6 ring-1 ring-red-700/30 hover:bg-red-700 transition-colors shadow-sm cursor-pointer select-none";
+          textoBotao.textContent = "Mantenha pressionado para cancelar resgate";
+          if (barraProgresso) barraProgresso.className = "absolute bottom-0 left-0 h-1 bg-amber-200 pointer-events-none";
+        } else {
+          resgateExistenteId = null;
+          btnResgatar.className = "relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-3 px-6 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors shadow-sm cursor-pointer select-none";
+          textoBotao.textContent = "Mantenha pressionado para resgatar";
+          if (barraProgresso) barraProgresso.className = "absolute bottom-0 left-0 h-1 bg-amber-400 pointer-events-none";
+        }
+      } catch (error) {
+        console.error("Erro ao verificar resgate:", error);
+      }
+    }
+
+    // --- 4. AÇÃO DE PRESSIONAR PARA RESGATAR / CANCELAR ---
+    const btnResgatar = document.getElementById('btn-resgatar');
+    const barraProgresso = document.getElementById('barra-progresso');
+    const textoBotao = document.getElementById('texto-botao');
+    const miniCardSucesso = document.getElementById('mini-card-sucesso');
+
+    let timerPressao = null;
+    let intervaloProgresso = null;
+    let tempoInicio = 0;
+    const tempoNecessario = 1500;
+
+    function iniciarPressao(e) {
+      if (e.cancelable) e.preventDefault();
+
+      if (!usuarioAtual) {
+        alert("Você precisa estar cadastrado e com sessão iniciada para realizar esta ação.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const acaoTexto = resgateExistenteId ? "Segure para cancelar..." : "Segure para resgatar...";
+      textoBotao.textContent = acaoTexto;
+      tempoInicio = Date.now();
+      barraProgresso.style.width = "0%";
+
+      intervaloProgresso = setInterval(() => {
+        let tempoDecorrido = Date.now() - tempoInicio;
+        let porcentagem = (tempoDecorrido / tempoNecessario) * 100;
+        if (porcentagem > 100) porcentagem = 100;
+        barraProgresso.style.width = `${porcentagem}%`;
+      }, 30);
+
+      timerPressao = setTimeout(() => {
+        if (resgateExistenteId) {
+          executarCancelamentoResgate();
+        } else {
+          executarResgate();
+        }
+      }, tempoNecessario);
+    }
+
+    function cancelarPressao() {
+      if (timerPressao) clearTimeout(timerPressao);
+      if (intervaloProgresso) clearInterval(intervaloProgresso);
+      barraProgresso.style.width = "0%";
+
+      if (!textoBotao.textContent.includes("Sucesso") && !textoBotao.textContent.includes("Cancelado")) {
+        textoBotao.textContent = resgateExistenteId ? "Mantenha pressionado para cancelar resgate" : "Mantenha pressionado para resgatar";
+      }
+    }
+
+    async function executarResgate() {
+      cancelarPressao();
+
+      try {
+        const dadosResgate = {
+          usuarioId: usuarioAtual.uid,
+          usuarioEmail: usuarioAtual.email,
+          usuarioNome: usuarioAtual.nome || usuarioAtual.email.split('@')[0],
+          promocaoId: dadosPromoCache.id,
+          titulo: dadosPromoCache.titulo,
+          descricao: dadosPromoCache.descricao,
+          foto: dadosPromoCache.foto || dadosPromoCache.imagem || "",
+          restauranteId: dadosPromoCache.restauranteId || "",
+          restauranteNome: dadosPromoCache.restaurante || "Restaurante",
+          dataResgate: serverTimestamp()
+        };
+
+        const docRef = await addDoc(collection(db, "salvos"), dadosResgate);
+        resgateExistenteId = docRef.id;
+
+        btnResgatar.classList.remove('bg-terra', 'hover:bg-terradeep');
+        btnResgatar.classList.add('bg-emerald-600');
+        textoBotao.textContent = "✔ Oferta Resgatada";
+
+        if (miniCardSucesso) {
+          miniCardSucesso.querySelector('h4').textContent = "Promoção Resgatada com Sucesso!";
+          miniCardSucesso.querySelector('p').textContent = "Redirecionando para os seus itens salvos...";
+          miniCardSucesso.classList.remove('hidden');
+        }
+
+        setTimeout(() => {
+          window.location.href = "salvos.html";
+        }, 1500);
+
+      } catch (error) {
+        console.error("Erro ao resgatar promoção:", error);
+        alert("Ocorreu um erro ao resgatar. Tente novamente.");
+      }
+    }
+
+    async function executarCancelamentoResgate() {
+      cancelarPressao();
+
+      try {
+        if (!resgateExistenteId) return;
+
+        await deleteDoc(doc(db, "salvos", resgateExistenteId));
+        resgateExistenteId = null;
+
+        textoBotao.textContent = "✖ Resgate Cancelado";
+        btnResgatar.classList.remove('bg-red-600', 'hover:bg-red-700');
+        btnResgatar.classList.add('bg-zinc-600');
+
+        if (miniCardSucesso) {
+          miniCardSucesso.querySelector('h4').textContent = "Resgate Cancelado";
+          miniCardSucesso.querySelector('p').textContent = "A promoção foi removida dos seus salvos.";
+          miniCardSucesso.classList.remove('hidden');
+        }
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+
+      } catch (error) {
+        console.error("Erro ao cancelar resgate:", error);
+        alert("Ocorreu um erro ao cancelar. Tente novamente.");
+      }
+    }
+
+    if (btnResgatar) {
+      btnResgatar.addEventListener('mousedown', iniciarPressao);
+      btnResgatar.addEventListener('mouseup', cancelarPressao);
+      btnResgatar.addEventListener('mouseleave', cancelarPressao);
+
+      btnResgatar.addEventListener('touchstart', iniciarPressao, { passive: false });
+      btnResgatar.addEventListener('touchend', cancelarPressao);
+      btnResgatar.addEventListener('touchcancel', cancelarPressao);
+    }
+  </script>
+</body>
+
+</html>

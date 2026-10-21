@@ -1,0 +1,25 @@
+# Dependências e builds (futuro: Vite/React)
+node_modules/
+dist/
+build/
+.vite/
+
+# Variáveis de ambiente (nunca versionar)
+.env
+.env.*
+!.env.example
+
+# Firebase CLI / Emulator
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+emulator-data/
+
+# Configuração local do Claude Code (pessoal desta máquina)
+.claude/settings.local.json
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+*.log

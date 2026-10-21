@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recuperar Senha — GastroMatch</title>
+
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <!-- CSS local do projeto -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased flex flex-col justify-between">
+
+  <!-- Header Mínimo -->
+  <header class="mx-auto max-w-6xl w-full px-5 sm:px-8">
+    <nav class="flex items-center justify-between py-6">
+      <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+      <a href="login.html" class="text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra transition-colors">
+        Voltar para o Login
+      </a>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Centralizado de Recuperação de Senha -->
+  <main class="mx-auto max-w-md w-full px-5 py-8">
+
+    <div class="rounded-[28px] bg-paper p-8 sm:p-10 ring-1 ring-ink/5 shadow-clay">
+
+      <!-- Estado 1: Formulário de Solicitação -->
+      <div id="recovery-form-container">
+        <!-- Cabeçalho do Card -->
+        <div class="text-center mb-8">
+          <div class="mx-auto mb-4 grid place-items-center size-14 rounded-full bg-cream text-terra ring-1 ring-ink/10 shadow-inner">
+            <span class="text-2xl">🔑</span>
+          </div>
+          <h1 class="font-display font-semibold text-3xl text-ink">Esqueceu sua senha?</h1>
+          <p class="mt-2 text-sm text-inksoft">Informe o e-mail cadastrado na sua conta para receber o link de redefinição.</p>
+        </div>
+
+        <!-- Aviso Inline (Sem Pop-up) -->
+        <div id="msg-recovery" class="hidden"></div>
+
+        <!-- Formulário -->
+        <form id="recovery-form" class="space-y-4">
+
+          <!-- Campo E-mail -->
+          <div>
+            <label for="recovery-email" class="block text-xs font-semibold text-ink mb-1.5">E-mail cadastrado</label>
+            <input type="email" id="recovery-email" required placeholder="seu@email.com" class="w-full rounded-2xl bg-cream px-4 py-3 text-sm text-ink placeholder:text-inksoft/60 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra/40">
+          </div>
+
+          <!-- Botão de Submissão -->
+          <button type="submit" class="w-full mt-2 inline-flex items-center justify-center rounded-2xl bg-terra text-cream font-semibold text-sm py-3.5 px-6 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors cursor-pointer shadow-sm">
+            Enviar link de redefinição
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Estado 2: Confirmação de Envio (Oculto por padrão) -->
+      <div id="success-message" class="hidden text-center py-4">
+        <div class="mx-auto mb-4 grid place-items-center size-16 rounded-full bg-cream text-terra ring-1 ring-ink/10 shadow-inner">
+          <span class="text-3xl">📩</span>
+        </div>
+        <h2 class="font-display font-semibold text-2xl text-ink">E-mail enviado!</h2>
+        <p class="mt-3 text-sm text-inksoft leading-relaxed">
+          As instruções para criar uma nova senha foram enviadas para o seu e-mail cadastrado.
+        </p>
+        <div class="mt-6 pt-6 border-t border-ink/10 flex flex-col gap-3">
+          <a href="login.html" class="w-full inline-flex items-center justify-center rounded-2xl bg-terra text-cream font-semibold text-sm py-3 px-6 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+            Ir para a tela de Login
+          </a>
+          <button type="button" id="btn-resend" class="text-xs text-inksoft hover:text-terra transition-colors cursor-pointer">
+            Não recebeu? Tentar novamente
+          </button>
+        </div>
+      </div>
+
+      <!-- Rodapé do Card -->
+      <div class="mt-8 pt-6 border-t border-ink/10 text-center">
+        <p class="text-xs text-inksoft">
+          Lembrou a senha?
+          <a href="login.html" class="font-semibold text-terra hover:underline">Faça login agora</a>
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer GastroMatch -->
+  <footer class="w-full pt-8 pb-10 mt-auto">
+    <div class="mx-auto max-w-6xl px-5 sm:px-8">
+
+      <!-- Linha Superior -->
+      <div class="border-t border-ink/10 pt-8">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; flex-wrap: nowrap;">
+
+          <!-- Coluna 1 -->
+          <div style="flex: 1 1 240px; max-width: 260px;" class="space-y-3">
+            <a href="index.html" class="font-display font-semibold text-2xl tracking-tight text-ink block">
+              GastroMatch<span class="text-terra">.</span>
+            </a>
+            <p class="text-xs text-inksoft leading-relaxed">
+              Conectando você às melhores experiências gastronômicas do Brasil com menus exclusivos e preços especiais.
+            </p>
+          </div>
+
+          <!-- Coluna 2 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Navegação</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="index.html" class="hover:text-terra transition-colors">Início</a>
+              <a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a>
+              <a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a>
+              <a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a>
+            </div>
+          </div>
+
+          <!-- Coluna 3 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Restaurantes</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="cadastro.html?tipo=restaurante" class="hover:text-terra transition-colors">Cadastrar Restaurante</a>
+              <a href="central-de-ajuda.html" class="hover:text-terra transition-colors">Suporte</a>
+            </div>
+          </div>
+
+          <!-- Coluna 4 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Usuários</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="cadastro.html" class="hover:text-terra transition-colors">Criar Conta</a>
+              <a href="login.html" class="hover:text-terra transition-colors">Entrar</a>
+            </div>
+          </div>
+
+          <!-- Coluna 5 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Contato</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="mailto:contato@gastromatch.com.br" class="hover:text-terra transition-colors">contato@gastromatch.com.br</a>
+              <a href="tel:61983833456" class="hover:text-terra transition-colors">(61) 98383-3456</a>
+              <a href="central-de-ajuda.html" class="hover:text-terra transition-colors">Central de Ajuda</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Linha Inferior -->
+      <div class="mt-8 pt-6 border-t border-ink/10 text-xs text-inksoft">
+        <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <script type="module">
+    import { auth, db } from './firebase-config.js';
+    import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const formContainer = document.getElementById("recovery-form-container");
+      const recoveryForm = document.getElementById("recovery-form");
+      const successMessage = document.getElementById("success-message");
+      const btnResend = document.getElementById("btn-resend");
+      const inputEmail = document.getElementById("recovery-email");
+      const msgDiv = document.getElementById("msg-recovery");
+      const btnSubmit = recoveryForm.querySelector('button[type="submit"]');
+      const textoOriginalBotao = btnSubmit.innerHTML;
+
+      function mostrarAviso(texto, tipo = 'erro') {
+        if (!msgDiv) return;
+        msgDiv.textContent = texto;
+        msgDiv.classList.remove('hidden');
+        if (tipo === 'sucesso') {
+          msgDiv.className = "mb-4 p-3 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200";
+        } else {
+          msgDiv.className = "mb-4 p-3 rounded-xl text-xs font-semibold bg-red-50 text-red-700 ring-1 ring-red-200";
+        }
+      }
+
+      if (recoveryForm) {
+        recoveryForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const email = inputEmail.value.trim().toLowerCase();
+          msgDiv.classList.add('hidden');
+
+          btnSubmit.innerHTML = "Verificando...";
+          btnSubmit.disabled = true;
+
+          try {
+            // 1. Verifica no Firestore se o e-mail existe na coleção de usuários
+            const qEmail = query(collection(db, "usuarios"), where("email", "==", email));
+            const querySnap = await getDocs(qEmail);
+
+            let emailEncontrado = false;
+            let usuarioBanido = false;
+
+            querySnap.forEach((docSnap) => {
+              const dados = docSnap.data();
+              if (dados.status === 'banido') {
+                usuarioBanido = true;
+              } else if (dados.status !== 'excluido') {
+                emailEncontrado = true;
+              }
+            });
+
+            if (usuarioBanido) {
+              mostrarAviso("Esta conta foi banida permanentemente. Entre em contato com o suporte.", 'erro');
+              btnSubmit.innerHTML = textoOriginalBotao;
+              btnSubmit.disabled = false;
+              return;
+            }
+
+            // 2. Se o e-mail não estiver na base de dados, bloqueia o envio
+            if (!emailEncontrado) {
+              mostrarAviso("Não encontramos nenhuma conta ativa cadastrada com este e-mail.", 'erro');
+              btnSubmit.innerHTML = textoOriginalBotao;
+              btnSubmit.disabled = false;
+              return;
+            }
+
+            // 3. Se existe, envia o link de redefinição pelo Firebase Auth
+            btnSubmit.innerHTML = "A enviar...";
+            await sendPasswordResetEmail(auth, email);
+
+            // Sucesso: Oculta o formulário e exibe a mensagem de confirmação
+            formContainer.classList.add("hidden");
+            successMessage.classList.remove("hidden");
+
+            // Restaura o botão caso decida tentar novamente depois
+            btnSubmit.innerHTML = textoOriginalBotao;
+            btnSubmit.disabled = false;
+
+          } catch (error) {
+            console.error("Erro ao processar recuperação:", error);
+            mostrarAviso("Ocorreu um erro ao tentar processar a solicitação. Tente novamente.", 'erro');
+            btnSubmit.innerHTML = textoOriginalBotao;
+            btnSubmit.disabled = false;
+          }
+        });
+      }
+
+      if (btnResend) {
+        btnResend.addEventListener("click", function () {
+          if (inputEmail) inputEmail.value = "";
+          msgDiv.classList.add('hidden');
+          successMessage.classList.add("hidden");
+          formContainer.classList.remove("hidden");
+          btnSubmit.innerHTML = textoOriginalBotao;
+          btnSubmit.disabled = false;
+        });
+      }
+    });
+  </script>
+
+</body>
+
+</html>

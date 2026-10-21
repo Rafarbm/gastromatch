@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Suporte e Administração — GastroMatch</title>
+
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <!-- Seu CSS local complementar -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased flex flex-col justify-between">
+
+  <!-- Header Padronizado em Suporte -->
+  <header class="mx-auto max-w-6xl px-5 sm:px-8 w-full">
+    <nav class="flex items-center justify-between py-5 border-b border-ink/10">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+      </div>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+          <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+          <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+          <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+          <li><a href="suporte.html" class="text-terra font-semibold">Painel Suporte</a></li>
+        </ul>
+      </div>
+
+      <div id="nav-auth-container" class="flex items-center gap-3">
+        <div style="position: relative !important; display: inline-block !important;">
+          <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all cursor-pointer shadow-sm">
+            <span class="text-sm font-semibold text-ink group-hover:text-cream whitespace-nowrap">Suporte</span>
+            <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50" style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; width: 240px !important; padding: 20px !important;">
+            <p id="admin-email" class="text-base font-bold text-ink truncate">Suporte</p>
+            <span class="text-[10px] uppercase font-bold text-terra">Administração</span>
+            <div style="margin: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1);"></div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <a href="suporte.html" class="flex items-center justify-center rounded-full bg-terra text-xs font-bold text-cream hover:bg-terradeep py-3 text-center">Painel Suporte</a>
+              <button id="btn-sair-admin" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 hover:bg-red-50 hover:text-red-600 py-3 cursor-pointer">Sair da conta</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="mx-auto max-w-6xl px-5 sm:px-8 py-10 space-y-10 w-full">
+
+    <!-- 1. BLOCO DE MÉTRICAS RÁPIDAS (INTERATIVAS) -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div onclick="abrirDetalhesModal('restaurantes')" class="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay flex items-center justify-between cursor-pointer hover:ring-terra transition-all">
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-inksoft">Restaurantes</p>
+          <h3 id="contador-restaurantes" class="font-display font-semibold text-3xl text-ink mt-1">0</h3>
+          <span class="text-[10px] text-terra font-semibold underline mt-1 block">Ver lista completa</span>
+        </div>
+        <div class="grid place-size-12 rounded-2xl bg-cream text-terra p-3 ring-1 ring-ink/10">
+          <span class="material-symbols-outlined text-2xl">storefront</span>
+        </div>
+      </div>
+
+      <div onclick="abrirDetalhesModal('usuarios')" class="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay flex items-center justify-between cursor-pointer hover:ring-terra transition-all">
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-inksoft">Usuários</p>
+          <h3 id="contador-usuarios" class="font-display font-semibold text-3xl text-ink mt-1">0</h3>
+          <span class="text-[10px] text-terra font-semibold underline mt-1 block">Ver lista completa</span>
+        </div>
+        <div class="grid place-size-12 rounded-2xl bg-cream text-terra p-3 ring-1 ring-ink/10">
+          <span class="material-symbols-outlined text-2xl">group</span>
+        </div>
+      </div>
+
+      <div onclick="abrirDetalhesModal('eventos')" class="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay flex items-center justify-between cursor-pointer hover:ring-terra transition-all">
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-inksoft">Eventos Ativos</p>
+          <h3 id="contador-eventos" class="font-display font-semibold text-3xl text-ink mt-1">0</h3>
+          <span class="text-[10px] text-terra font-semibold underline mt-1 block">Ver lista completa</span>
+        </div>
+        <div class="grid place-size-12 rounded-2xl bg-cream text-terra p-3 ring-1 ring-ink/10">
+          <span class="material-symbols-outlined text-2xl">event</span>
+        </div>
+      </div>
+
+      <div onclick="abrirDetalhesModal('emails')" class="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay flex items-center justify-between cursor-pointer hover:ring-terra transition-all">
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-inksoft">E-mails de Suporte</p>
+          <h3 id="contador-emails" class="font-display font-semibold text-3xl text-ink mt-1">0</h3>
+          <span class="text-[10px] text-terra font-semibold underline mt-1 block">Ver caixa de entrada</span>
+        </div>
+        <div class="grid place-size-12 rounded-2xl bg-cream text-terra p-3 ring-1 ring-ink/10">
+          <span class="material-symbols-outlined text-2xl">mail</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. SUPER EVENTO DA PÁGINA INICIAL -->
+    <section class="rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-terra">Destaque Principal</span>
+          <h2 class="font-display font-semibold text-2xl text-ink">Super Evento da Página Inicial</h2>
+          <p class="text-xs text-inksoft">Defina o evento principal do mês com contagem regressiva e títulos personalizados.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="abrirModalSuperEvento()" class="inline-flex items-center gap-2 rounded-full bg-terra text-cream text-xs font-semibold py-2.5 px-5 hover:bg-terradeep transition-colors shadow-sm cursor-pointer">
+            <span class="material-symbols-outlined text-sm">settings</span> Configurar Super Evento
+          </button>
+        </div>
+      </div>
+
+      <div id="info-super-evento-atual" class="rounded-2xl bg-cream p-4 ring-1 ring-ink/5 text-xs text-inksoft">
+        A carregar configuração do super evento...
+      </div>
+    </section>
+
+    <!-- 3. EVENTOS GERAIS DA PLATAFORMA -->
+    <section class="rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-display font-semibold text-2xl text-ink">Eventos Gerais da Plataforma</h2>
+          <p class="text-xs text-inksoft">Crie eventos globais (como GastroMatch, Festival de Massas, Premium Week) para os restaurantes participarem.</p>
+        </div>
+        <button type="button" onclick="abrirModalCriarEventoGeral()" class="inline-flex items-center gap-2 rounded-full bg-terra text-cream text-xs font-semibold py-2.5 px-5 hover:bg-terradeep transition-colors shadow-sm cursor-pointer">
+          <span class="material-symbols-outlined text-sm">add</span> Novo Evento Geral
+        </button>
+      </div>
+
+      <div id="lista-eventos-gerais" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Carregado via script -->
+      </div>
+    </section>
+
+    <!-- 4. GESTÃO: RESTAURANTES E USUÁRIOS -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Moderação de Restaurantes -->
+      <div class="rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-terra">Gestão</span>
+            <h3 class="font-display font-semibold text-xl text-ink">Restaurantes</h3>
+          </div>
+          <button type="button" onclick="abrirModalAdicionarUsuario('restaurante')" class="rounded-full bg-terra text-cream text-xs font-semibold py-2 px-4 hover:bg-terradeep transition-colors cursor-pointer flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">add</span> Adicionar Restaurante
+          </button>
+        </div>
+
+        <div class="pt-2">
+          <h4 class="text-xs font-bold text-ink uppercase tracking-wider mb-3">Lista de Restaurantes</h4>
+          <div id="lista-restaurantes-admin" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+            <!-- Carregado via script -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Moderação de Usuários -->
+      <div class="rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-terra">Gestão</span>
+            <h3 class="font-display font-semibold text-xl text-ink">Usuários</h3>
+          </div>
+          <button type="button" onclick="abrirModalAdicionarUsuario('cliente')" class="rounded-full bg-terra text-cream text-xs font-semibold py-2 px-4 hover:bg-terradeep transition-colors cursor-pointer flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">add</span> Adicionar Usuário
+          </button>
+        </div>
+
+        <div class="pt-2">
+          <h4 class="text-xs font-bold text-ink uppercase tracking-wider mb-3">Lista de Usuários</h4>
+          <div id="lista-usuarios-admin" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+            <!-- Carregado via script -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. CAIXA DE ENTRADA DO SUPORTE -->
+    <section class="rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay space-y-6">
+      <div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-terra">Atendimento ao Cliente</span>
+        <h2 class="font-display font-semibold text-2xl text-ink">E-mails Recebidos (contato@gastromatch.com.br)</h2>
+        <p class="text-xs text-inksoft">Mensagens enviadas pelos usuários e restaurantes através do canal de contato.</p>
+      </div>
+
+      <div id="lista-emails-suporte" class="space-y-3">
+        <!-- Carregado via script -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer Padronizado (5 Colunas) -->
+  <footer class="w-full pt-8 pb-10 mt-auto">
+    <div class="mx-auto max-w-6xl px-5 sm:px-8">
+      <div class="border-t border-ink/10 pt-8">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; flex-wrap: nowrap;">
+
+          <!-- Coluna 1 -->
+          <div style="flex: 1 1 240px; max-width: 260px;" class="space-y-3">
+            <a href="index.html" class="font-display font-semibold text-2xl tracking-tight text-ink block">
+              GastroMatch<span class="text-terra">.</span>
+            </a>
+            <p class="text-xs text-inksoft leading-relaxed">
+              Conectando você às melhores experiências gastronômicas do Brasil com menus exclusivos e preços especiais.
+            </p>
+          </div>
+
+          <!-- Coluna 2 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Navegação</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="index.html" class="hover:text-terra transition-colors">Início</a>
+              <a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a>
+              <a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a>
+              <a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a>
+            </div>
+          </div>
+
+          <!-- Coluna 3 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Restaurantes</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="cadastro.html?tipo=restaurante" class="hover:text-terra transition-colors">Cadastrar Restaurante</a>
+              <a href="central-de-ajuda.html" class="hover:text-terra transition-colors">Suporte</a>
+            </div>
+          </div>
+
+          <!-- Coluna 4 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Para Usuários</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="cadastro.html" class="hover:text-terra transition-colors">Criar Conta</a>
+              <a href="login.html" class="hover:text-terra transition-colors">Entrar</a>
+            </div>
+          </div>
+
+          <!-- Coluna 5 -->
+          <div style="flex: 0 0 auto;" class="space-y-2">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Contato</h4>
+            <div class="flex flex-col gap-2 text-xs text-inksoft">
+              <a href="mailto:contato@gastromatch.com.br" class="hover:text-terra transition-colors">contato@gastromatch.com.br</a>
+              <a href="tel:61983833456" class="hover:text-terra transition-colors">(61) 98383-3456</a>
+              <a href="central-de-ajuda.html" class="hover:text-terra transition-colors">Central de Ajuda</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-ink/10 text-xs text-inksoft">
+        <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL: Configurar Super Evento -->
+  <div id="modal-super-evento" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-paper rounded-[32px] p-6 sm:p-8 max-w-md w-full shadow-2xl ring-1 ring-ink/10 space-y-4 relative max-h-[90vh] overflow-y-auto">
+      <button type="button" onclick="fecharModalSuperEvento()" class="absolute top-6 right-6 text-inksoft hover:text-ink cursor-pointer">
+        <span class="material-symbols-outlined text-2xl">close</span>
+      </button>
+
+      <h2 class="font-display font-semibold text-2xl text-ink">Super Evento</h2>
+      <p class="text-xs text-inksoft">Preencha para exibir a contagem regressiva na página inicial. Deixe em branco se não houver super evento este mês.</p>
+
+      <form id="form-super-evento" class="space-y-4 text-sm pt-2">
+        <div>
+          <label class="block font-semibold text-ink mb-1">Título do Super Evento (Opcional)</label>
+          <input type="text" id="se-titulo" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Ex: Outubro Gostoso - 2026">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Subtítulo / Descrição Curta (Opcional)</label>
+          <input type="text" id="se-subtitulo" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Ex: Venha aproveitar esse evento">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-ink mb-1">Início do Evento</label>
+            <input type="date" id="se-inicio" class="w-full rounded-2xl bg-cream px-3 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+          <div>
+            <label class="block font-semibold text-ink mb-1">Fim do Evento</label>
+            <input type="date" id="se-fim" class="w-full rounded-2xl bg-cream px-3 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" id="se-mostrar-aviso" class="rounded text-terra focus:ring-terra size-4">
+          <label for="se-mostrar-aviso" class="text-xs font-medium text-ink">Exibir aviso de "evento chegando" antes da data inicial?</label>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="removerSuperEvento()" class="w-1/3 rounded-full bg-red-50 text-red-600 font-semibold py-3 px-2 text-xs hover:bg-red-100 transition-colors ring-1 ring-red-200 cursor-pointer">
+            Remover Evento
+          </button>
+          <button type="submit" class="w-2/3 rounded-full bg-terra text-cream font-semibold py-3 px-4 hover:bg-terradeep transition-colors shadow-sm cursor-pointer text-xs">
+            Salvar Super Evento
+          </button>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Tipo de Cozinha (Opcional)</label>
+          <select id="se-cozinha" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra cursor-pointer">
+            <option value="Geral">Geral (Todas)</option>
+            <option value="Italiana">Italiana</option>
+            <option value="Japonesa">Japonesa</option>
+            <option value="Brasileira">Brasileira</option>
+            <option value="Francesa">Francesa</option>
+            <option value="Mexicana">Mexicana</option>
+            <option value="Contemporânea">Contemporânea</option>
+            <option value="Mediterrânea">Mediterrânea</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Tipos de Vibe (Opcional - Até 3)</label>
+          <div class="grid grid-cols-2 gap-2 bg-cream/50 p-3 rounded-2xl ring-1 ring-ink/5">
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="se-vibe" value="Familiar" class="text-terra focus:ring-terra rounded"> Familiar</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="se-vibe" value="Romântica" class="text-terra focus:ring-terra rounded"> Romântica</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="se-vibe" value="Noturna" class="text-terra focus:ring-terra rounded"> Noturna / Badalada</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="se-vibe" value="Cafeteria" class="text-terra focus:ring-terra rounded"> Cafeteria / Brunch</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="se-vibe" value="Descontraída" class="text-terra focus:ring-terra rounded"> Descontraída / Casual</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="se-vibe" value="Sofisticada" class="text-terra focus:ring-terra rounded"> Sofisticada / Premium</label>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Criar Evento Geral -->
+  <div id="modal-evento-geral" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-paper rounded-[32px] p-6 sm:p-8 max-w-lg w-full shadow-2xl ring-1 ring-ink/10 space-y-4 relative max-h-[90vh] overflow-y-auto">
+      <button type="button" onclick="fecharModalCriarEventoGeral()" class="absolute top-6 right-6 text-inksoft hover:text-ink cursor-pointer">
+        <span class="material-symbols-outlined text-2xl">close</span>
+      </button>
+
+      <h2 class="font-display font-semibold text-2xl text-ink">Novo Evento Geral</h2>
+      <p class="text-xs text-inksoft">Cadastre um festival global para toda a plataforma.</p>
+
+      <form id="form-novo-evento-geral" class="space-y-4 text-sm pt-2">
+        <input type="hidden" id="eg-evento-id">
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Título do Evento</label>
+          <input type="text" id="eg-titulo" required class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Ex: Festival de Inverno GastroMatch">
+        </div>
+
+        <!-- Datas do Período -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-ink mb-1">Data Início</label>
+            <input type="date" id="eg-inicio" required class="w-full rounded-2xl bg-cream px-3 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+          <div>
+            <label class="block font-semibold text-ink mb-1">Data Fim</label>
+            <input type="date" id="eg-fim" required class="w-full rounded-2xl bg-cream px-3 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+        </div>
+
+        <!-- NOVOS CAMPOS: Horário de Funcionamento / Validade -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-ink mb-1">Hora de Início</label>
+            <input type="time" id="eg-hora-inicio" class="w-full rounded-2xl bg-cream px-3 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+          <div>
+            <label class="block font-semibold text-ink mb-1">Hora de Término</label>
+            <input type="time" id="eg-hora-fim" class="w-full rounded-2xl bg-cream px-3 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+        </div>
+
+        <!-- NOVOS CAMPOS: Dias de Validade na Semana -->
+        <div>
+          <label class="block font-semibold text-ink mb-1">Dias Válidos de Funcionamento</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-cream/50 p-3 rounded-2xl ring-1 ring-ink/5 text-xs">
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" name="eg-dias" value="Segunda" class="text-terra focus:ring-terra rounded"> Seg</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" name="eg-dias" value="Terça" class="text-terra focus:ring-terra rounded"> Ter</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" name="eg-dias" value="Quarta" class="text-terra focus:ring-terra rounded"> Qua</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" name="eg-dias" value="Quinta" class="text-terra focus:ring-terra rounded"> Qui</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" name="eg-dias" value="Sexta" class="text-terra focus:ring-terra rounded"> Sex</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" name="eg-dias" value="Sábado" class="text-terra focus:ring-terra rounded"> Sáb</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" name="eg-dias" value="Domingo" class="text-terra focus:ring-terra rounded"> Dom</label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Tipo de Evento</label>
+          <input type="text" id="evento-tipo" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Ex: Festival de Inverno" value="Evento GastroMatch">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Tipo de Cozinha</label>
+          <select id="eg-cozinha" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra cursor-pointer">
+            <option value="Geral">Geral (Todas as cozinhas)</option>
+            <option value="Italiana">Italiana</option>
+            <option value="Japonesa">Japonesa</option>
+            <option value="Brasileira">Brasileira</option>
+            <option value="Francesa">Francesa</option>
+            <option value="Mexicana">Mexicana</option>
+            <option value="Contemporânea">Contemporânea</option>
+            <option value="Mediterrânea">Mediterrânea</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Tipo de Vibe (Selecione de 1 até 3 opções)</label>
+          <div class="grid grid-cols-2 gap-2 bg-cream/50 p-3 rounded-2xl ring-1 ring-ink/5">
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="eg-vibe" value="Familiar" class="text-terra focus:ring-terra rounded"> Familiar</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="eg-vibe" value="Romântica" class="text-terra focus:ring-terra rounded"> Romântica</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="eg-vibe" value="Noturna" class="text-terra focus:ring-terra rounded"> Noturna / Badalada</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="eg-vibe" value="Cafeteria" class="text-terra focus:ring-terra rounded"> Cafeteria / Brunch</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="eg-vibe" value="Descontraída" class="text-terra focus:ring-terra rounded"> Descontraída / Casual</label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" name="eg-vibe" value="Sofisticada" class="text-terra focus:ring-terra rounded"> Sofisticada / Premium</label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-ink mb-1">URL da Imagem</label>
+            <input type="url" id="eg-imagem-url" placeholder="https://exemplo.com/foto.jpg" class="w-full rounded-2xl bg-cream px-3 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+          <div>
+            <label class="block font-semibold text-ink mb-1">Foto do Dispositivo</label>
+            <input type="file" id="eg-imagem-file" accept="image/*" class="w-full text-[11px] text-inksoft file:mr-2 file:py-2 file:px-3 file:rounded-xl file:border-0 file:font-semibold file:bg-terra file:text-cream hover:file:bg-terradeep cursor-pointer">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-ink mb-1">Descrição / Regras</label>
+          <textarea id="eg-descricao" rows="3" required class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Detalhes do evento..."></textarea>
+        </div>
+
+        <button type="submit" id="btn-salvar-eg" class="w-full rounded-full bg-terra text-cream font-semibold py-3 px-4 hover:bg-terradeep transition-colors shadow-sm cursor-pointer">
+          Publicar Evento Global
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Adicionar Usuário / Restaurante -->
+  <div id="modal-adicionar-usuario" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-paper rounded-[32px] p-6 sm:p-8 max-w-md w-full shadow-2xl ring-1 ring-ink/10 space-y-4 relative max-h-[90vh] overflow-y-auto">
+      <button type="button" onclick="fecharModalAdicionarUsuario()" class="absolute top-6 right-6 text-inksoft hover:text-ink cursor-pointer">
+        <span class="material-symbols-outlined text-2xl">close</span>
+      </button>
+
+      <h2 id="modal-add-titulo" class="font-display font-semibold text-2xl text-ink">Adicionar</h2>
+      <p class="text-xs text-inksoft">Insira as informações necessárias para registrar na plataforma.</p>
+
+      <form id="form-adicionar-usuario" class="space-y-3 text-sm pt-2">
+        <input type="hidden" id="add-tipo-conta">
+        <div>
+          <label class="block font-semibold text-ink mb-1" id="label-nome-principal">Nome</label>
+          <input type="text" id="add-nome" required class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+        </div>
+        <div>
+          <label class="block font-semibold text-ink mb-1" id="label-doc-principal">Documento</label>
+          <input type="text" id="add-documento" required class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+        </div>
+        <div>
+          <label class="block font-semibold text-ink mb-1">E-mail</label>
+          <input type="email" id="add-email" required class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+        </div>
+        <div id="campo-extra-restaurante" class="hidden space-y-3">
+          <div>
+            <label class="block font-semibold text-ink mb-1">Nome do Restaurante</label>
+            <input type="text" id="add-rest-nome" class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+          <div>
+            <label class="block font-semibold text-ink mb-1">Telefone</label>
+            <input type="text" id="add-rest-tel" class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+          <div>
+            <label class="block font-semibold text-ink mb-1">Endereço</label>
+            <input type="text" id="add-rest-end" class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-ink mb-1">Senha</label>
+          <input type="password" id="add-senha" required placeholder="Mínimo 8 caracteres" class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
+        </div>
+        <button type="submit" class="w-full rounded-full bg-terra text-cream font-semibold py-3 px-4 hover:bg-terradeep transition-colors shadow-sm cursor-pointer mt-3">
+          Concluir Cadastro
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Janela em Destaque para Métricas / Listagens -->
+  <div id="modal-destaque-admin" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-paper rounded-[32px] p-6 sm:p-8 max-w-2xl w-full shadow-2xl ring-1 ring-ink/10 space-y-6 relative max-h-[85vh] flex flex-col">
+      <button type="button" onclick="fecharDetalhesModal()" class="absolute top-6 right-6 text-inksoft hover:text-ink cursor-pointer">
+        <span class="material-symbols-outlined text-2xl">close</span>
+      </button>
+
+      <div>
+        <span id="modal-detalhe-categoria" class="text-[10px] font-bold uppercase tracking-wider text-terra">Visão Geral</span>
+        <h2 id="modal-detalhe-titulo" class="font-display font-semibold text-2xl text-ink">Detalhes</h2>
+      </div>
+
+      <div id="modal-detalhe-conteudo" class="space-y-3 overflow-y-auto pr-2 flex-1 max-h-[55vh]">
+        <!-- Inserido via script -->
+      </div>
+
+      <div class="pt-4 border-t border-ink/10 flex justify-end">
+        <button type="button" onclick="fecharDetalhesModal()" class="rounded-full bg-ink text-cream text-xs font-semibold py-2.5 px-6 hover:bg-terra transition-colors cursor-pointer">
+          Fechar Janela
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db, fazerLogout, firebaseConfig } from './firebase-config.js';
+    import { onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    document.getElementById('btn-sair-admin').addEventListener('click', fazerLogout);
+
+    window.abrirModalCriarEventoGeral = () => {
+      document.getElementById('eg-evento-id').value = '';
+      document.getElementById('form-novo-evento-geral').reset();
+      const tituloModal = document.querySelector('#modal-evento-geral h2');
+      if (tituloModal) tituloModal.textContent = "Novo Evento Geral";
+      const btnSalvar = document.getElementById('btn-salvar-eg');
+      if (btnSalvar) btnSalvar.textContent = "Publicar Evento Global";
+      document.getElementById('modal-evento-geral').classList.remove('hidden');
+    };
+    window.fecharModalCriarEventoGeral = () => document.getElementById('modal-evento-geral').classList.add('hidden');
+
+    window.abrirModalSuperEvento = () => document.getElementById('modal-super-evento').classList.remove('hidden');
+    window.fecharModalSuperEvento = () => document.getElementById('modal-super-evento').classList.add('hidden');
+
+    window.alterarStatusUsuario = async (docId, novoStatus) => {
+      try {
+        if (novoStatus === 'banido') {
+          await updateDoc(doc(db, "usuarios", docId), {
+            status: 'banido',
+            banidoEm: new Date().toISOString()
+          });
+        } else {
+          await updateDoc(doc(db, "usuarios", docId), {
+            status: 'ativo',
+            motivoBanimento: null,
+            banidoEm: null
+          });
+        }
+        window.fecharDetalhesModal();
+      } catch (e) {
+        console.error("Erro ao alterar status:", e);
+      }
+    };
+
+    window.restaurarCadastro = async (docId) => {
+      try {
+        await updateDoc(doc(db, "usuarios", docId), { status: 'ativo', excluidoEm: null });
+        window.fecharDetalhesModal();
+      } catch (e) { console.error("Erro ao restaurar:", e); }
+    };
+
+    window.abrirModalAdicionarUsuario = (tipo) => {
+      document.getElementById('add-tipo-conta').value = tipo;
+      const tituloModal = document.getElementById('modal-add-titulo');
+      const labelNome = document.getElementById('label-nome-principal');
+      const labelDoc = document.getElementById('label-doc-principal');
+      const campoExtra = document.getElementById('campo-extra-restaurante');
+
+      if (tipo === 'restaurante') {
+        tituloModal.textContent = "Adicionar Restaurante";
+        labelNome.textContent = "Nome do Responsável";
+        labelDoc.textContent = "CNPJ (14 dígitos - Apenas números)";
+        campoExtra.classList.remove('hidden');
+      } else {
+        tituloModal.textContent = "Adicionar Usuário";
+        labelNome.textContent = "Nome Completo";
+        labelDoc.textContent = "CPF (11 dígitos - Apenas números)";
+        campoExtra.classList.add('hidden');
+      }
+
+      document.getElementById('form-adicionar-usuario').reset();
+      document.getElementById('add-tipo-conta').value = tipo;
+      document.getElementById('modal-adicionar-usuario').classList.remove('hidden');
+    };
+
+    window.fecharModalAdicionarUsuario = () => {
+      document.getElementById('modal-adicionar-usuario').classList.add('hidden');
+    };
+
+    let cacheAdmin = {
+      restaurantes: [],
+      restaurantesExcluidos: [],
+      usuarios: [],
+      usuariosExcluidos: [],
+      eventos: [],
+      emails: []
+    };
+
+    window.abrirDetalhesModal = (tipo) => {
+      const modal = document.getElementById('modal-destaque-admin');
+      const tituloEl = document.getElementById('modal-detalhe-titulo');
+      const catEl = document.getElementById('modal-detalhe-categoria');
+      const conteudoEl = document.getElementById('modal-detalhe-conteudo');
+
+      conteudoEl.innerHTML = '';
+
+      if (tipo === 'restaurantes') {
+        catEl.textContent = "Plataforma";
+        tituloEl.textContent = `Restaurantes (Ativos e Excluídos)`;
+        const todosRestaurantes = [...cacheAdmin.restaurantes, ...cacheAdmin.restaurantesExcluidos];
+
+        if (todosRestaurantes.length === 0) {
+          conteudoEl.innerHTML = `<p class="text-xs text-inksoft text-center py-6">Nenhum restaurante registado.</p>`;
+        } else {
+          todosRestaurantes.forEach(r => {
+            const isBanido = r.status === 'banido';
+            const isExcluido = r.status === 'excluido';
+            let badgeStatus = '<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Ativo</span>';
+            if (isBanido) badgeStatus = '<span class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Banido</span>';
+            if (isExcluido) badgeStatus = '<span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Excluído</span>';
+
+            const docId = r.id;
+
+            conteudoEl.innerHTML += `
+              <div class="rounded-2xl bg-cream p-4 ring-1 ring-ink/5 flex items-center justify-between gap-3 ${isExcluido ? 'opacity-75' : ''}">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-display font-semibold text-base text-ink">${r.nomeRestaurante || 'Sem Nome'}</h4>
+                    ${badgeStatus}
+                  </div>
+                  <p class="text-xs text-inksoft">CNPJ: <strong class="text-ink">${r.cnpj || 'Não informado'}</strong> | Cozinha: ${r.cozinha || 'N/A'}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  ${!isExcluido ? `
+                    <button type="button" onclick="alterarStatusUsuario('${docId}', '${isBanido ? 'ativo' : 'banido'}')" class="rounded-full bg-paper py-1.5 px-3 text-[11px] font-semibold ${isBanido ? 'text-emerald-600' : 'text-terra'} ring-1 ring-ink/10 hover:bg-cream transition-colors cursor-pointer">${isBanido ? 'Desbanir' : 'Banir'}</button>
+                    <button type="button" onclick="excluirCadastroDefinitivo('${docId}', 'restaurante')" class="rounded-full bg-red-50 py-1.5 px-3 text-[11px] font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-100 transition-colors cursor-pointer">Excluir</button>
+                  ` : `
+                    <button type="button" onclick="restaurarCadastro('${docId}')" class="rounded-full bg-emerald-50 py-1.5 px-3 text-[11px] font-semibold text-emerald-600 ring-1 ring-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer">Restaurar</button>
+                  `}
+                </div>
+              </div>
+            `;
+          });
+        }
+      } else if (tipo === 'usuarios') {
+        catEl.textContent = "Plataforma";
+        tituloEl.textContent = `Usuários (Ativos e Excluídos)`;
+        const todosUsuarios = [...cacheAdmin.usuarios, ...cacheAdmin.usuariosExcluidos];
+
+        if (todosUsuarios.length === 0) {
+          conteudoEl.innerHTML = `<p class="text-xs text-inksoft text-center py-6">Nenhum usuário registado.</p>`;
+        } else {
+          todosUsuarios.forEach(u => {
+            const isBanido = u.status === 'banido';
+            const isExcluido = u.status === 'excluido';
+            let badgeStatus = '<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Ativo</span>';
+            if (isBanido) badgeStatus = '<span class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Banido</span>';
+            if (isExcluido) badgeStatus = '<span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Excluído</span>';
+
+            conteudoEl.innerHTML += `
+              <div class="rounded-2xl bg-cream p-4 ring-1 ring-ink/5 flex items-center justify-between gap-3 ${isExcluido ? 'opacity-75' : ''}">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-display font-semibold text-base text-ink">${u.nome || u.email || 'Usuário'}</h4>
+                    ${badgeStatus}
+                  </div>
+                  <p class="text-xs text-inksoft">CPF: <strong class="text-ink">${u.cpf || 'Não informado'}</strong></p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  ${!isExcluido ? `
+                    <button type="button" onclick="alterarStatusUsuario('${u.id}', '${isBanido ? 'ativo' : 'banido'}')" class="rounded-full bg-paper py-1.5 px-3 text-[11px] font-semibold ${isBanido ? 'text-emerald-600' : 'text-terra'} ring-1 ring-ink/10 hover:bg-cream transition-colors cursor-pointer">${isBanido ? 'Desbanir' : 'Banir'}</button>
+                    <button type="button" onclick="excluirCadastroDefinitivo('${u.id}', 'cliente')" class="rounded-full bg-red-50 py-1.5 px-3 text-[11px] font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-100 transition-colors cursor-pointer">Excluir</button>
+                  ` : `
+                    <button type="button" onclick="restaurarCadastro('${u.id}')" class="rounded-full bg-emerald-50 py-1.5 px-3 text-[11px] font-semibold text-emerald-600 ring-1 ring-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer">Restaurar</button>
+                  `}
+                </div>
+              </div>
+            `;
+          });
+        }
+      } else if (tipo === 'eventos') {
+        catEl.textContent = "Todos os Eventos";
+        tituloEl.textContent = `Eventos Ativos na Plataforma (${cacheAdmin.eventos.length})`;
+        if (cacheAdmin.eventos.length === 0) {
+          conteudoEl.innerHTML = `<p class="text-xs text-inksoft text-center py-6">Nenhum evento registado.</p>`;
+        } else {
+          cacheAdmin.eventos.forEach(ev => {
+            const isSuporte = ev.tipoEvento === 'geral_plataforma';
+            const badgeOrigem = isSuporte
+              ? '<span class="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">Suporte / Global</span>'
+              : '<span class="text-[9px] font-bold text-terra bg-terra/10 px-2 py-0.5 rounded-full">Restaurante Parceiro</span>';
+
+            conteudoEl.innerHTML += `
+              <div class="rounded-2xl bg-cream p-4 ring-1 ring-ink/5 flex items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-display font-semibold text-base text-ink">${ev.titulo}</h4>
+                    ${badgeOrigem}
+                  </div>
+                  <p class="text-xs text-terra font-semibold">Período: ${ev.inicio || ev.dataInicio || ''} até ${ev.fim || ev.dataFim || ''}</p>
+                  <p class="text-xs text-ink">${ev.descricao || ''}</p>
+                </div>
+                ${isSuporte ? `
+  <div class="flex items-center gap-2 shrink-0">
+    <button
+      type="button"
+      onclick="abrirModalEditarEventoGeral(
+        '${ev.id}',
+        '${encodeURIComponent(ev.titulo || '')}',
+        '${ev.inicio || ev.dataInicio || ''}',
+        '${ev.fim || ev.dataFim || ''}',
+        '${encodeURIComponent(ev.tipo || '')}',
+        '${encodeURIComponent(ev.cozinha || '')}',
+        '${encodeURIComponent(ev.descricao || '')}',
+        '${encodeURIComponent(ev.imagem || '')}'
+      )"
+      class="rounded-full bg-paper py-1.5 px-3 text-[11px] font-semibold text-terra ring-1 ring-ink/10 hover:bg-cream transition-colors cursor-pointer"
+    >
+      Editar
+    </button>
+
+    <button
+      type="button"
+      onclick="excluirEventoGeral('${ev.id}')"
+      class="rounded-full bg-red-50 py-1.5 px-3 text-[11px] font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-100 transition-colors cursor-pointer"
+    >
+      Excluir
+    </button>
+  </div>
+` : ''}
+              </div>
+            `;
+          });
+        }
+      } else if (tipo === 'emails') {
+        catEl.textContent = "Atendimento";
+        tituloEl.textContent = `E-mails de Suporte (${cacheAdmin.emails.length})`;
+        if (cacheAdmin.emails.length === 0) {
+          conteudoEl.innerHTML = `<p class="text-xs text-inksoft text-center py-6">Nenhum e-mail recebido em contato@gastromatch.com.br.</p>`;
+        } else {
+          cacheAdmin.emails.forEach(mail => {
+            conteudoEl.innerHTML += `
+              <div class="rounded-2xl bg-cream p-4 ring-1 ring-ink/5 space-y-1">
+                <div class="flex justify-between text-xs text-inksoft font-medium">
+                  <span>De: ${mail.nome} (${mail.email})</span>
+                  <span>${mail.data || ''}</span>
+                </div>
+                <h4 class="font-semibold text-sm text-ink">${mail.assunto || 'Contato Suporte'}</h4>
+                <p class="text-xs text-ink">${mail.mensagem}</p>
+              </div>
+            `;
+          });
+        }
+      }
+
+      modal.classList.remove('hidden');
+    };
+
+    window.fecharDetalhesModal = () => {
+      document.getElementById('modal-destaque-admin').classList.add('hidden');
+    };
+
+    async function carregarSuperEventoAdmin() {
+      try {
+        const ref = doc(db, "configuracoes", "super_evento");
+        const snap = await getDoc(ref);
+        const containerInfo = document.getElementById('info-super-evento-atual');
+
+        if (snap.exists()) {
+          const dados = snap.data();
+          containerInfo.innerHTML = `
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="font-bold text-ink text-sm">${dados.titulo || 'Sem Título'}</p>
+                <p class="text-inksoft">${dados.subtitulo || 'Sem subtítulo'}</p>
+                <p class="text-terra font-semibold mt-1">Período: ${dados.inicio} até ${dados.fim}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="abrirModalSuperEvento()" class="rounded-full bg-paper py-1.5 px-3 text-[11px] font-semibold text-terra ring-1 ring-ink/10 hover:bg-cream transition-colors cursor-pointer">Editar</button>
+                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Ativo no Site</span>
+              </div>
+            </div>
+          `;
+          document.getElementById('se-titulo').value = dados.titulo || '';
+          document.getElementById('se-subtitulo').value = dados.subtitulo || '';
+          document.getElementById('se-inicio').value = dados.inicio || '';
+          document.getElementById('se-fim').value = dados.fim || '';
+          if (document.getElementById('se-cozinha')) document.getElementById('se-cozinha').value = dados.cozinha || 'Geral';
+          document.getElementById('se-mostrar-aviso').checked = dados.mostrarAviso || false;
+        } else {
+          containerInfo.innerHTML = `<p class="text-xs text-inksoft">Nenhum super evento configurado no momento (a página inicial ficará sem esta faixa).</p>`;
+        }
+      } catch (e) {
+        console.error("Erro ao carregar super evento:", e);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const checkboxesVibe = document.querySelectorAll('input[name="eg-vibe"]');
+      checkboxesVibe.forEach(cb => {
+        cb.addEventListener('change', () => {
+          const selecionados = document.querySelectorAll('input[name="eg-vibe"]:checked');
+          if (selecionados.length > 3) {
+            cb.checked = false;
+            alert("Você pode selecionar no máximo 3 tipos de vibe.");
+          }
+        });
+      });
+
+      const checkboxesSuperVibe = document.querySelectorAll('input[name="se-vibe"]');
+      checkboxesSuperVibe.forEach(cb => {
+        cb.addEventListener('change', () => {
+          const selecionados = document.querySelectorAll('input[name="se-vibe"]:checked');
+          if (selecionados.length > 3) {
+            cb.checked = false;
+            alert("Você pode selecionar no máximo 3 tipos de vibe.");
+          }
+        });
+      });
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user || !user.email || !user.email.endsWith("@sugama.com")) {
+          window.location.href = "index.html";
+          return;
+        }
+
+        document.getElementById('admin-email').textContent = user.email;
+        iniciarOuvintesTempoReal();
+        carregarSuperEventoAdmin();
+      });
+    });
+
+    function iniciarOuvintesTempoReal() {
+      onSnapshot(collection(db, "usuarios"), (snapUsuarios) => {
+        cacheAdmin.restaurantes = [];
+        cacheAdmin.restaurantesExcluidos = [];
+        cacheAdmin.usuarios = [];
+        cacheAdmin.usuariosExcluidos = [];
+
+        snapUsuarios.forEach(d => {
+          const dados = { id: d.id, ...d.data() };
+          if (dados.status === 'excluido') {
+            if (dados.tipo === 'restaurante') cacheAdmin.restaurantesExcluidos.push(dados);
+            else cacheAdmin.usuariosExcluidos.push(dados);
+          } else {
+            if (dados.tipo === 'restaurante') cacheAdmin.restaurantes.push(dados);
+            else cacheAdmin.usuarios.push(dados);
+          }
+        });
+
+        const restsAtivos = cacheAdmin.restaurantes.filter(r => r.status !== 'banido');
+        const usersAtivos = cacheAdmin.usuarios.filter(u => u.status !== 'banido');
+
+        document.getElementById('contador-restaurantes').textContent = restsAtivos.length;
+        document.getElementById('contador-usuarios').textContent = usersAtivos.length;
+
+        const containerRestAdmin = document.getElementById('lista-restaurantes-admin');
+        containerRestAdmin.innerHTML = restsAtivos.length ? '' : '<p class="text-xs text-inksoft">Nenhum restaurante ativo.</p>';
+        restsAtivos.slice(0, 5).forEach(r => {
+          containerRestAdmin.innerHTML += `
+    <div class="flex items-center justify-between bg-cream p-2.5 rounded-xl text-xs gap-2">
+      <div>
+        <a 
+          href="pagina-restaurante.html?id=${encodeURIComponent(r.id)}"
+          class="font-bold text-ink hover:text-terra hover:underline transition-colors cursor-pointer"
+        >
+          ${r.nomeRestaurante || 'Sem Nome'}
+        </a>
+        <p class="text-[10px] text-inksoft">
+          CNPJ: ${r.cnpj || 'Não informado'}
+        </p>
+      </div>
+
+      <button 
+        type="button" 
+        onclick="excluirCadastroDefinitivo('${r.id}', 'restaurante')" 
+        class="text-red-600 font-semibold hover:underline cursor-pointer"
+      >
+        Excluir
+      </button>
+    </div>
+  `;
+        });
+
+        const containerUserAdmin = document.getElementById('lista-usuarios-admin');
+        containerUserAdmin.innerHTML = usersAtivos.length ? '' : '<p class="text-xs text-inksoft">Nenhum usuário ativo.</p>';
+        usersAtivos.slice(0, 5).forEach(u => {
+          containerUserAdmin.innerHTML += `
+            <div class="flex items-center justify-between bg-cream p-2.5 rounded-xl text-xs gap-2">
+              <div>
+                <p class="font-bold text-ink">${u.nome || u.email || 'Usuário'}</p>
+                <p class="text-[10px] text-inksoft">CPF: ${u.cpf || 'Não informado'}</p>
+              </div>
+              <button type="button" onclick="excluirCadastroDefinitivo('${u.id}', 'cliente')" class="text-red-600 font-semibold hover:underline cursor-pointer">Excluir</button>
+            </div>
+          `;
+        });
+      });
+
+      onSnapshot(collection(db, "eventos"), (snapEventos) => {
+        const todosEventos = snapEventos.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        document.getElementById('contador-eventos').textContent = todosEventos.length;
+        cacheAdmin.eventos = todosEventos;
+
+        const eventosGerais = todosEventos.filter(ev => ev.tipoEvento === 'geral_plataforma');
+        const containerEventos = document.getElementById('lista-eventos-gerais');
+        containerEventos.innerHTML = eventosGerais.length === 0 ? '<p class="text-xs text-inksoft col-span-full">Nenhum evento geral criado.</p>' : '';
+
+        eventosGerais.forEach(ev => {
+          containerEventos.innerHTML += `
+            <div class="rounded-2xl bg-cream p-4 ring-1 ring-ink/5 space-y-2 relative">
+              <span class="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full uppercase">Suporte / Global</span>
+              <h4 class="font-display font-semibold text-base text-ink">${ev.titulo}</h4>
+              <p class="text-xs text-inksoft">De ${ev.inicio || ev.dataInicio} até ${ev.fim || ev.dataFim}</p>
+              <p class="text-xs text-ink">${ev.descricao || ''}</p>
+              <div class="pt-2 flex items-center justify-end gap-2">
+                <button type="button" onclick="abrirModalEditarEventoGeral('${ev.id}', '${encodeURIComponent(ev.titulo || '')}', '${ev.inicio || ev.dataInicio || ''}', '${ev.fim || ev.dataFim || ''}', '${encodeURIComponent(ev.tipo || '')}', '${encodeURIComponent(ev.cozinha || '')}', '${encodeURIComponent(ev.descricao || '')}', '${encodeURIComponent(ev.imagem || '')}')" class="rounded-full bg-paper px-3 py-1 text-[11px] font-semibold text-terra ring-1 ring-ink/10 hover:bg-cream transition-colors cursor-pointer">Editar</button>
+                <button type="button" onclick="excluirEventoGeral('${ev.id}')" class="rounded-full bg-red-50 px-3 py-1 text-[11px] font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-100 transition-colors cursor-pointer">Excluir Evento</button>
+              </div>
+            </div>
+          `;
+        });
+      });
+
+      onSnapshot(collection(db, "contatos_suporte"), (snapEmails) => {
+        document.getElementById('contador-emails').textContent = snapEmails.size;
+        cacheAdmin.emails = snapEmails.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const containerEmails = document.getElementById('lista-emails-suporte');
+        containerEmails.innerHTML = cacheAdmin.emails.length === 0 ? '<p class="text-xs text-inksoft">Nenhum e-mail recebido no momento.</p>' : '';
+        cacheAdmin.emails.slice(0, 3).forEach(mail => {
+          containerEmails.innerHTML += `
+            <div class="rounded-2xl bg-cream p-4 ring-1 ring-ink/5 space-y-1">
+              <div class="flex justify-between text-xs text-inksoft font-medium">
+                <span>De: ${mail.nome} (${mail.email})</span>
+                <span>${mail.data || ''}</span>
+              </div>
+              <h4 class="font-semibold text-sm text-ink">${mail.assunto || 'Contato Suporte'}</h4>
+              <p class="text-xs text-ink">${mail.mensagem}</p>
+            </div>
+          `;
+        });
+      });
+    }
+
+    window.excluirEventoGeral = async (eventoId) => {
+      if (confirm("Deseja realmente excluir este evento geral da plataforma?")) {
+        try {
+          await deleteDoc(doc(db, "eventos", eventoId));
+        } catch (error) {
+          console.error("Erro ao excluir evento geral:", error);
+        }
+      }
+    };
+
+    window.excluirCadastroDefinitivo = async (docId, tipo) => {
+      try {
+        if (tipo === 'restaurante') {
+          const colecoes = ["menus", "promocoes", "cupons", "eventos"];
+          for (const colName of colecoes) {
+            const q = query(collection(db, colName), where("restauranteId", "==", docId));
+            const snap = await getDocs(q);
+            const promessasExclusao = snap.docs.map(item => deleteDoc(doc(db, colName, item.id)));
+            await Promise.all(promessasExclusao);
+          }
+        }
+
+        await updateDoc(doc(db, "usuarios", docId), {
+          status: 'excluido',
+          excluidoEm: new Date().toISOString()
+        });
+
+        if (typeof window.fecharDetalhesModal === 'function') {
+          window.fecharDetalhesModal();
+        }
+      } catch (e) {
+        console.error("Erro crítico ao excluir cadastro:", e);
+        alert("Erro ao excluir. Verifique o console para mais detalhes.");
+      }
+    };
+
+    document.getElementById('form-super-evento').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const vibesSelecionadas = Array.from(document.querySelectorAll('input[name="se-vibe"]:checked')).map(cb => cb.value);
+
+        const dadosSuper = {
+          titulo: document.getElementById('se-titulo').value.trim(),
+          subtitulo: document.getElementById('se-subtitulo').value.trim(),
+          inicio: document.getElementById('se-inicio').value,
+          fim: document.getElementById('se-fim').value,
+          cozinha: document.getElementById('se-cozinha').value,
+          vibes: vibesSelecionadas,
+          mostrarAviso: document.getElementById('se-mostrar-aviso').checked,
+          atualizadoEm: new Date()
+        };
+
+        await setDoc(doc(db, "configuracoes", "super_evento"), dadosSuper);
+        fecharModalSuperEvento();
+        alert("Super evento salvo com sucesso!");
+        carregarSuperEventoAdmin();
+      } catch (err) {
+        console.error("Erro ao salvar super evento:", err);
+        alert("Erro ao salvar.");
+      }
+    });
+
+    window.removerSuperEvento = async () => {
+      if (confirm("Deseja remover o super evento da página inicial?")) {
+        try {
+          await deleteDoc(doc(db, "configuracoes", "super_evento"));
+          fecharModalSuperEvento();
+          alert("Super evento removido!");
+          carregarSuperEventoAdmin();
+        } catch (err) {
+          console.error("Erro ao remover:", err);
+        }
+      }
+    };
+
+    document.getElementById('form-adicionar-usuario').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tipo = document.getElementById('add-tipo-conta').value;
+      const nome = document.getElementById('add-nome').value;
+      const documento = document.getElementById('add-documento').value.replace(/\D/g, '');
+      const email = document.getElementById('add-email').value;
+      const senha = document.getElementById('add-senha').value;
+
+      try {
+        const adminAtual = auth.currentUser;
+        const adminEmail = adminAtual ? adminAtual.email : null;
+        const adminPass = prompt("Digite a sua senha de Administrador atual para confirmar a criação deste novo registo:");
+        if (!adminPass) return;
+
+        const tempApp = initializeApp(firebaseConfig, "TempApp_" + Date.now());
+        const { getAuth: getAuthTemp, createUserWithEmailAndPassword: createTemp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+        const tempAuth = getAuthTemp(tempApp);
+
+        const userCredential = await createTemp(tempAuth, email, senha);
+        const user = userCredential.user;
+
+        let dadosNovo = { email: email, tipo: tipo, status: 'ativo', criadoEm: new Date() };
+        if (tipo === 'restaurante') {
+          dadosNovo.nomeResponsavel = nome;
+          dadosNovo.cnpj = documento;
+          dadosNovo.nomeRestaurante = document.getElementById('add-rest-nome').value;
+          dadosNovo.telefone = document.getElementById('add-rest-tel').value;
+          dadosNovo.endereco = document.getElementById('add-rest-end').value;
+        } else {
+          dadosNovo.nome = nome;
+          dadosNovo.cpf = documento;
+        }
+
+        await setDoc(doc(db, "usuarios", user.uid), dadosNovo);
+        await tempAuth.signOut();
+        if (adminEmail && adminPass) {
+          await signInWithEmailAndPassword(auth, adminEmail, adminPass);
+        }
+
+        fecharModalAdicionarUsuario();
+        alert("Cadastro criado com sucesso!");
+      } catch (error) { console.error("Erro ao criar:", error); alert("Erro: " + error.message); }
+    });
+
+    window.abrirModalEditarEventoGeral = (id, encTitulo, inicio, fim, encTipo, encCozinha, encDescricao, encImagem) => {
+      document.getElementById('eg-evento-id').value = id;
+      document.getElementById('eg-titulo').value = decodeURIComponent(encTitulo);
+      document.getElementById('evento-tipo').value = decodeURIComponent(encTipo);
+      document.getElementById('eg-cozinha').value = decodeURIComponent(encCozinha);
+      document.getElementById('eg-inicio').value = inicio;
+      document.getElementById('eg-fim').value = fim;
+      document.getElementById('eg-descricao').value = decodeURIComponent(encDescricao);
+      document.getElementById('eg-imagem-url').value = decodeURIComponent(encImagem);
+
+      const modalEl = document.getElementById('modal-evento-geral');
+      if (modalEl) {
+        const tituloModal = modalEl.querySelector('h2');
+        if (tituloModal) tituloModal.textContent = "Editar Evento Geral";
+        const btnSalvar = document.getElementById('btn-salvar-eg');
+        if (btnSalvar) btnSalvar.textContent = "Atualizar Evento Global";
+        modalEl.classList.remove('hidden');
+      }
+    };
+
+    document.getElementById('form-novo-evento-geral').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const eventoId = document.getElementById('eg-evento-id').value;
+        const imagemUrlInput = document.getElementById('eg-imagem-url').value.trim();
+        const imagemFileInput = document.getElementById('eg-imagem-file').files[0];
+
+        const vibesSelecionadas = Array.from(document.querySelectorAll('input[name="eg-vibe"]:checked')).map(cb => cb.value);
+        const diasSelecionados = Array.from(document.querySelectorAll('input[name="eg-dias"]:checked')).map(cb => cb.value);
+
+        let imagemFinal = imagemUrlInput || "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800";
+        if (imagemFileInput) {
+          imagemFinal = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (uploadEvent) => resolve(uploadEvent.target.result);
+            reader.onerror = (error) => reject(error);
+            reader.readAsDataURL(imagemFileInput);
+          });
+        }
+
+        const dadosEvento = {
+          titulo: document.getElementById('eg-titulo').value,
+          tipo: document.getElementById('evento-tipo').value.trim() || "Evento GastroMatch",
+          cozinha: document.getElementById('eg-cozinha').value,
+          vibes: vibesSelecionadas,
+          diasValidos: diasSelecionados,
+          horaInicio: document.getElementById('eg-hora-inicio').value || "",
+          horaFim: document.getElementById('eg-hora-fim').value || "",
+          origem: "Plataforma GastroMatch",
+          inicio: document.getElementById('eg-inicio').value,
+          fim: document.getElementById('eg-fim').value,
+          imagem: imagemFinal,
+          descricao: document.getElementById('eg-descricao').value,
+          tipoEvento: 'geral_plataforma',
+          atualizadoEm: new Date()
+        };
+
+        if (eventoId) {
+          await updateDoc(doc(db, "eventos", eventoId), dadosEvento);
+          alert("Evento atualizado com sucesso!");
+        } else {
+          dadosEvento.criadoEm = new Date();
+          await addDoc(collection(db, "eventos"), dadosEvento);
+          alert("Evento global criado com sucesso!");
+        }
+
+        fecharModalCriarEventoGeral();
+        document.getElementById('form-novo-evento-geral').reset();
+        document.getElementById('eg-evento-id').value = '';
+      } catch (error) {
+        console.error("Erro ao salvar evento geral:", error);
+        alert("Erro ao salvar evento.");
+      }
+    });
+
+    document.getElementById('btn-user-dropdown')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('dropdown-menu')?.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => {
+      document.getElementById('dropdown-menu')?.classList.add('hidden');
+    });
+  </script>
+
+</body>
+
+</html>

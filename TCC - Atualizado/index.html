@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GastroMatch — Menus promocionais com preço fixo</title>
+
+    <!-- Teu CSS local -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Fontes do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" />
+
+    <!-- Estilos específicos do Story Card -->
+    <style>
+        .story-wrapper {
+            width: 360px;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        .story {
+            position: relative;
+            width: 360px;
+            height: 580px;
+            background: #a1a1a1;
+            border-radius: 36px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .story img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        .story-bottom-content {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .story-title {
+            color: #fff;
+            font-family: 'Fraunces', serif;
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.2;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .story-info {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.95;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased">
+    <div class="min-h-screen bg-cream text-ink font-body antialiased">
+        <!-- CÓDIGO CORRIGIDO -->
+        <header class="relative z-50 mx-auto max-w-6xl px-5 sm:px-8">
+            <nav class="flex items-center justify-between py-5">
+                <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+
+                <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                    <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+                        <li><a href="index.html" class="text-terra font-semibold">Início</a></li>
+                        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                        <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                        <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                    </ul>
+                </div>
+
+                <div id="nav-auth-container" class="flex items-center gap-3">
+                    <a href="login.html" class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+                        Entrar
+                    </a>
+                    <a href="cadastro.html" class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+                        Fazer Cadastro
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <section class="relative mx-auto max-w-6xl px-5 sm:px-8 pt-4 pb-20">
+            <div class="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                <div class="lg:col-span-6">
+                    <span id="super-evento-badge" class="hidden inline-flex items-center gap-2 rounded-full bg-sage/20 text-sage px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]">
+                        <span class="size-1.5 rounded-full bg-sage"></span> <span id="super-evento-badge-text">Edição Especial · 2026</span>
+                    </span>
+
+                    <p id="super-evento-subtitulo" class="mt-2 text-xs font-semibold text-terra"></p>
+
+                    <h1 class="mt-5 font-display font-semibold text-5xl sm:text-6xl leading-[0.95] text-balance max-w-[16ch]">
+                        A Alta Gastronomia da Cidade Reunida <span class="italic text-terra">num só Lugar</span>.
+                    </h1>
+                    <p class="mt-5 text-base sm:text-lg text-inksoft text-pretty max-w-[46ch]">
+                        Explore os melhores restaurantes com menus exclusivos por tempo limitado. Sabores incríveis com preços acessíveis durante nossos eventos especiais.
+                    </p>
+                    <div class="mt-8 rounded-[28px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay">
+                        <div class="flex items-center gap-2 text-inksoft text-sm font-medium">
+                            <span class="grid place-items-center size-7 rounded-full bg-terra/15 shrink-0">
+                                <span class="size-2 rounded-full bg-terra"></span>
+                            </span>Onde você quer comer?
+                        </div>
+                        <div class="mt-3 flex flex-col sm:flex-row gap-3">
+                            <button id="btn-localizacao" type="button" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-terra text-cream font-semibold text-sm py-3 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors cursor-pointer">
+                                Usar minha localização
+                            </button>
+                            <div class="flex-1">
+                                <input id="input-bairro" type="text" placeholder="Bairro ou região" class="w-full rounded-2xl bg-cream/70 px-4 py-3 text-sm text-ink placeholder:text-inksoft/70 ring-1 ring-ink/5 focus:outline-none focus:ring-2 focus:ring-terra/40" value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STORY CARD INTERATIVO -->
+                <div class="lg:col-span-6 flex justify-center relative">
+                    <div class="story-wrapper">
+                        <div class="story" id="story-card-container" style="position: relative; cursor: pointer;">
+                            <img id="hero-img" src="" alt="Prato Destaque" style="width: 100%; height: 100%; object-fit: cover;">
+
+                            <div id="touch-left" style="position: absolute; top: 0; left: 0; width: 30%; height: 100%; z-index: 10;"></div>
+                            <div id="touch-center" style="position: absolute; top: 0; left: 30%; width: 40%; height: 100%; z-index: 10;"></div>
+                            <div id="touch-right" style="position: absolute; top: 0; left: 70%; width: 30%; height: 100%; z-index: 10;"></div>
+
+                            <div id="story-info-box" class="hidden absolute inset-0 z-30 flex justify-center items-center pointer-events-none">
+                                <div id="btn-ver-mais-story" class="pointer-events-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-terra text-cream text-sm font-bold shadow-2xl ring-1 ring-cream/20 cursor-pointer hover:bg-terradeep transition-all">
+                                    <span>Ver mais</span>
+                                    <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="story-bottom-content pointer-events-none" style="z-index: 5;">
+                                <div id="hero-nome" class="story-title">A carregar pratos...</div>
+                                <div class="story-info">
+                                    <span id="story-info-text">GastroMatch - 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO DE CONTAGEM REGRESSIVA DINÂMICA -->
+        <section id="secao-contagem-regressiva" class="hidden mx-auto max-w-6xl px-5 sm:px-8">
+            <div class="rounded-[28px] bg-ink text-cream px-6 py-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-5">
+                <div class="flex items-center gap-3">
+                    <span class="size-2.5 rounded-full bg-terra animate-[softpulse_2s_ease-in-out_infinite]"></span>
+                    <p id="label-tempo-fest" class="text-sm font-medium text-cream/80">Tempo restante para o festival</p>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <div class="text-center">
+                        <p id="sc-dias" class="font-display font-semibold text-3xl leading-none">00</p>
+                        <p class="text-[10px] uppercase tracking-[0.14em] text-cream/50 mt-1">dias</p>
+                    </div>
+                    <span class="text-cream/30 text-2xl font-display">:</span>
+                    <div class="text-center">
+                        <p id="sc-horas" class="font-display font-semibold text-3xl leading-none">00</p>
+                        <p class="text-[10px] uppercase tracking-[0.14em] text-cream/50 mt-1">horas</p>
+                    </div>
+                    <span class="text-cream/30 text-2xl font-display">:</span>
+                    <div class="text-center">
+                        <p id="sc-minutos" class="font-display font-semibold text-3xl leading-none">00</p>
+                        <p class="text-[10px] uppercase tracking-[0.14em] text-cream/50 mt-1">min</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="menus" class="mx-auto max-w-6xl px-5 sm:px-8 pt-20">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-terra">Menus promocionais</p>
+                    <h2 class="mt-2 font-display font-semibold text-4xl sm:text-5xl leading-tight text-balance max-w-[20ch]">Na mesa esta semana</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="container-filtros-promocoes" class="hidden sm:flex flex-wrap gap-2"></div>
+                    <a href="promocoes.html" class="inline-flex items-center rounded-full bg-ink text-cream text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-terradeep transition-colors">
+                        Explorar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Grid de Cards de Menus (Dinâmico) -->
+            <div id="container-promocoes-na-mesa" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <section id="eventos" class="mx-auto max-w-6xl px-5 sm:px-8 pt-20">
+            <div class="flex items-end justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-terra">Eventos</p>
+                    <h2 class="mt-2 font-display font-semibold text-4xl sm:text-5xl leading-tight text-balance max-w-[20ch]">Noites, jantares e degustações</h2>
+                </div>
+                <a href="eventos.html" class="inline-flex items-center rounded-full bg-ink text-cream text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-terradeep transition-colors">
+                    Explorar
+                </a>
+            </div>
+            <!-- Grid de Eventos (Dinâmico) -->
+            <div class="grid sm:grid-cols-3 gap-5 mt-8"></div>
+        </section>
+
+        <!-- SEÇÃO DE CUPONS E DESCONTOS ESPECIAIS -->
+        <section id="cupons" class="mx-auto max-w-6xl px-5 sm:px-8 pt-20">
+            <div class="flex items-end justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-terra">Vantagens</p>
+                    <h2 class="mt-2 font-display font-semibold text-4xl sm:text-5xl leading-tight text-balance max-w-[20ch]">Cupons e Descontos Especiais</h2>
+                </div>
+                <a href="promocoes.html#cupons" class="inline-flex items-center rounded-full bg-ink text-cream text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-terradeep transition-colors">
+                    Ver todos
+                </a>
+            </div>
+            <!-- Grid de Cupons (Dinâmico com ID atribuído) -->
+            <div id="container-cupons" class="mt-8 grid sm:grid-cols-3 gap-5"></div>
+        </section>
+
+        <section id="como-funciona" class="mx-auto max-w-6xl px-5 sm:px-8 pt-20 pb-24">
+            <div class="rounded-[32px] bg-paper p-8 sm:p-12 ring-1 ring-ink/5">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-terra">Como funciona</p>
+                <h2 class="mt-2 font-display font-semibold text-4xl sm:text-5xl leading-tight text-balance max-w-[22ch]">Do clique à mesa em três passos</h2>
+                <div class="mt-10 grid sm:grid-cols-3 gap-8">
+                    <div>
+                        <span class="grid place-items-center size-12 rounded-2xl bg-terra/15 text-terra font-display font-semibold text-xl">1</span>
+                        <h3 class="mt-4 font-display font-semibold text-xl">Escolha o bairro</h3>
+                        <p class="mt-2 text-sm text-inksoft text-pretty">Ative a localização ou digite o bairro para ver os menus disponíveis perto de você.</p>
+                    </div>
+                    <div>
+                        <span class="grid place-items-center size-12 rounded-2xl bg-sage/20 text-sage font-display font-semibold text-xl">2</span>
+                        <h3 class="mt-4 font-display font-semibold text-xl">Reserve o menu</h3>
+                        <p class="mt-2 text-sm text-inksoft text-pretty">Selecione o preço fixo e o horário. O valor é fechado, sem surpresas na conta.</p>
+                    </div>
+                    <div>
+                        <span class="grid place-items-center size-12 rounded-2xl bg-butter/40 text-terradeep font-display font-semibold text-xl">3</span>
+                        <h3 class="mt-4 font-display font-semibold text-xl">Prove a experiência</h3>
+                        <p class="mt-2 text-sm text-inksoft text-pretty">Apresente o código na mesa e aproveite o menu antes que o selo expire.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="mx-auto max-w-6xl px-5 sm:px-8 pb-10">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-ink/10 pt-6 text-sm text-inksoft">
+                <p class="font-display font-semibold text-lg text-ink">GastroMatch<span class="text-terra">.</span></p>
+                <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- SCRIPT DE CARREGAMENTO DINÂMICO -->
+    <script type="module">
+        import { db, observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+        import { collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        let listaStoriesPratos = [];
+        let indiceStoryAtual = 0;
+        let timerStory = null;
+        let clicadoNoMeio = false;
+        let listaPromocoesCache = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await carregarDadosDinamicosIndex();
+        });
+
+        async function carregarDadosDinamicosIndex() {
+            try {
+                // 1. CARREGAR PRATOS PARA OS STORIES
+                const pratosSnap = await getDocs(collection(db, "menus"));
+                let pratosValidos = [];
+
+                pratosSnap.forEach(docSnap => {
+                    const dados = { id: docSnap.id, ...docSnap.data() };
+                    const tipoItem = (dados.tipo || dados.classificacao || 'novo-menu').toLowerCase();
+                    const vinculadoPromo = dados.vinculadoPromocao || dados.promocaoId;
+
+                    if ((tipoItem.includes('novo-menu') || tipoItem === 'menu') && !vinculadoPromo) {
+                        pratosValidos.push(dados);
+                    }
+                });
+
+                pratosValidos.sort((a, b) => (b.avaliacao || 0) - (a.avaliacao || 0));
+
+                let cozinhasVistas = new Set();
+                listaStoriesPratos = pratosValidos.filter(p => {
+                    const cozinha = (p.cozinha || p.categoria || 'geral').toLowerCase();
+                    if (!cozinhasVistas.has(cozinha) || cozinhasVistas.size < 4) {
+                        cozinhasVistas.add(cozinha);
+                        return true;
+                    }
+                    return false;
+                });
+
+                if (listaStoriesPratos.length < 15) {
+                    pratosValidos.forEach(p => {
+                        if (!listaStoriesPratos.includes(p) && listaStoriesPratos.length < 15) {
+                            listaStoriesPratos.push(p);
+                        }
+                    });
+                }
+
+                if (listaStoriesPratos.length > 0) {
+                    iniciarStories();
+                }
+
+                // 2. CARREGAR MENUS PROMOCIONAIS E CONFIGURAR FILTROS DINÂMICOS
+                const promosSnap = await getDocs(collection(db, "promocoes"));
+                listaPromocoesCache = [];
+                const cozinhasEncontradas = new Set();
+
+                promosSnap.forEach(docSnap => {
+                    const p = { id: docSnap.id, ...docSnap.data() };
+                    listaPromocoesCache.push(p);
+                    if (p.cozinha) {
+                        cozinhasEncontradas.add(p.cozinha);
+                    }
+                });
+
+                listaPromocoesCache.sort((a, b) => (b.avaliacao || 0) - (a.avaliacao || 0));
+
+                const containerFiltros = document.getElementById('container-filtros-promocoes');
+                if (containerFiltros) {
+                    let htmlFiltros = `
+                        <button type="button" onclick="filtrarPromocoesCozinha('Todos')" class="btn-filtro-cozinha px-4 py-2 rounded-full text-xs font-semibold bg-terra text-cream transition-colors cursor-pointer">
+                          Todos
+                        </button>
+                    `;
+
+                    cozinhasEncontradas.forEach((cozinha) => {
+                        htmlFiltros += `
+                            <button type="button" onclick="filtrarPromocoesCozinha('${cozinha}')" class="btn-filtro-cozinha px-4 py-2 rounded-full text-xs font-semibold bg-paper text-ink ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors cursor-pointer">
+                              ${cozinha}
+                            </button>
+                        `;
+                    });
+
+                    containerFiltros.innerHTML = htmlFiltros;
+                }
+
+                renderizarCardsPromocoes(listaPromocoesCache.slice(0, 3));
+
+                // 3. CARREGAR EVENTOS (Máximo 3 cards)
+                const eventosSnap = await getDocs(collection(db, "eventos"));
+                let eventosValidos = [];
+                eventosSnap.forEach(docSnap => {
+                    eventosValidos.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderizarEventos(eventosValidos.slice(0, 3));
+
+                // 4. CARREGAR VANTAGENS / CUPONS (Máximo 3 cards)
+                const cuponsSnap = await getDocs(collection(db, "cupons"));
+                let cuponsValidos = [];
+                cuponsSnap.forEach(docSnap => {
+                    cuponsValidos.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                cuponsValidos.sort((a, b) => (b.avaliacaoRestaurante || 0) - (a.avaliacaoRestaurante || 0));
+                renderizarVantagens(cuponsValidos.slice(0, 3));
+
+            } catch (error) {
+                console.error("Erro ao carregar dados dinâmicos da página inicial:", error);
+            }
+        }
+
+        // Função Global de filtragem por Cozinha
+        window.filtrarPromocoesCozinha = function (cozinhaSelecionada) {
+            const botoes = document.querySelectorAll('.btn-filtro-cozinha');
+            botoes.forEach(btn => {
+                if (btn.textContent.trim() === cozinhaSelecionada) {
+                    btn.className = "btn-filtro-cozinha px-4 py-2 rounded-full text-xs font-semibold bg-terra text-cream transition-colors cursor-pointer";
+                } else {
+                    btn.className = "btn-filtro-cozinha px-4 py-2 rounded-full text-xs font-semibold bg-paper text-ink ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors cursor-pointer";
+                }
+            });
+
+            if (cozinhaSelecionada === 'Todos') {
+                renderizarCardsPromocoes(listaPromocoesCache.slice(0, 3));
+            } else {
+                const filtradas = listaPromocoesCache.filter(p => p.cozinha === cozinhaSelecionada);
+                renderizarCardsPromocoes(filtradas);
+            }
+        };
+
+        // --- LÓGICA DO STORY CARD INTERATIVO ---
+        function iniciarStories() {
+            atualizarStoryVisual();
+            iniciarTimerStoryLoop();
+
+            const touchLeft = document.getElementById('touch-left');
+            const touchCenter = document.getElementById('touch-center');
+            const touchRight = document.getElementById('touch-right');
+            const infoBox = document.getElementById('story-info-box');
+            const btnVerMaisStory = document.getElementById('btn-ver-mais-story');
+
+            if (touchLeft) {
+                touchLeft.onclick = (e) => {
+                    e.stopPropagation();
+                    indiceStoryAtual = (indiceStoryAtual - 1 + listaStoriesPratos.length) % listaStoriesPratos.length;
+                    fecharBoxInfo();
+                    atualizarStoryVisual();
+                    iniciarTimerStoryLoop();
+                };
+            }
+
+            if (touchRight) {
+                touchRight.onclick = (e) => {
+                    e.stopPropagation();
+                    indiceStoryAtual = (indiceStoryAtual + 1) % listaStoriesPratos.length;
+                    fecharBoxInfo();
+                    atualizarStoryVisual();
+                    iniciarTimerStoryLoop();
+                };
+            }
+
+            if (touchCenter) {
+                touchCenter.onclick = (e) => {
+                    e.stopPropagation();
+                    if (!clicadoNoMeio) {
+                        clicadoNoMeio = true;
+                        clearInterval(timerStory);
+                        if (infoBox) infoBox.classList.remove('hidden');
+                    } else {
+                        redirecionarDetalhesRestaurante();
+                    }
+                };
+            }
+
+            if (btnVerMaisStory) {
+                btnVerMaisStory.onclick = (e) => {
+                    e.stopPropagation();
+                    redirecionarDetalhesRestaurante();
+                };
+            }
+        }
+
+        function redirecionarDetalhesRestaurante() {
+            const prato = listaStoriesPratos[indiceStoryAtual];
+            const restauranteId = prato?.restauranteId || prato?.idRestaurante || '';
+            window.location.href = `pagina-restaurante.html?id=${restauranteId}`;
+        }
+
+        function fecharBoxInfo() {
+            clicadoNoMeio = false;
+            const infoBox = document.getElementById('story-info-box');
+            if (infoBox) infoBox.classList.add('hidden');
+        }
+
+        function atualizarStoryVisual() {
+            if (listaStoriesPratos.length === 0) return;
+            const item = listaStoriesPratos[indiceStoryAtual];
+            const imgEl = document.getElementById('hero-img');
+            const nomeEl = document.getElementById('hero-nome');
+            const infoTextEl = document.getElementById('story-info-text');
+
+            if (imgEl) {
+                imgEl.style.opacity = '0';
+                setTimeout(() => {
+                    imgEl.src = item.foto || item.imagem || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000';
+                    if (nomeEl) nomeEl.textContent = item.titulo || item.nome;
+                    if (infoTextEl) infoTextEl.textContent = `${item.restauranteNome || 'Restaurante'} - R$ ${item.preco || item.valor || '0,00'}`;
+                    imgEl.style.opacity = '1';
+                }, 150);
+            }
+        }
+
+        function iniciarTimerStoryLoop() {
+            clearInterval(timerStory);
+            timerStory = setInterval(() => {
+                if (!clicadoNoMeio) {
+                    indiceStoryAtual = (indiceStoryAtual + 1) % listaStoriesPratos.length;
+                    atualizarStoryVisual();
+                }
+            }, 5000);
+        }
+
+        // --- RENDERIZAÇÃO DOS CARDS DE PROMOÇÕES ---
+        function renderizarCardsPromocoes(promos) {
+            const gridContainer = document.getElementById('container-promocoes-na-mesa') || document.querySelector('#menus .grid');
+            if (!gridContainer) return;
+
+            gridContainer.innerHTML = '';
+
+            if (promos.length === 0) {
+                gridContainer.innerHTML = `<p class="text-xs text-inksoft col-span-3 text-center py-6">Nenhuma promoção encontrada para esta categoria.</p>`;
+                return;
+            }
+
+            promos.forEach(p => {
+                const cat = (p.cozinha || p.categoria || 'Geral').toLowerCase();
+
+                gridContainer.innerHTML += `
+                <article data-categoria="${cat}" onclick="window.location.href='promocoes-detalhes.html?id=${p.id}'" class="card-menu group rounded-[28px] bg-paper p-4 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-all cursor-pointer">
+                    <div class="relative">
+                        <img src="${p.foto || p.imagem || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800'}" alt="${p.titulo}" class="w-full aspect-[4/3] rounded-[20px] object-cover">
+                        <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-terra text-cream text-[11px] font-semibold px-3 py-1.5 shadow-sm">Promoção Ativa</span>
+                    </div>
+                    <div class="mt-4 px-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-[0.12em] text-terra">${p.cozinha || 'Especial'}</span>
+                            <span class="text-xs font-medium text-inksoft">${p.restauranteNome || 'Restaurante'}</span>
+                        </div>
+                        <h3 class="mt-2 font-display font-semibold text-2xl leading-tight text-ink">${p.titulo}</h3>
+                        <p class="mt-1 text-sm text-inksoft line-clamp-1">${p.descricao || ''}</p>
+                        <div class="mt-4 flex items-end justify-between border-t border-dashed border-ink/15 pt-4">
+                            <div>
+                                <p class="text-[10px] font-semibold uppercase text-inksoft">Preço promocional</p>
+                                <p class="font-display font-semibold text-3xl leading-none text-terra">R$ ${p.valorPromocional || p.preco || '0,00'}</p>
+                            </div>
+                            <span class="text-sm font-medium text-inksoft group-hover:text-terra transition-colors">Ver oferta &rarr;</span>
+                        </div>
+                    </div>
+                </article>
+            `;
+            });
+        }
+
+        // --- RENDERIZAÇÃO DE EVENTOS ---
+        function renderizarEventos(eventos) {
+            const gridEventos = document.querySelector('#eventos .grid');
+            if (!gridEventos) return;
+            gridEventos.innerHTML = '';
+
+            if (eventos.length === 0) {
+                gridEventos.innerHTML = `<p class="text-xs text-inksoft col-span-3 text-center py-4">Nenhum evento agendado no momento.</p>`;
+                return;
+            }
+
+            function formatarDataBR(dataStr) {
+                if (!dataStr) return '';
+                if (!dataStr.includes('-')) return dataStr;
+                const partes = dataStr.split('T')[0].split('-');
+                if (partes.length === 3) {
+                    return `${partes[2]}/${partes[1]}`;
+                }
+                return dataStr;
+            }
+
+            eventos.forEach(ev => {
+                const inicioRaw = ev.dataInicio || ev.inicio || ev.startDate || ev.data || '';
+                const fimRaw = ev.dataFim || ev.fim || ev.endDate || '';
+
+                const inicio = formatarDataBR(inicioRaw);
+                const fim = formatarDataBR(fimRaw);
+
+                let periodoTexto = '';
+                if (inicio && fim) {
+                    periodoTexto = `${inicio} - ${fim}`;
+                } else if (inicio) {
+                    periodoTexto = inicio;
+                }
+
+                gridEventos.innerHTML += `
+                <div onclick="window.location.href='evento-detalhes.html?id=${ev.id}'" class="rounded-[24px] bg-paper p-6 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-transform cursor-pointer flex flex-col justify-between">
+                    <div>
+                        <span class="inline-block px-3.5 py-1 rounded-full bg-terra/10 text-terra text-[10px] font-bold uppercase tracking-widest mb-3">Evento</span>
+                        <h3 class="font-display font-semibold text-2xl text-ink leading-tight">${ev.titulo || ev.nome || 'Evento'}</h3>
+                        ${periodoTexto ? `<p class="mt-2 text-xs font-semibold text-terra">${periodoTexto}</p>` : ''}
+                        ${ev.descricao ? `<p class="mt-2 text-sm text-inksoft line-clamp-1">${ev.descricao}</p>` : ''}
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-ink/10 flex items-center justify-between">
+                        <span class="text-[10px] uppercase font-bold text-inksoft">Detalhes</span>
+                        <span class="text-xs font-semibold text-terra hover:underline">Ver evento &rarr;</span>
+                    </div>
+                </div>
+            `;
+            });
+        }
+
+        // --- RENDERIZAÇÃO DE VANTAGENS / CUPONS ---
+        function renderizarVantagens(cupons) {
+            const gridCupons = document.getElementById('container-cupons') || document.querySelector('#cupons .grid');
+            if (!gridCupons) return;
+            gridCupons.innerHTML = '';
+
+            if (cupons.length === 0) {
+                gridCupons.innerHTML = `<p class="text-xs text-inksoft col-span-3 text-center py-4">Nenhum cupom disponível no momento.</p>`;
+                return;
+            }
+
+            cupons.forEach((cupom) => {
+                const cupomId = cupom.id || '';
+                const codigoCupom = cupom.codigo || cupom.nome || "CUPOM";
+
+                let valorBruto = String(cupom.desconto || cupom.titulo || "Desconto Especial").trim();
+                valorBruto = valorBruto.replace(/%?\s*de\s*desconto/gi, '')
+                    .replace(/%?\s*off/gi, '')
+                    .replace(/%/g, '')
+                    .trim();
+
+                let descontoTexto = "Desconto Especial";
+                if (valorBruto && !isNaN(valorBruto)) {
+                    descontoTexto = `${valorBruto}% de desconto`;
+                } else if (valorBruto) {
+                    descontoTexto = `${valorBruto} de desconto`;
+                }
+
+                const nomeRestaurante = cupom.restauranteNome || cupom.restaurante || "Parceiro GastroMatch";
+
+                gridCupons.innerHTML += `
+                <div onclick="window.location.href='cupom-detalhes.html?id=${cupomId}'" class="group rounded-[24px] bg-paper p-5 ring-1 ring-ink/10 shadow-sm flex flex-col justify-between space-y-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:ring-terra/30 cursor-pointer">
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-lg font-bold text-terra uppercase tracking-wider">
+                        ${codigoCupom}
+                      </span>
+                      <span class="text-xs font-semibold text-ink whitespace-nowrap">
+                        ${descontoTexto}
+                      </span>
+                    </div>
+
+                    <h4 class="font-display font-semibold text-base text-ink group-hover:text-terra transition-colors duration-200">
+                      ${nomeRestaurante}
+                    </h4>
+                  </div>
+
+                  <div class="pt-2 flex items-center justify-between">
+                    <a href="cupom-detalhes.html?id=${cupomId}" onclick="event.stopPropagation()" class="text-xs font-semibold text-terra group-hover:underline transition-all">
+                      Ver cupom
+                    </a>
+                  </div>
+                </div>
+            `;
+            });
+        }
+    </script>
+
+    <!-- Script de Autenticação Unificado Corrigido -->
+    <script type="module">
+        import { observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+
+        function aplicarEstadoAutenticacao(logado, user, dadosUsuario) {
+            const navAuthContainer = document.getElementById('nav-auth-container') || document.querySelector('header nav .flex.items-center.gap-3');
+            const navLinksList = document.getElementById('nav-links');
+
+            if (!navAuthContainer) return;
+
+            navAuthContainer.style.setProperty('position', 'relative', 'important');
+            navAuthContainer.style.setProperty('z-index', '9999', 'important');
+
+            const isSuporte = user && user.email && user.email.endsWith("@sugama.com");
+
+            if (navLinksList) {
+                if (logado) {
+                    if (isSuporte) {
+                        navLinksList.innerHTML = `
+                        <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                        <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                        <li><a href="suporte.html" class="text-terra font-semibold">Painel Suporte</a></li>
+                    `;
+                    } else if (dadosUsuario?.tipo === 'restaurante') {
+                        navLinksList.innerHTML = `
+                        <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                        <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                        <li><a href="painel-restaurante.html" class="text-terra font-semibold">Painel Restaurante</a></li>
+                    `;
+                    } else {
+                        navLinksList.innerHTML = `
+                        <li><a href="index.html" class="text-terra font-semibold">Início</a></li>
+                        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                        <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                        <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                        <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+                    `;
+                    }
+                } else {
+                    navLinksList.innerHTML = `
+                    <li><a href="index.html" class="text-terra font-semibold">Início</a></li>
+                    <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                    <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                    <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                `;
+                }
+            }
+
+            if (logado && user) {
+                const nomeBruto = isSuporte
+                    ? 'Suporte'
+                    : (dadosUsuario?.tipo === 'restaurante'
+                        ? (dadosUsuario?.nomeRestaurante || dadosUsuario?.nomeResponsavel || user?.email?.split('@')[0])
+                        : (dadosUsuario?.nome || user?.email?.split('@')[0] || 'Utilizador'));
+
+                const primeiroNome = nomeBruto.trim().split(' ')[0];
+                const nomeFormatado = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
+
+                let botoesDropdownHTML = '';
+                if (isSuporte) {
+                    botoesDropdownHTML = `
+                    <a href="suporte.html" class="flex items-center justify-center rounded-full bg-terra text-xs font-bold text-cream hover:bg-terradeep transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Painel Suporte</a>
+                    <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">Sair da conta</button>
+                `;
+                } else if (dadosUsuario?.tipo === 'restaurante') {
+                    botoesDropdownHTML = `
+                    <a href="painel-restaurante.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Painel</a>
+                    <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">Sair da conta</button>
+                `;
+                } else {
+                    botoesDropdownHTML = `
+                    <a href="perfil-usuario.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Ver perfil</a>
+                    <a href="salvos.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Salvos</a>
+                    <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">Sair da conta</button>
+                `;
+                }
+
+                navAuthContainer.innerHTML = `
+                <div style="position: relative !important; display: inline-block !important; width: auto !important; overflow: visible !important;">
+                    <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all duration-200 cursor-pointer shadow-sm focus:outline-none">
+                        <span class="text-sm font-semibold text-ink group-hover:text-cream transition-colors whitespace-nowrap">${nomeFormatado}</span>
+                        <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50 transition-all duration-200" style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; min-width: 240px !important; width: 240px !important; padding: 20px !important; box-sizing: border-box !important; position: absolute !important; right: 0 !important; top: 100% !important;">
+                        <div style="padding-left: 4px; padding-right: 4px;">
+                            <p class="text-base font-bold text-ink truncate" style="margin: 0 !important; font-size: 1rem !important; font-weight: 700 !important; color: #2B2725 !important;">${nomeFormatado}</p>
+                            ${isSuporte ? '<span class="text-[10px] uppercase font-bold text-terra">Administração</span>' : (dadosUsuario?.tipo === 'restaurante' ? '<span class="text-[10px] uppercase font-bold text-terra">Conta Parceiro</span>' : '')}
+                        </div>
+                        <div style="margin-top: 12px !important; margin-bottom: 16px !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important; width: 100% !important;"></div>
+                        <div style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important;">${botoesDropdownHTML}</div>
+                    </div>
+                </div>
+            `;
+
+                const btnDropdown = document.getElementById('btn-user-dropdown');
+                const dropdownMenu = document.getElementById('dropdown-menu');
+                const arrowIcon = document.getElementById('arrow-icon');
+
+                if (btnDropdown && dropdownMenu) {
+                    btnDropdown.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdownMenu.classList.toggle('hidden');
+                        if (arrowIcon) arrowIcon.classList.toggle('rotate-180');
+                    });
+
+                    document.addEventListener('click', (e) => {
+                        if (dropdownMenu && !dropdownMenu.contains(e.target) && !btnDropdown.contains(e.target)) {
+                            dropdownMenu.classList.add('hidden');
+                            if (arrowIcon) arrowIcon.classList.remove('rotate-180');
+                        }
+                    });
+                }
+
+                const btnSair = document.getElementById('btn-sair');
+                if (btnSair) btnSair.addEventListener('click', fazerLogout);
+            } else {
+                navAuthContainer.innerHTML = `
+    <a href="login.html"
+       class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+        Entrar
+    </a>
+
+    <a href="cadastro.html"
+       class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+        Fazer Cadastro
+    </a>
+`;
+            }
+        }
+
+        observarEstadoAutenticacao(({ logado, user, dadosUsuario }) => {
+            aplicarEstadoAutenticacao(logado, user, dadosUsuario);
+        });
+    </script>
+
+    <!-- Script Super Evento -->
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        async function carregarSuperEventoIndex() {
+            try {
+                const ref = doc(db, "configuracoes", "super_evento");
+                const snap = await getDoc(ref);
+
+                const secaoContagem = document.getElementById('secao-contagem-regressiva');
+                const badgeContainer = document.getElementById('super-evento-badge');
+                const badgeText = document.getElementById('super-evento-badge-text');
+                const subEl = document.getElementById('super-evento-subtitulo');
+                const labelTempo = document.getElementById('label-tempo-fest');
+
+                if (!snap.exists()) {
+                    if (secaoContagem) secaoContagem.classList.add('hidden');
+                    if (badgeContainer) badgeContainer.classList.add('hidden');
+                    return;
+                }
+
+                const dados = snap.data();
+                const agora = new Date();
+                const dataInicio = new Date(dados.inicio + 'T00:00:00');
+                const dataFim = new Date(dados.fim + 'T23:59:59');
+
+                let alvo;
+
+                if (agora < dataInicio) {
+                    alvo = dataInicio;
+                    if (badgeText) badgeText.textContent = dados.titulo || 'Próximo Evento';
+
+                    if (labelTempo) {
+                        labelTempo.textContent = dados.subtitulo || (dados.mostrarAviso ? "Um novo evento está chegando" : "Contagem para o início do evento");
+                    }
+                } else if (agora >= dataInicio && agora <= dataFim) {
+                    alvo = dataFim;
+                    if (badgeText) badgeText.textContent = dados.titulo || 'Edição Especial · 2026';
+
+                    if (labelTempo) {
+                        labelTempo.textContent = dados.subtitulo || "Tempo restante para o fim do evento";
+                    }
+                } else {
+                    if (secaoContagem) secaoContagem.classList.add('hidden');
+                    if (badgeContainer) badgeContainer.classList.add('hidden');
+                    return;
+                }
+
+                if (subEl) subEl.textContent = "";
+
+                if (secaoContagem) secaoContagem.classList.remove('hidden');
+                if (badgeContainer) badgeContainer.classList.remove('hidden');
+
+                function atualizarContador() {
+                    const diff = alvo - new Date();
+                    if (diff <= 0) {
+                        location.reload();
+                        return;
+                    }
+
+                    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                    const minutos = Math.floor((diff / 1000 / 60) % 60);
+
+                    const dEl = document.getElementById('sc-dias');
+                    const hEl = document.getElementById('sc-horas');
+                    const mEl = document.getElementById('sc-minutos');
+
+                    if (dEl) dEl.textContent = String(dias).padStart(2, '0');
+                    if (hEl) hEl.textContent = String(horas).padStart(2, '0');
+                    if (mEl) mEl.textContent = String(minutos).padStart(2, '0');
+                }
+
+                atualizarContador();
+                setInterval(atualizarContador, 1000);
+
+            } catch (e) {
+                console.error("Erro ao carregar Super Evento:", e);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", carregarSuperEventoIndex);
+    </script>
+</body>
+
+</html>

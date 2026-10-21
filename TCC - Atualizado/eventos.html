@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Eventos — GastroMatch</title>
+
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <!-- CSS local -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Fontes do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased">
+
+    <!-- Header Padronizado Exato ao Index -->
+    <header class="mx-auto max-w-6xl px-5 sm:px-8">
+        <nav class="flex items-center justify-between py-5">
+            <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+                    <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                    <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                    <li><a href="eventos.html" class="text-terra font-semibold">Eventos</a></li>
+                </ul>
+            </div>
+
+            <div id="nav-auth-container" class="flex items-center gap-3">
+                <a href="login.html" class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+                    Entrar
+                </a>
+                <a href="cadastro.html" class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+                    Fazer Cadastro
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="mx-auto max-w-6xl px-5 sm:px-8 pt-6 pb-24">
+
+        <!-- Título da Página -->
+        <div class="mb-10">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-terra/10 text-terra text-xs font-semibold px-3 py-1">
+                Agenda Oficial
+            </span>
+            <h1 class="mt-2 font-display font-semibold text-4xl sm:text-5xl text-ink">
+                Noites, jantares e degustações
+            </h1>
+            <p class="mt-2 text-base text-inksoft max-w-2xl">
+                Explore todos os eventos gastronómicos programados na cidade. Utilize os filtros ou selecione uma data no calendário para encontrar o que procura.
+            </p>
+        </div>
+
+        <!-- Grid de Conteúdo e Filtros -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <!-- Barra Lateral (Filtros e Calendário) -->
+            <aside class="lg:col-span-4 space-y-6">
+
+                <!-- Calendário Interativo -->
+                <div class="rounded-[28px] bg-paper p-6 ring-1 ring-ink/5 shadow-clay space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-display font-semibold text-lg text-ink">Outubro de 2026</h3>
+                        <button type="button" id="btn-reset-cal" class="text-xs font-semibold text-terra hover:underline cursor-pointer">Limpar data</button>
+                    </div>
+
+                    <!-- Dias da Semana -->
+                    <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-inksoft">
+                        <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+                    </div>
+
+                    <!-- Dias do Mês (Renderizados via JS) -->
+                    <div id="calendar-days" class="grid grid-cols-7 gap-1 text-sm">
+                        <!-- Injetado dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Filtro: Tipo de Evento -->
+                <div class="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay">
+                    <h3 class="font-display font-semibold text-base text-ink mb-3">Tipo de Evento</h3>
+                    <div id="filtro-tipos-container" class="space-y-2 text-sm text-inksoft">
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="evento gastromatch" class="filtro-tipo-evento rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Evento GastroMatch</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="evento de restaurante" class="filtro-tipo-evento rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Evento de Restaurante</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Filtro: Tipo de Cozinha -->
+                <div class="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay">
+                    <h3 class="font-display font-semibold text-base text-ink mb-3">Tipo de Cozinha</h3>
+                    <div id="filtro-cozinhas-container" class="space-y-2 text-sm text-inksoft">
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="geral" class="filtro-tipo-cozinha rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Geral</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="italiana" class="filtro-tipo-cozinha rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Italiana</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="contemporânea" class="filtro-tipo-cozinha rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Contemporânea</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="japonesa" class="filtro-tipo-cozinha rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Japonesa</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Filtro: Tipo de Vibe -->
+                <div class="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay">
+                    <h3 class="font-display font-semibold text-base text-ink mb-3">Tipo de Vibe</h3>
+                    <div id="filtro-vibes-container" class="space-y-2 text-sm text-inksoft">
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="geral" class="filtro-tipo-vibe rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Geral / Todas</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="romântica" class="filtro-tipo-vibe rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Romântica</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="sofisticada" class="filtro-tipo-vibe rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Sofisticada</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer hover:text-ink">
+                            <input type="checkbox" value="cafeteria" class="filtro-tipo-vibe rounded border-ink/20 text-terra focus:ring-terra">
+                            <span>Cafeteria</span>
+                        </label>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- Lista de Eventos (Cards) -->
+            <section class="lg:col-span-8">
+
+                <!-- Grid Dinâmico de Eventos -->
+                <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <p class="text-sm text-inksoft text-center col-span-full py-10">A carregar eventos do servidor...</p>
+                </div>
+
+                <!-- Estado Vazio (Nenhum evento encontrado) -->
+                <div id="no-events-results" class="hidden rounded-[28px] bg-paper p-10 text-center ring-1 ring-ink/5 shadow-clay mt-4">
+                    <p class="font-display font-semibold text-xl text-ink">Nenhum evento encontrado</p>
+                    <p class="mt-1 text-sm text-inksoft">Tente alterar os filtros selecionados ou limpar a data no calendário.</p>
+                    <button type="button" id="btn-limpar-eventos" class="mt-4 inline-flex items-center justify-center rounded-full bg-terra text-cream text-xs font-semibold py-2.5 px-5 hover:bg-terradeep transition-colors cursor-pointer">
+                        Restaurar todos os eventos
+                    </button>
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="mx-auto max-w-6xl px-5 sm:px-8 pb-10">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-ink/10 pt-6 text-sm text-inksoft">
+            <p class="font-display font-semibold text-lg text-ink">GastroMatch<span class="text-terra">.</span></p>
+            <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- SCRIPT ÚNICO E OTIMIZADO DA PÁGINA DE EVENTOS -->
+    <script type="module">
+        import { db, observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+        import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Gerenciamento dinâmico do Header (Padronizado)
+        function aplicarEstadoAutenticacao(logado, user, dadosUsuario) {
+            const navAuthContainer = document.getElementById('nav-auth-container') || document.querySelector('header nav .flex.items-center.gap-3');
+            const navLinksList = document.getElementById('nav-links');
+
+            if (!navAuthContainer) return;
+
+            navAuthContainer.style.setProperty('position', 'relative', 'important');
+            navAuthContainer.style.setProperty('overflow', 'visible', 'important');
+            navAuthContainer.style.setProperty('min-width', 'max-content', 'important');
+
+            const isSuporte = user && user.email && user.email.endsWith("@sugama.com");
+
+            if (navLinksList) {
+                if (logado) {
+                    if (isSuporte) {
+                        // Reescreve a lista completa sem o "Como Funciona"
+                        navLinksList.innerHTML = `
+                        <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                        <li><a href="eventos.html" class="text-terra font-semibold">Eventos</a></li>
+                        <li><a href="suporte.html" class="hover:text-terra transition-colors">Painel Suporte</a></li>
+                    `;
+                    } else if (dadosUsuario?.tipo === 'restaurante') {
+                        navLinksList.innerHTML = `
+                        <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                        <li><a href="eventos.html" class="text-terra font-semibold">Eventos</a></li>
+                        <li><a href="painel-restaurante.html" class="hover:text-terra transition-colors">Painel Restaurante</a></li>
+                    `;
+                    } else {
+                        navLinksList.innerHTML = `
+                        <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                        <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                        <li><a href="eventos.html" class="text-terra font-semibold">Eventos</a></li>
+                        <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                        <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+                    `;
+                    }
+                } else {
+                    navLinksList.innerHTML = `
+                    <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                    <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                    <li><a href="eventos.html" class="text-terra font-semibold">Eventos</a></li>
+                    <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                `;
+                }
+            }
+
+            if (logado && user) {
+                const nomeBruto = isSuporte
+                    ? 'Suporte'
+                    : (dadosUsuario?.tipo === 'restaurante'
+                        ? (dadosUsuario?.nomeRestaurante || dadosUsuario?.nomeResponsavel || user?.email?.split('@')[0])
+                        : (dadosUsuario?.nome || user?.email?.split('@')[0] || 'Utilizador'));
+
+                const primeiroNome = nomeBruto.trim().split(' ')[0];
+                const nomeFormatado = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
+
+                let botoesDropdownHTML = '';
+                if (isSuporte) {
+                    botoesDropdownHTML = `
+                    <a href="suporte.html" class="flex items-center justify-center rounded-full bg-terra text-xs font-bold text-cream hover:bg-terradeep transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Painel Suporte</a>
+                    <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">Sair da conta</button>
+                `;
+                } else if (dadosUsuario?.tipo === 'restaurante') {
+                    botoesDropdownHTML = `
+                    <a href="painel-restaurante.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Painel</a>
+                    <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">Sair da conta</button>
+                `;
+                } else {
+                    botoesDropdownHTML = `
+                    <a href="perfil-usuario.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Ver perfil</a>
+                    <a href="salvos.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">Salvos</a>
+                    <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">Sair da conta</button>
+                `;
+                }
+
+                navAuthContainer.innerHTML = `
+                <div style="position: relative !important; display: inline-block !important; width: auto !important; overflow: visible !important;">
+                    <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all duration-200 cursor-pointer shadow-sm focus:outline-none">
+                        <span class="text-sm font-semibold text-ink group-hover:text-cream transition-colors whitespace-nowrap">${nomeFormatado}</span>
+                        <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50 transition-all duration-200" style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; min-width: 240px !important; width: 240px !important; padding: 20px !important; box-sizing: border-box !important; position: absolute !important; right: 0 !important; top: 100% !important;">
+                        <div style="padding-left: 4px; padding-right: 4px;">
+                            <p class="text-base font-bold text-ink truncate" style="margin: 0 !important; font-size: 1rem !important; font-weight: 700 !important; color: #2B2725 !important;">${nomeFormatado}</p>
+                            ${isSuporte ? '<span class="text-[10px] uppercase font-bold text-terra">Administração</span>' : (dadosUsuario?.tipo === 'restaurante' ? '<span class="text-[10px] uppercase font-bold text-terra">Conta Parceiro</span>' : '')}
+                        </div>
+                        <div style="margin-top: 12px !important; margin-bottom: 16px !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important; width: 100% !important;"></div>
+                        <div style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important;">${botoesDropdownHTML}</div>
+                    </div>
+                </div>
+            `;
+
+                const btnDropdown = document.getElementById('btn-user-dropdown');
+                const dropdownMenu = document.getElementById('dropdown-menu');
+                const arrowIcon = document.getElementById('arrow-icon');
+
+                if (btnDropdown && dropdownMenu) {
+                    btnDropdown.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdownMenu.classList.toggle('hidden');
+                        if (arrowIcon) arrowIcon.classList.toggle('rotate-180');
+                    });
+
+                    document.addEventListener('click', (e) => {
+                        if (dropdownMenu && !dropdownMenu.contains(e.target) && !btnDropdown.contains(e.target)) {
+                            dropdownMenu.classList.add('hidden');
+                            if (arrowIcon) arrowIcon.classList.remove('rotate-180');
+                        }
+                    });
+                }
+
+                const btnSair = document.getElementById('btn-sair');
+                if (btnSair) btnSair.addEventListener('click', fazerLogout);
+            } else {
+                navAuthContainer.innerHTML = `
+                <a href="login.html" class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+                    Entrar
+                </a>
+                <a href="cadastro.html" class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+                    Fazer Cadastro
+                </a>
+            `;
+            }
+        }
+
+        observarEstadoAutenticacao(({ logado, user, dadosUsuario }) => {
+            aplicarEstadoAutenticacao(logado, user, dadosUsuario);
+        });
+
+        document.addEventListener("DOMContentLoaded", async function () {
+
+            const containerEventos = document.getElementById("events-container");
+            const calendarDaysContainer = document.getElementById("calendar-days");
+            const btnReset = document.getElementById("btn-reset-cal");
+            const btnLimparEventos = document.getElementById("btn-limpar-eventos");
+            const noEventsCard = document.getElementById("no-events-results");
+
+            let selectedDay = null;
+            let paginaAtual = 1;
+            const itensPorPagina = 9;
+            let listaEventosGlobal = [];
+
+            function formatarDataBR(dataStr) {
+                if (!dataStr || !dataStr.includes("-")) return dataStr;
+                const partes = dataStr.split("-");
+                if (partes.length === 3) {
+                    return `${partes[2]}/${partes[1]}`;
+                }
+                return dataStr;
+            }
+
+            if (containerEventos) {
+                try {
+                    containerEventos.innerHTML = `<p class="text-sm text-inksoft text-center col-span-full py-10">A carregar eventos do servidor...</p>`;
+
+                    const querySnapshot = await getDocs(collection(db, "eventos"));
+                    listaEventosGlobal = [];
+
+                    querySnapshot.forEach((docSnap) => {
+                        listaEventosGlobal.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+
+                    try {
+                        const superRef = doc(db, "configuracoes", "super_evento");
+                        const superSnap = await getDoc(superRef);
+                        if (superSnap.exists()) {
+                            const superDados = superSnap.data();
+                            const hojeStr = new Date().toISOString().split('T')[0];
+
+                            if (superDados.inicio && superDados.fim && hojeStr >= superDados.inicio && hojeStr <= superDados.fim) {
+                                listaEventosGlobal.unshift({
+                                    id: 'super_evento_ativo',
+                                    titulo: superDados.titulo || 'Super Evento em Destaque',
+                                    descricao: superDados.subtitulo || 'Aproveite o evento principal do mês!',
+                                    inicio: superDados.inicio,
+                                    fim: superDados.fim,
+                                    cozinha: superDados.cozinha || 'Geral',
+                                    vibes: superDados.vibes || ['Sofisticada', 'Noturna'],
+                                    tipo: 'Super Evento',
+                                    origem: 'Plataforma GastroMatch',
+                                    imagem: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800',
+                                    isSuperEvento: true
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Erro ao carregar super evento:", err);
+                    }
+
+                    listaEventosGlobal.sort((a, b) => {
+                        const isSupA = (a.isSuperEvento || a.tipoEvento === 'geral_plataforma' || (a.origem || "").includes("GastroMatch")) ? 0 : 1;
+                        const isSupB = (b.isSuperEvento || b.tipoEvento === 'geral_plataforma' || (b.origem || "").includes("GastroMatch")) ? 0 : 1;
+                        return isSupA - isSupB;
+                    });
+
+                } catch (error) {
+                    console.error("Erro ao carregar eventos:", error);
+                    containerEventos.innerHTML = `<p class="text-sm text-red-500 text-center col-span-full py-10">Erro ao carregar eventos do servidor.</p>`;
+                }
+            }
+
+            // Ativar escuta nos checkboxes de filtros para reagirem instantaneamente
+            document.querySelectorAll('.filtro-tipo-evento, .filtro-tipo-cozinha, .filtro-tipo-vibe').forEach(cb => {
+                cb.addEventListener("change", () => {
+                    paginaAtual = 1;
+                    aplicarFiltros();
+                });
+            });
+
+            function renderizarCalendarioDinamico() {
+                if (!calendarDaysContainer) return;
+                calendarDaysContainer.innerHTML = "";
+
+                const daysMeta = {};
+                listaEventosGlobal.forEach(ev => {
+                    const inicioOriginal = ev.inicio || ev.dataInicio || "2026-10-22";
+                    const fimOriginal = ev.fim || ev.dataFim || inicioOriginal;
+                    const partesInicio = inicioOriginal.split("-");
+                    const start = partesInicio.length === 3 ? parseInt(partesInicio[2], 10) : 22;
+                    const partesFim = fimOriginal.split("-");
+                    const end = partesFim.length === 3 ? parseInt(partesFim[2], 10) : start;
+
+                    for (let d = start; d <= end; d++) {
+                        if (!daysMeta[d]) daysMeta[d] = {};
+                        if (start === end) {
+                            daysMeta[d].type = 'single';
+                        } else if (d === start) {
+                            daysMeta[d].type = 'start';
+                        } else if (d === end) {
+                            daysMeta[d].type = 'end';
+                        } else {
+                            daysMeta[d].type = 'middle';
+                        }
+                    }
+                });
+
+                const totalDays = 31;
+                const startOffset = 4;
+
+                for (let i = 0; i < startOffset; i++) {
+                    const emptySpan = document.createElement("span");
+                    emptySpan.className = "h-9 w-full";
+                    calendarDaysContainer.appendChild(emptySpan);
+                }
+
+                for (let day = 1; day <= totalDays; day++) {
+                    const meta = daysMeta[day];
+                    const cellWrapper = document.createElement("div");
+                    cellWrapper.className = "h-9 w-full flex items-center justify-center my-0.5";
+
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.textContent = day;
+
+                    if (meta) {
+                        if (meta.type === 'single') {
+                            btn.className = "size-8 rounded-full bg-terra text-cream font-semibold flex items-center justify-center shadow-sm cursor-pointer";
+                        } else if (meta.type === 'start') {
+                            cellWrapper.style.backgroundColor = "rgba(202, 93, 59, 0.18)";
+                            cellWrapper.style.borderTopLeftRadius = "9999px";
+                            cellWrapper.style.borderBottomLeftRadius = "9999px";
+                            btn.className = "size-8 rounded-full bg-terra text-cream font-semibold flex items-center justify-center shadow-sm cursor-pointer";
+                        } else if (meta.type === 'end') {
+                            cellWrapper.style.backgroundColor = "rgba(202, 93, 59, 0.18)";
+                            cellWrapper.style.borderTopRightRadius = "9999px";
+                            cellWrapper.style.borderBottomRightRadius = "9999px";
+                            btn.className = "size-8 rounded-full bg-terra text-cream font-semibold flex items-center justify-center shadow-sm cursor-pointer";
+                        } else if (meta.type === 'middle') {
+                            cellWrapper.style.backgroundColor = "rgba(202, 93, 59, 0.18)";
+                            btn.className = "size-8 text-ink font-bold flex items-center justify-center cursor-pointer";
+                        }
+                    } else {
+                        btn.className = "size-8 text-inksoft/60 hover:text-ink hover:bg-paper rounded-full transition-colors flex items-center justify-center cursor-pointer";
+                    }
+
+                    if (selectedDay === day) {
+                        btn.style.outline = "2px solid #2B2725";
+                    }
+
+                    btn.addEventListener("click", function () {
+                        if (selectedDay === day) {
+                            selectedDay = null;
+                        } else {
+                            selectedDay = day;
+                        }
+                        paginaAtual = 1;
+                        renderizarCalendarioDinamico();
+                        aplicarFiltros();
+                    });
+
+                    cellWrapper.appendChild(btn);
+                    calendarDaysContainer.appendChild(cellWrapper);
+                }
+            }
+
+            function aplicarFiltros() {
+                const tiposSelecionados = Array.from(document.querySelectorAll(".filtro-tipo-evento:checked")).map(cb => cb.value.trim().toLowerCase());
+                const cozinhasSelecionadas = Array.from(document.querySelectorAll(".filtro-tipo-cozinha:checked")).map(cb => cb.value.trim().toLowerCase());
+                const vibesSelecionadas = Array.from(document.querySelectorAll(".filtro-tipo-vibe:checked")).map(cb => cb.value.trim().toLowerCase());
+
+                let eventosFiltrados = listaEventosGlobal.filter(ev => {
+                    let tipoEvento = (ev.tipo || "").trim();
+                    if (!tipoEvento) tipoEvento = ev.restauranteId ? "Evento de Restaurante" : "Evento GastroMatch";
+                    const cardTipo = tipoEvento.toLowerCase();
+
+                    const cardCozinha = (ev.cozinha || "Geral").trim().toLowerCase();
+
+                    let cardVibes = [];
+                    if (ev.vibes) {
+                        if (Array.isArray(ev.vibes)) {
+                            cardVibes = ev.vibes.map(v => String(v).trim().toLowerCase());
+                        } else if (typeof ev.vibes === 'string') {
+                            cardVibes = [ev.vibes.trim().toLowerCase()];
+                        }
+                    }
+
+                    const inicioOriginal = ev.inicio || ev.dataInicio || "2026-10-22";
+                    const fimOriginal = ev.fim || ev.dataFim || inicioOriginal;
+                    const partesInicio = inicioOriginal.split("-");
+                    const start = partesInicio.length === 3 ? parseInt(partesInicio[2], 10) : 22;
+                    const partesFim = fimOriginal.split("-");
+                    const end = partesFim.length === 3 ? parseInt(partesFim[2], 10) : start;
+
+                    const atendeTipo = tiposSelecionados.length === 0 || tiposSelecionados.includes(cardTipo);
+                    const atendeCozinha = cozinhasSelecionadas.length === 0 || cozinhasSelecionadas.includes("geral") || cozinhasSelecionadas.includes(cardCozinha);
+                    const atendeVibe = vibesSelecionadas.length === 0 || vibesSelecionadas.includes("geral") || vibesSelecionadas.some(v => cardVibes.includes(v));
+                    const atendeData = !selectedDay || (selectedDay >= start && selectedDay <= end);
+
+                    return atendeTipo && atendeCozinha && atendeVibe && atendeData;
+                });
+
+                renderizarPagina(eventosFiltrados);
+            }
+
+            function renderizarPagina(eventos) {
+                containerEventos.innerHTML = '';
+
+                const paginacaoAntiga = document.getElementById('paginacao-container');
+                if (paginacaoAntiga) paginacaoAntiga.remove();
+
+                if (eventos.length === 0) {
+                    noEventsCard.classList.remove("hidden");
+                    noEventsCard.style.setProperty("display", "block", "important");
+                    return;
+                } else {
+                    noEventsCard.classList.add("hidden");
+                    noEventsCard.style.setProperty("display", "none", "important");
+                }
+
+                const totalPaginas = Math.ceil(eventos.length / itensPorPagina);
+                const inicio = (paginaAtual - 1) * itensPorPagina;
+                const fim = inicio + itensPorPagina;
+                const eventosPagina = eventos.slice(inicio, fim);
+
+                eventosPagina.forEach((ev) => {
+                    const eventoId = ev.id;
+                    const inicioOriginal = ev.inicio || ev.dataInicio || "2026-10-22";
+                    const fimOriginal = ev.fim || ev.dataFim || inicioOriginal;
+                    const dataInicioBR = formatarDataBR(inicioOriginal);
+                    const dataFimBR = formatarDataBR(fimOriginal);
+                    const periodoExibicao = inicioOriginal === fimOriginal ? dataInicioBR : `${dataInicioBR} a ${dataFimBR}`;
+
+                    let tipoEvento = (ev.tipo || "").trim();
+                    if (!tipoEvento) tipoEvento = ev.restauranteId ? "Evento de Restaurante" : "Evento GastroMatch";
+
+                    const origemExibicao = ev.restauranteNome || ev.origem || "Plataforma GastroMatch";
+                    const imagemEvento = ev.imagem || ev.foto || "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800";
+
+                    const isSup = (ev.isSuperEvento || ev.tipoEvento === 'geral_plataforma' || origemExibicao.includes("GastroMatch"));
+                    const estiloCard = isSup ? "ring-2 ring-terra shadow-lg bg-terra/5" : "ring-1 ring-ink/5 shadow-clay";
+
+                    const cardHtml = `
+                    <article onclick="${ev.isSuperEvento ? '' : `window.location.href='evento-detalhes.html?id=${eventoId}'`}" class="event-card group rounded-[28px] bg-paper p-4 ${estiloCard} hover:-translate-y-1 transition-all cursor-pointer relative">
+                        ${isSup ? `<span class="absolute top-5 right-5 z-10 inline-flex items-center gap-1 rounded-full bg-terra text-cream text-[10px] font-bold px-2.5 py-1 shadow-sm">${ev.isSuperEvento ? 'Super Evento' : 'Oficial GastroMatch'}</span>` : ''}
+                        <div class="relative">
+                            <img src="${imagemEvento}" alt="${ev.titulo || 'Evento'}" class="w-full aspect-[16/9] rounded-[20px] object-cover">
+                            <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-terra text-cream text-[11px] font-semibold px-3 py-1.5 shadow-sm">
+                                ${periodoExibicao}
+                            </span>
+                        </div>
+                        <div class="mt-4 px-1">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-terra">${tipoEvento}</span>
+                                <span class="text-xs font-medium text-inksoft">${origemExibicao}</span>
+                            </div>
+                            <h3 class="mt-2 font-display font-semibold text-2xl leading-tight text-ink">${ev.titulo || 'Evento Especial'}</h3>
+                            <p class="mt-1 text-sm text-inksoft">${ev.descricao || ''}</p>
+                            <div class="mt-4 flex items-center justify-between border-t border-dashed border-ink/15 pt-4">
+                                <div>
+                                    <p class="text-[10px] font-semibold uppercase text-inksoft">Período Ativo</p>
+                                    <p class="font-display font-semibold text-lg leading-none text-terra">${periodoExibicao}</p>
+                                </div>
+                                <span class="text-sm font-medium text-inksoft group-hover:text-terra transition-colors">Ver detalhes</span>
+                            </div>
+                        </div>
+                    </article>
+                `;
+                    containerEventos.innerHTML += cardHtml;
+                });
+
+                if (totalPaginas > 1) {
+                    const paginacaoDiv = document.createElement('div');
+                    paginacaoDiv.id = 'paginacao-container';
+                    paginacaoDiv.className = 'col-span-full flex items-center justify-center gap-3 mt-8 pt-4 border-t border-ink/10';
+
+                    paginacaoDiv.innerHTML = `
+                    <button type="button" id="btn-pagina-anterior" ${paginaAtual === 1 ? 'disabled' : ''} class="rounded-full bg-paper px-4 py-2 text-xs font-semibold text-ink ring-1 ring-ink/10 hover:bg-cream disabled:opacity-40 cursor-pointer">Anterior</button>
+                    <span class="text-xs font-semibold text-inksoft">Página ${paginaAtual} de ${totalPaginas}</span>
+                    <button type="button" id="btn-pagina-proxima" ${paginaAtual === totalPaginas ? 'disabled' : ''} class="rounded-full bg-paper px-4 py-2 text-xs font-semibold text-ink ring-1 ring-ink/10 hover:bg-cream disabled:opacity-40 cursor-pointer">Próxima</button>
+                `;
+
+                    containerEventos.after(paginacaoDiv);
+
+                    document.getElementById('btn-pagina-anterior').addEventListener('click', () => {
+                        if (paginaAtual > 1) {
+                            paginaAtual--;
+                            aplicarFiltros();
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    });
+
+                    document.getElementById('btn-pagina-proxima').addEventListener('click', () => {
+                        if (paginaAtual < totalPaginas) {
+                            paginaAtual++;
+                            aplicarFiltros();
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    });
+                }
+            }
+
+            function resetarFiltros() {
+                selectedDay = null;
+                document.querySelectorAll(".filtro-tipo-evento, .filtro-tipo-cozinha, .filtro-tipo-vibe").forEach(cb => cb.checked = false);
+                paginaAtual = 1;
+                renderizarCalendarioDinamico();
+                aplicarFiltros();
+            }
+
+            if (btnReset) btnReset.addEventListener("click", resetarFiltros);
+            if (btnLimparEventos) btnLimparEventos.addEventListener("click", resetarFiltros);
+
+            renderizarCalendarioDinamico();
+            aplicarFiltros();
+        });
+    </script>
+</body>
+
+</html>

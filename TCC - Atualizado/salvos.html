@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Salvos — GastroMatch</title>
+
+  <!-- CSS local compilado com Tailwind -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased">
+  <div class="min-h-screen bg-cream text-ink font-body antialiased">
+
+    <!-- Cabeçalho / Navbar -->
+    <header class="mx-auto max-w-6xl px-5 sm:px-8">
+      <nav class="flex items-center justify-between py-5">
+        <!-- Logo -->
+        <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">
+          GastroMatch<span class="text-terra">.</span>
+        </a>
+
+        <!-- Menu Principal (Desktop) -->
+        <div class="hidden md:flex items-center gap-8">
+          <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+            <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+            <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+            <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+            <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+            <li><a href="salvos.html" class="text-terra font-semibold">Salvos</a></li>
+          </ul>
+        </div>
+
+        <!-- Botões de Autenticação / Menu do Usuário -->
+        <div id="nav-auth-container" class="flex items-center gap-3">
+          <a href="login.html" class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+            Entrar
+          </a>
+          <a href="cadastro.html" class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+            Fazer Cadastro
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Seção Principal de Salvos -->
+    <main class="mx-auto max-w-6xl px-5 sm:px-8 pt-6 pb-24">
+
+      <!-- Título e Subtítulo -->
+      <div class="flex flex-col gap-2">
+        <span class="inline-flex items-center gap-2 rounded-full bg-sage/20 text-sage px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] w-fit">
+          <span class="size-1.5 rounded-full bg-sage"></span> Sua Coleção
+        </span>
+        <h1 class="font-display font-semibold text-4xl sm:text-5xl leading-tight text-ink">
+          Itens Salvos
+        </h1>
+        <p class="text-base text-inksoft max-w-[50ch]">
+          Acompanhe os menus e restaurantes que você guardou para experimentar mais tarde.
+        </p>
+      </div>
+
+      <!-- Tabs de Navegação entre Categorias -->
+      <!-- Tabs de Navegação entre Categorias -->
+      <div class="mt-8 flex items-center gap-3 border-b border-ink/10 pb-4">
+        <button type="button" id="tab-menus" class="inline-flex items-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-2 px-5 ring-1 ring-terradeep/30 transition-colors cursor-pointer">
+          Menus Salvos <span id="count-menus" class="rounded-full bg-cream/20 text-cream px-2 py-0.5 text-xs font-semibold">0</span>
+        </button>
+        <button type="button" id="tab-restaurantes" class="inline-flex items-center gap-2 rounded-full bg-paper text-inksoft text-sm font-medium py-2 px-5 ring-1 ring-ink/5 hover:text-ink transition-colors cursor-pointer">
+          Restaurantes <span id="count-restaurantes" class="rounded-full bg-cream text-ink px-2 py-0.5 text-xs font-semibold">0</span>
+        </button>
+      </div>
+
+      <!-- Estado Vazio (Solução Definitiva com Espaçamento Direto) -->
+      <div id="estado-vazio" class="hidden" style="margin-top: 48px !important; margin-bottom: 48px !important;">
+        <div class="flex flex-col items-center justify-center text-center rounded-[32px] bg-paper ring-1 ring-ink/5 shadow-clay max-w-lg mx-auto" style="padding: 40px 24px !important;">
+          <span class="material-symbols-outlined text-5xl text-terra/60" style="margin-bottom: 12px;">bookmark_border</span>
+          <h2 class="font-display font-semibold text-2xl text-ink">Nenhum item salvo ainda</h2>
+          <p class="text-sm text-inksoft max-w-sm leading-relaxed" style="margin-top: 8px; margin-bottom: 24px;">
+            Explore os menus e restaurantes disponíveis e guarde as suas opções favoritas aqui.
+          </p>
+          <a href="index.html" class="inline-flex items-center justify-center rounded-full bg-terra text-cream text-sm font-semibold py-3 px-8 ring-1 ring-terradeep/30 hover:bg-terradeep transition-all shadow-sm">
+            Explorar
+          </a>
+        </div>
+      </div>
+
+      <!-- Grid de Cards Salvos -->
+      <div id="grid-salvos" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Conteúdo renderizado via JavaScript -->
+      </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="mx-auto max-w-6xl px-5 sm:px-8 pb-10">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-ink/10 pt-6 text-sm text-inksoft">
+        <p class="font-display font-semibold text-lg text-ink">GastroMatch<span class="text-terra">.</span></p>
+        <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Script de Autenticação e Gestão de Salvos via Firebase -->
+  <script type="module">
+    import { db, observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+    import { collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Arrays de itens salvos
+    let menusSalvos = [];
+    let restaurantesSalvos = [];
+    let abaAtiva = 'menus'; // 'menus' ou 'restaurantes'
+    let usuarioLogadoId = null;
+
+    // Elementos do DOM
+    const tabMenus = document.getElementById('tab-menus');
+    const tabRestaurantes = document.getElementById('tab-restaurantes');
+    const countMenus = document.getElementById('count-menus');
+    const countRestaurantes = document.getElementById('count-restaurantes');
+    const gridSalvos = document.getElementById('grid-salvos');
+    const estadoVazio = document.getElementById('estado-vazio');
+
+    // Estilos reutilizáveis para as Abas e Contadores
+    const ESTILOS = {
+      tabAtiva: 'inline-flex items-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-2 px-5 ring-1 ring-terradeep/30 transition-colors cursor-pointer',
+      tabInativa: 'inline-flex items-center gap-2 rounded-full bg-paper text-inksoft text-sm font-medium py-2 px-5 ring-1 ring-ink/5 hover:text-ink transition-colors cursor-pointer',
+      badgeAtivo: 'rounded-full bg-cream/20 text-cream px-2 py-0.5 text-xs font-semibold',
+      badgeInativo: 'rounded-full bg-cream text-ink px-2 py-0.5 text-xs font-semibold'
+    };
+
+    // Atualiza o valor numérico dos contadores
+    function atualizarContadores() {
+      if (countMenus) countMenus.textContent = menusSalvos.length;
+      if (countRestaurantes) countRestaurantes.textContent = restaurantesSalvos.length;
+    }
+
+    // Atualiza os estilos das abas e badges dependendo da aba ativa
+    function atualizarEstiloAbas() {
+      if (!tabMenus || !tabRestaurantes) return;
+
+      if (abaAtiva === 'menus') {
+        tabMenus.className = ESTILOS.tabAtiva;
+        if (countMenus) countMenus.className = ESTILOS.badgeAtivo;
+
+        tabRestaurantes.className = ESTILOS.tabInativa;
+        if (countRestaurantes) countRestaurantes.className = ESTILOS.badgeInativo;
+      } else {
+        tabRestaurantes.className = ESTILOS.tabAtiva;
+        if (countRestaurantes) countRestaurantes.className = ESTILOS.badgeAtivo;
+
+        tabMenus.className = ESTILOS.tabInativa;
+        if (countMenus) countMenus.className = ESTILOS.badgeInativo;
+      }
+    }
+
+    // Função global para remover um item salvo do Firestore
+    window.removerItem = async function (idDoc, tipo, event) {
+      if (event) event.stopPropagation();
+
+      try {
+        await deleteDoc(doc(db, "salvos", idDoc));
+
+        if (tipo === 'menu') {
+          menusSalvos = menusSalvos.filter(item => item.idDoc !== idDoc);
+        } else {
+          restaurantesSalvos = restaurantesSalvos.filter(item => item.idDoc !== idDoc);
+        }
+
+        atualizarContadores();
+        renderizarItens();
+      } catch (error) {
+        console.error("Erro ao remover item salvo:", error);
+      }
+    };
+
+    // Renderiza os cards conforme a aba ativa
+    function renderizarItens() {
+      if (!gridSalvos || !estadoVazio) return;
+
+      gridSalvos.innerHTML = '';
+      const lista = abaAtiva === 'menus' ? menusSalvos : restaurantesSalvos;
+
+      if (lista.length === 0) {
+        gridSalvos.classList.add('hidden');
+        estadoVazio.classList.remove('hidden');
+        return;
+      }
+
+      gridSalvos.classList.remove('hidden');
+      estadoVazio.classList.add('hidden');
+
+      if (abaAtiva === 'menus') {
+        lista.forEach(item => {
+          const card = document.createElement('article');
+          card.className = 'card-menu group rounded-[28px] bg-paper p-4 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-all cursor-pointer relative';
+          card.onclick = () => window.location.href = `promocoes-detalhes.html?id=${item.promocaoId}`;
+          card.innerHTML = `
+            <div class="relative">
+                <img src="${item.foto || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800'}" alt="${item.titulo}" class="w-full aspect-[4/3] rounded-[20px] object-cover">
+                <span class="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-600 text-cream text-[11px] font-semibold px-3 py-1.5 shadow-sm">Resgatado</span>
+                <button type="button" aria-label="Remover dos salvos" title="Remover dos salvos" onclick="removerItem('${item.idDoc}', 'menu', event)" class="absolute top-3 right-3 grid place-items-center size-9 rounded-full bg-paper/90 backdrop-blur-md text-terra hover:bg-terra hover:text-cream transition-colors shadow-sm cursor-pointer">
+                    <span class="material-symbols-outlined text-xl">bookmark_added</span>
+                </button>
+            </div>
+            <div class="mt-4 px-1">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-[0.12em] text-terra">${item.restauranteNome || 'Restaurante'}</span>
+                </div>
+                <h2 class="mt-2 font-display font-semibold text-2xl leading-tight text-ink">${item.titulo}</h2>
+                <p class="mt-1 text-sm text-inksoft line-clamp-2">${item.descricao}</p>
+                <div class="mt-4 flex items-end justify-between border-t border-dashed border-ink/15 pt-4">
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase text-inksoft">Apresentar no local</p>
+                    </div>
+                    <span class="text-sm font-medium text-inksoft group-hover:text-terra transition-colors">Ver detalhes &rarr;</span>
+                </div>
+            </div>
+        `;
+          gridSalvos.appendChild(card);
+        });
+      } else {
+        lista.forEach(item => {
+          const card = document.createElement('article');
+          card.className = 'card-restaurante group rounded-[28px] bg-paper p-4 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-all cursor-pointer relative';
+          card.onclick = () => window.location.href = `restaurante-detalhes.html?id=${item.restauranteId}`;
+          card.innerHTML = `
+            <div class="relative">
+                <img src="${item.imagem || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800'}" alt="${item.nome}" class="w-full aspect-[4/3] rounded-[20px] object-cover">
+                <button type="button" aria-label="Remover dos salvos" title="Remover dos salvos" onclick="removerItem('${item.idDoc}', 'restaurante', event)" class="absolute top-3 right-3 grid place-items-center size-9 rounded-full bg-paper/90 backdrop-blur-md text-terra hover:bg-terra hover:text-cream transition-colors shadow-sm cursor-pointer">
+                    <span class="material-symbols-outlined text-xl">bookmark_added</span>
+                </button>
+            </div>
+            <div class="mt-4 px-1">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-[0.12em] text-terra">${item.cozinha || 'Restaurante'}</span>
+                    <span class="flex items-center gap-1 text-xs font-semibold text-ink"><span class="material-symbols-outlined text-sm text-amber-500 fill-1">star</span> ${item.avaliacao || '4.9'}</span>
+                </div>
+                <h2 class="mt-2 font-display font-semibold text-2xl leading-tight text-ink">${item.nome}</h2>
+                <p class="mt-1 text-sm text-inksoft">${item.localizacao || ''}</p>
+                <div class="mt-4 flex items-center justify-end border-t border-dashed border-ink/15 pt-4">
+                    <span class="text-sm font-medium text-inksoft group-hover:text-terra transition-colors">Ver restaurante &rarr;</span>
+                </div>
+            </div>
+        `;
+          gridSalvos.appendChild(card);
+        });
+      }
+    }
+
+    // Busca os itens salvos do utilizador no Firestore
+    async function carregarItensSalvosDoBanco(uid) {
+      try {
+        const q = query(collection(db, "salvos"), where("usuarioId", "==", uid));
+        const querySnapshot = await getDocs(q);
+
+        menusSalvos = [];
+        restaurantesSalvos = [];
+
+        querySnapshot.forEach((docSnap) => {
+          const dados = docSnap.data();
+          const itemFormatado = { idDoc: docSnap.id, ...dados };
+
+          // Classifica entre menu/promoção ou restaurante
+          if (dados.promocaoId || dados.titulo) {
+            menusSalvos.push(itemFormatado);
+          } else {
+            restaurantesSalvos.push(itemFormatado);
+          }
+        });
+
+        atualizarContadores();
+        atualizarEstiloAbas();
+        renderizarItens();
+      } catch (error) {
+        console.error("Erro ao carregar dados do Firestore:", error);
+      }
+    }
+
+    // Eventos de clique nas Abas
+    if (tabMenus) {
+      tabMenus.addEventListener('click', () => {
+        abaAtiva = 'menus';
+        atualizarEstiloAbas();
+        renderizarItens();
+      });
+    }
+
+    if (tabRestaurantes) {
+      tabRestaurantes.addEventListener('click', () => {
+        abaAtiva = 'restaurantes';
+        atualizarEstiloAbas();
+        renderizarItens();
+      });
+    }
+
+    // --- AUTENTICAÇÃO E RENDERIZAÇÃO DO HEADER DINÂMICO ---
+    const navAuthContainer = document.querySelector('header nav .flex.items-center.gap-3') || document.querySelector('header nav');
+    const navLinksList = document.getElementById('nav-links');
+
+    if (navAuthContainer) {
+      navAuthContainer.style.setProperty('position', 'relative', 'important');
+      navAuthContainer.style.setProperty('overflow', 'visible', 'important');
+      navAuthContainer.style.setProperty('min-width', 'max-content', 'important');
+
+      observarEstadoAutenticacao(({ logado, user, dadosUsuario }) => {
+        if (logado && user) {
+          usuarioLogadoId = user.uid;
+          carregarItensSalvosDoBanco(user.uid);
+
+          const isRestaurante = dadosUsuario?.tipo === 'restaurante';
+
+          if (navLinksList) {
+            if (isRestaurante) {
+              navLinksList.innerHTML = `
+              <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+              <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+              <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+              <li><a href="painel-restaurante.html" class="text-terra font-semibold">Painel</a></li>
+            `;
+            } else {
+              navLinksList.innerHTML = `
+              <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+              <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+              <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+              <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+              <li><a href="salvos.html" class="text-terra font-semibold">Salvos</a></li>
+            `;
+            }
+          }
+
+          const nomeBruto = isRestaurante
+            ? (dadosUsuario?.nomeRestaurante || dadosUsuario?.nomeResponsavel || user?.email?.split('@')[0])
+            : (dadosUsuario?.nome || user?.email?.split('@')[0] || 'Usuário');
+
+          const primeiroNome = nomeBruto.trim().split(' ')[0];
+          const nomeFormatado = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
+
+          let botoesDropdownHTML = '';
+          if (isRestaurante) {
+            botoesDropdownHTML = `
+            <a href="painel-restaurante.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+              Painel
+            </a>
+            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+              Sair da conta
+            </button>
+          `;
+          } else {
+            botoesDropdownHTML = `
+            <a href="perfil-usuario.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+              Ver perfil
+            </a>
+            <a href="salvos.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors text-center shadow-sm whitespace-nowrap" style="padding: 12px 16px !important; text-decoration: none !important; width: 100% !important; box-sizing: border-box !important;">
+              Salvos
+            </a>
+            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer whitespace-nowrap" style="padding: 12px 16px !important; width: 100% !important; border: 1px solid rgba(0,0,0,0.1) !important; box-sizing: border-box !important;">
+              Sair da conta
+            </button>
+          `;
+          }
+
+          navAuthContainer.innerHTML = `
+          <div style="position: relative !important; display: inline-block !important; width: auto !important; overflow: visible !important;">
+            <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all duration-200 cursor-pointer shadow-sm focus:outline-none">
+              <span class="text-sm font-semibold text-ink group-hover:text-cream transition-colors whitespace-nowrap">
+                ${nomeFormatado}
+              </span>
+              <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+
+            <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50 transition-all duration-200" 
+                 style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; min-width: 240px !important; width: 240px !important; max-width: 240px !important; padding: 20px !important; box-sizing: border-box !important; position: absolute !important; right: 0 !important; top: 100% !important;">
+             
+              <div style="padding-left: 4px; padding-right: 4px;">
+                <p class="text-base font-bold text-ink truncate" style="margin: 0 !important; font-size: 1rem !important; font-weight: 700 !important; color: #2B2725 !important;">${nomeFormatado}</p>
+                ${isRestaurante ? '<span class="text-[10px] uppercase font-bold text-terra">Conta Parceiro</span>' : ''}
+              </div>
+
+              <div style="margin-top: 12px !important; margin-bottom: 16px !important; border-bottom: 1px solid rgba(0,0,0,0.1) !important; width: 100% !important;"></div>
+
+              <div style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important;">
+                ${botoesDropdownHTML}
+              </div>
+
+            </div>
+          </div>
+        `;
+
+          const btnDropdown = document.getElementById('btn-user-dropdown');
+          const dropdownMenu = document.getElementById('dropdown-menu');
+          const arrowIcon = document.getElementById('arrow-icon');
+
+          if (btnDropdown) {
+            btnDropdown.addEventListener('click', (e) => {
+              e.stopPropagation();
+              dropdownMenu.classList.toggle('hidden');
+              if (arrowIcon) arrowIcon.classList.toggle('rotate-180');
+            });
+          }
+
+          document.addEventListener('click', (e) => {
+            if (dropdownMenu && !dropdownMenu.contains(e.target) && !btnDropdown.contains(e.target)) {
+              dropdownMenu.classList.add('hidden');
+              if (arrowIcon) arrowIcon.classList.remove('rotate-180');
+            }
+          });
+
+          const btnSair = document.getElementById('btn-sair');
+          if (btnSair) {
+            btnSair.addEventListener('click', fazerLogout);
+          }
+        } else {
+          window.location.href = 'login.html';
+        }
+      });
+    }
+  </script>
+
+</body>
+
+</html>
