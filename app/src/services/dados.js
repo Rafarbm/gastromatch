@@ -1,0 +1,162 @@
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { db } from "../lib/firebase";
+
+// Único ponto de acesso ao Firestore no app novo. As páginas nunca chamam o
+// Firestore diretamente: se a estrutura do banco mudar (ex.: separar uma
+// coleção pública "restaurantes"), só este arquivo muda.
+
+const FOTO_PADRAO = "/img/restaurante-padrao.jpg";
+
+function hojeISO() {
+  return new Date().toISOString().split("T")[0];
+}
+
+// ---------- normalizadores (o legado grava o mesmo dado com nomes diferentes) ----------
+
+function normalizarRestaurante(id, d) {
+  const fotos = [...(d.fotos || []), d.foto, d.imagem].filter(Boolean);
+  return {
+    id,
+    nome: d.nomeRestaurante || d.nome || "Restaurante",
+    cozinha: d.cozinha || "",
+    experiencias: Array.isArray(d.vibes) ? d.vibes : [],
+    ocasioes: Array.isArray(d.ocasioes) ? d.ocasioes : [],
+    faixaPreco: Number(d.faixaPreco) || null,
+    cidade: d.cidade || "",
+    bairro: d.bairro || "",
+    endereco: d.endereco || "",
+    coordenadas: d.lat && d.lng ? { lat: d.lat, lng: d.lng } : null,
+    telefone: d.telefone || "",
+    whatsapp: (d.whatsapp || d.telefone || "").replace(/\D/g, ""),
+    descricao: d.descricao || "",
+    fotos: fotos.length ? [...new Set(fotos)] : [FOTO_PADRAO],
+    destaque: Boolean(d.destaque),
+    horarios: [
+      { dias: d.diasSemana, inicio: d.inicioSemana, fim: d.fimSemana },
+      { dias: d.diasFim, inicio: d.inicioFds, fim: d.fimFds },
+    ].filter((h) => h.dias || h.inicio || h.fim),
+    ativo: d.status !== "banido" && d.status !== "excluido",
+  };
+}
+
+function normalizarEvento(id, d) {
+  return {
+    id,
+    titulo: d.titulo || d.nome || "Evento",
+    descricao: d.descricao || d.condicoes || "",
+    foto: d.foto || d.imagem || FOTO_PADRAO,
+    inicio: d.inicio || d.dataInicio || "",
+    fim: d.fim || d.dataFim || d.inicio || d.dataInicio || "",
+    horaInicio: d.horaInicio || "",
+    horaFim: d.horaFim || "",
+    restauranteId: d.restauranteId || "",
+    restauranteNome: d.restauranteNome || d.restaurante || "",
+    global: d.tipoEvento === "geral_plataforma",
+    participantes: d.restaurantesParticipantes || [],
+  };
+}
+
+function normalizarPromocao(id, d) {
+  return {
+    id,
+    titulo: d.titulo || "Promoção",
+    descricao: d.descricao || "",
+    foto: d.foto || d.imagem || FOTO_PADRAO,
+    valor: d.valorPromocional || "",
+    prato: d.prato || "",
+    restauranteId: d.restauranteId || "",
+    restauranteNome: d.restauranteNome || d.restaurante || "",
+    diasValidos: d.diasValidos || [],
+    horaInicio: d.horaInicio || "",
+    horaFim: d.horaFim || "",
+  };
+}
+
+function normalizarCupom(id, d) {
+  return {
+    id,
+    codigo: d.codigo || "",
+    desconto: d.desconto || "",
+    condicoes: d.condicoes || "",
+    validadeInicio: d.validadeInicio || "",
+    validadeFim: d.validadeFim || "",
+    restauranteId: d.restauranteId || "",
+  };
+}
+
+function normalizarMenu(id, d) {
+  return {
+    id,
+    titulo: d.titulo || d.nome || "Prato",
+    categoria: d.categoria || "Outros",
+    descricao: d.descricao || "",
+    preco: Number(d.preco) || null,
+    foto: d.imagem || d.foto || null,
+  };
+}
+
+// ---------- regras de validade ----------
+
+export function eventoVigente(ev, hoje = hojeISO()) {
+  return !ev.fim || ev.fim >= hoje;
+}
+
+export function cupomValido(c, hoje = hojeISO()) {
+  return (!c.validadeInicio || c.validadeInicio <= hoje) && (!c.validadeFim || c.validadeFim >= hoje);
+}
+
+// ---------- consultas ----------
+
+// Hoje os restaurantes vivem em "usuarios" (legado). Ver alerta de PII na auditoria.
+export async function listarRestaurantes() {
+  const snap = await getDocs(query(collection(db, "usuarios"), where("tipo", "==", "restaurante")));
+  return snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo);
+}
+
+export async function obterRestaurante(id) {
+  const snap = await getDoc(doc(db, "usuarios", id));
+  if (!snap.exists() || snap.data().tipo !== "restaurante") return null;
+  const r = normalizarRestaurante(snap.id, snap.data());
+  return r.ativo ? r : null;
+}
+
+async function listarPorRestaurante(colecao, restauranteId) {
+  const snap = await getDocs(query(collection(db, colecao), where("restauranteId", "==", restauranteId)));
+  return snap.docs;
+}
+
+export async function obterConteudoRestaurante(id) {
+  const [menus, promocoes, cupons, eventosProprios, todosEventos] = await Promise.all([
+    listarPorRestaurante("menus", id),
+    listarPorRestaurante("promocoes", id),
+    listarPorRestaurante("cupons", id),
+    listarPorRestaurante("eventos", id),
+    getDocs(query(collection(db, "eventos"), where("tipoEvento", "==", "geral_plataforma"))),
+  ]);
+
+  const eventos = [
+    ...eventosProprios.map((d) => normalizarEvento(d.id, d.data())),
+    // Eventos globais só aparecem se o restaurante aceitou participar.
+    ...todosEventos.docs.map((d) => normalizarEvento(d.id, d.data())).filter((e) => e.participantes.includes(id)),
+  ].filter((e) => eventoVigente(e));
+
+  return {
+    menus: menus.map((d) => normalizarMenu(d.id, d.data())),
+    promocoes: promocoes.map((d) => normalizarPromocao(d.id, d.data())),
+    cupons: cupons.map((d) => normalizarCupom(d.id, d.data())).filter((c) => cupomValido(c)),
+    eventos,
+  };
+}
+
+export async function listarPromocoes() {
+  const snap = await getDocs(collection(db, "promocoes"));
+  return snap.docs.map((d) => normalizarPromocao(d.id, d.data()));
+}
+
+export async function listarEventos() {
+  const snap = await getDocs(collection(db, "eventos"));
+  return snap.docs
+    .map((d) => normalizarEvento(d.id, d.data()))
+    .filter((e) => eventoVigente(e))
+    .sort((a, b) => a.inicio.localeCompare(b.inicio));
+}

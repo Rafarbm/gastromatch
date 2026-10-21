@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* Identidade visual herdada do styles.css legado (mesmos tokens oklch). */
+@theme {
+  --color-cream: oklch(94.1% 0.023 85);
+  --color-paper: oklch(97.1% 0.011 85);
+  --color-ink: oklch(26.2% 0.009 77);
+  --color-inksoft: oklch(47% 0.015 78);
+  --color-terra: oklch(60.1% 0.128 42);
+  --color-terradeep: oklch(49.4% 0.121 41);
+  --color-sage: oklch(66.5% 0.045 128);
+  --color-butter: oklch(84.5% 0.098 90);
+
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-body: "Inter Variable", system-ui, sans-serif;
+
+  --shadow-clay: 0 24px 50px -30px oklch(26.2% 0.009 77 / 0.5);
+  --shadow-clay-lg: 0 30px 60px -35px oklch(26.2% 0.009 77 / 0.55);
+}
+
+/* Esconde a barra de rolagem dos carrosséis horizontais, mantendo o scroll. */
+@utility scroll-oculto {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
