@@ -1,0 +1,19 @@
+// ============================================================================
+//  ATENÇÃO — REGRAS SOMENTE PARA O EMULADOR LOCAL. NÃO PUBLICAR.
+//
+//  Estas regras liberam leitura e escrita para qualquer pessoa. Se forem
+//  publicadas em um projeto real (produção ou staging), o banco fica
+//  totalmente aberto. O .firebaserc aponta apenas para "demo-gastromatch",
+//  um projeto que não existe na nuvem, então um "firebase deploy" falha.
+//
+//  As regras reais de segurança serão escritas na Etapa 3, a partir das
+//  regras atualmente publicadas em produção.
+// ============================================================================
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
