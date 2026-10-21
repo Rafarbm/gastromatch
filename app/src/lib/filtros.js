@@ -1,4 +1,4 @@
-import { distanciaKm } from "../contexts/LocalidadeContext";
+import { distanciaKm } from "./geo.js";
 
 // Regra de combinação: dentro de um mesmo grupo vale "OU" (Romântica ou
 // Tranquila); entre grupos vale "E" (experiência E cozinha E preço E local).

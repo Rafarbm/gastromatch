@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Icone from "./Icone";
-import { useLocalidade, distanciaKm } from "../contexts/LocalidadeContext";
+import { useLocalidade } from "../contexts/LocalidadeContext";
+import { distanciaKm } from "../lib/geo";
 import { useCarregar } from "../hooks/useCarregar";
 import { listarRestaurantes } from "../services/dados";
 import { cidadesEBairros } from "../lib/filtros";

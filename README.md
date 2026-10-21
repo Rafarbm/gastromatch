@@ -23,11 +23,16 @@ firebase emulators:start --project demo-gastromatch
 # Terminal 2 — dados de demonstração (apaga e recria tudo no emulador)
 node scripts/seed-emulator.mjs
 
-# Terminal 3 — site
+# Terminal 3 — app novo (React) — MVP
+cd app && npm install && npm run dev
+
+# Terminal 4 (opcional) — páginas legadas (login, painéis)
 python -m http.server 5500 --bind 127.0.0.1 --directory "TCC - Atualizado"
 ```
 
-Abrir `http://127.0.0.1:5500/index.html`. Painel do emulador: `http://127.0.0.1:4000`.
+App novo: `http://127.0.0.1:5173`. Legado: `http://127.0.0.1:5500/index.html`. Painel do emulador: `http://127.0.0.1:4000`.
+
+O app novo e o legado rodam em portas diferentes, então o login **não** é compartilhado entre eles localmente.
 
 Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`.
 
