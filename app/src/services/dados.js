@@ -5,7 +5,7 @@ import { db } from "../lib/firebase";
 // Firestore diretamente: se a estrutura do banco mudar (ex.: separar uma
 // coleção pública "restaurantes"), só este arquivo muda.
 
-const FOTO_PADRAO = "/img/restaurante-padrao.jpg";
+const FOTO_PADRAO = "/img/interior-2.jpg";
 
 function hojeISO() {
   return new Date().toISOString().split("T")[0];

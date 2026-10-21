@@ -32,12 +32,12 @@ export const FAIXAS_PRECO = [
 
 // Sugestões prontas da Home: cada uma é só uma combinação de filtros existentes.
 export const SUGESTOES_EXPERIENCIA = [
-  { titulo: "Jantar romântico", experiencias: ["Romântica"], foto: "/img/sugestao-romantico.jpg" },
-  { titulo: "Encontro com amigos", experiencias: ["Alegre", "Descontraída"], foto: "/img/sugestao-amigos.jpg" },
-  { titulo: "Almoço em família", experiencias: ["Familiar"], foto: "/img/sugestao-familia.jpg" },
-  { titulo: "Ambiente tranquilo", experiencias: ["Tranquila"], foto: "/img/sugestao-tranquilo.jpg" },
-  { titulo: "Experiência sofisticada", experiencias: ["Sofisticada"], foto: "/img/sugestao-sofisticado.jpg" },
-  { titulo: "Comemoração especial", ocasiao: "aniversario", foto: "/img/sugestao-comemoracao.jpg" },
+  { titulo: "Jantar romântico", experiencias: ["Romântica"], foto: "/img/vinho-1.jpg" },
+  { titulo: "Encontro com amigos", experiencias: ["Alegre", "Descontraída"], foto: "/img/amigos-1.jpg" },
+  { titulo: "Almoço em família", experiencias: ["Familiar"], foto: "/img/familia-1.jpg" },
+  { titulo: "Ambiente tranquilo", experiencias: ["Tranquila"], foto: "/img/cafe-1.jpg" },
+  { titulo: "Experiência sofisticada", experiencias: ["Sofisticada"], foto: "/img/francesa-1.jpg" },
+  { titulo: "Comemoração especial", ocasiao: "aniversario", foto: "/img/comemoracao-1.jpg" },
 ];
 
 // Datas comemorativas: só mostram restaurantes que marcaram a ocasião no cadastro.
