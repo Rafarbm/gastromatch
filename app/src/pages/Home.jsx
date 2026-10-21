@@ -126,7 +126,7 @@ export default function Home() {
                 return (
                   <Link key={s.titulo} to={`/restaurantes?${q}`} className="group relative overflow-hidden rounded-[24px] aspect-[4/3] sm:aspect-[16/9]">
                     <img src={s.foto} alt="" loading="lazy" className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <span className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent" />
+                    <span className="absolute inset-0 bg-linear-to-t from-ink/80 to-transparent" />
                     <span className="absolute bottom-3 left-4 right-4 font-display font-semibold text-lg sm:text-xl text-cream">{s.titulo}</span>
                   </Link>
                 );

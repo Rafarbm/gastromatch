@@ -96,16 +96,17 @@ export default function Restaurante() {
   categorias.sort((a, b) => (ordemCategorias.indexOf(a) + 1 || 99) - (ordemCategorias.indexOf(b) + 1 || 99));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-6 pb-24 lg:pb-0">
-      <Link to="/restaurantes" className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra">
-        <Icone nome="esquerda" className="size-4" /> Restaurantes
-      </Link>
-
-      <div className="mt-4">
-        <Galeria fotos={r.fotos} nome={r.nome} />
+    <div className="pb-24 lg:pb-0">
+      <div className="mx-auto max-w-6xl px-4 sm:px-8 py-4">
+        <Link to="/restaurantes" className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra">
+          <Icone nome="esquerda" className="size-4" /> Restaurantes
+        </Link>
       </div>
 
-      <div className="mt-8 grid lg:grid-cols-12 gap-8 items-start">
+      {/* Galeria fora do container: ocupa a largura total da tela. */}
+      <Galeria fotos={r.fotos} nome={r.nome} />
+
+      <div className="mx-auto max-w-6xl px-4 sm:px-8 mt-8 grid lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-8 space-y-6">
           {/* Identificação */}
           <header>

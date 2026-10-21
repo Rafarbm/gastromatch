@@ -24,7 +24,7 @@ export default function Hero({ slides }) {
 
   return (
     <section
-      className="mx-auto max-w-6xl px-4 sm:px-8 pt-4"
+      className="pt-4"
       aria-roledescription="carrossel"
       aria-label="Destaques do GastroMatch"
       onMouseEnter={() => setPausado(true)}
@@ -32,7 +32,8 @@ export default function Hero({ slides }) {
       onFocus={() => setPausado(true)}
       onBlur={() => setPausado(false)}
     >
-      <div className="relative overflow-hidden rounded-[32px] bg-ink shadow-clay-lg aspect-[4/5] sm:aspect-[16/7]">
+      {/* Largura total da tela; o texto continua alinhado à grade do site. */}
+      <div className="relative overflow-hidden bg-ink h-[70vh] min-h-105 max-h-160">
         {slides.map((s, i) => (
           <div
             key={s.titulo}
@@ -43,8 +44,9 @@ export default function Hero({ slides }) {
             className={`absolute inset-0 transition-opacity duration-700 ${i === atual ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
             <img src={s.foto} alt="" className="absolute inset-0 size-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/40 to-ink/10 sm:bg-gradient-to-r sm:from-ink/85 sm:via-ink/45 sm:to-transparent" />
-            <div className="relative h-full flex flex-col justify-end sm:justify-center p-6 sm:p-12 max-w-xl text-cream">
+            <div className="absolute inset-0 bg-linear-to-t from-ink/85 via-ink/40 to-ink/10 sm:bg-linear-to-r sm:from-ink/85 sm:via-ink/45 sm:to-transparent" />
+            <div className="relative h-full mx-auto max-w-6xl px-4 sm:px-8 pb-14 sm:pb-0 flex flex-col justify-end sm:justify-center text-cream">
+              <div className="max-w-xl">
               {s.selo && <span className="w-fit rounded-full bg-terra px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]">{s.selo}</span>}
               <h1 className="mt-3 font-display font-semibold text-4xl sm:text-5xl leading-[1.02] text-balance">{s.titulo}</h1>
               <p className="mt-3 text-base sm:text-lg text-cream/85 text-pretty">{s.descricao}</p>
@@ -54,6 +56,7 @@ export default function Hero({ slides }) {
                   {s.cta.rotulo}
                 </Link>
               )}
+              </div>
             </div>
           </div>
         ))}
@@ -66,7 +69,7 @@ export default function Hero({ slides }) {
             <button type="button" onClick={() => ir(atual + 1)} aria-label="Próximo slide" className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:grid place-items-center size-10 rounded-full bg-cream/90 text-ink hover:bg-cream">
               <Icone nome="direita" />
             </button>
-            <div className="absolute bottom-4 right-6 flex gap-2">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
               {slides.map((s, i) => (
                 <button
                   key={s.titulo}
