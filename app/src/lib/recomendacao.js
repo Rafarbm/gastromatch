@@ -32,9 +32,12 @@ function avaliar(r, pref, posicao) {
   // 1. Experiência: proporcional a quantas das experiências pedidas o restaurante oferece.
   if (pref.experiencias?.length) {
     const comuns = pref.experiencias.filter((e) => r.experiencias.includes(e));
+    const faltantes = pref.experiencias.filter((e) => !r.experiencias.includes(e));
     if (comuns.length) {
       pontos += PESOS.experiencia * (comuns.length / pref.experiencias.length);
       atende.push(`Oferece experiência ${comuns.join(" e ").toLowerCase()}`);
+      // Atendimento parcial também precisa ser explicado, senão a nota parece arbitrária.
+      if (faltantes.length) naoAtende.push(`Não é ${faltantes.join(" nem ").toLowerCase()}`);
     } else {
       naoAtende.push(`Não tem a experiência ${pref.experiencias.join("/").toLowerCase()}`);
     }

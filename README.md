@@ -38,6 +38,16 @@ Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.ga
 
 > `firestore.rules` deste repositório é **permissivo e só para o emulador**. Nunca publicar.
 
+### Recomendação com IA (opcional)
+
+1. Copie `app/.env.example` para `app/.env` e preencha `GROQ_API_KEY` (console.groq.com → API Keys).
+2. Reinicie `npm run dev`. A rota `/recomendar/conversa` passa a usar a IA.
+
+- A chave fica só no servidor (proxy `/api/ia` em `app/server/ia.js`); nunca vai para o navegador nem para o Git.
+- A IA apenas interpreta a conversa; os restaurantes são escolhidos por `app/src/lib/recomendacao.js` sobre os dados do banco.
+- Sem chave ou sem internet, a tela mostra o aviso e oferece a recomendação por etapas (`/recomendar`).
+- **Produção:** o proxy atual só existe no servidor de desenvolvimento do Vite. Para publicar, ele precisa virar uma função de servidor (ex.: Netlify Functions).
+
 ## Checklist antes de levar para produção
 
 1. A pasta publicada contém **todas** as páginas de produção (inclusive `cadastro.html`, `cupom-detalhes.html`, `central-de-ajuda.html`).

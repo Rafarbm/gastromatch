@@ -116,7 +116,7 @@ export default function Catalogo() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-6">
-      <Link to="/recomendar" className="flex items-center justify-between gap-4 rounded-[24px] bg-terra text-cream px-5 py-4 hover:bg-terradeep transition-colors">
+      <Link to="/recomendar/conversa" className="flex items-center justify-between gap-4 rounded-[24px] bg-terra text-cream px-5 py-4 hover:bg-terradeep transition-colors">
         <span className="flex items-center gap-3">
           <Icone nome="recomendar" />
           <span><strong className="font-semibold">Não sabe o que escolher?</strong> <span className="text-cream/85">Receba uma recomendação.</span></span>

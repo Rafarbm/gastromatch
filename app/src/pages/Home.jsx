@@ -55,7 +55,7 @@ export default function Home() {
       titulo: "Escolha o restaurante pela experiência",
       descricao: "Romântico, alegre, tranquilo ou sofisticado: diga o clima e a gente encontra a mesa certa.",
       foto: "/img/vinho-1.jpg",
-      cta: { rotulo: "Recomendar para mim", para: "/recomendar", icone: "recomendar" },
+      cta: { rotulo: "Recomendar com IA", para: "/recomendar/conversa", icone: "recomendar" },
     },
     dados?.superEvento && {
       selo: "Evento",
@@ -93,10 +93,10 @@ export default function Home() {
       <Hero slides={slides} />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-6">
-        <Link to="/recomendar" className="flex items-center justify-between gap-4 rounded-[28px] bg-terra text-cream p-5 sm:p-6 hover:bg-terradeep transition-colors">
+        <Link to="/recomendar/conversa" className="flex items-center justify-between gap-4 rounded-[28px] bg-terra text-cream p-5 sm:p-6 hover:bg-terradeep transition-colors">
           <span>
-            <span className="block font-display font-semibold text-xl sm:text-2xl">Recomendar para mim</span>
-            <span className="text-sm text-cream/85">Responda 4 perguntas rápidas e receba sugestões explicadas.</span>
+            <span className="block font-display font-semibold text-xl sm:text-2xl">Recomendar com IA</span>
+            <span className="text-sm text-cream/85">Converse como falaria com um amigo e receba sugestões explicadas.</span>
           </span>
           <span aria-hidden="true" className="text-2xl">→</span>
         </Link>

@@ -6,7 +6,7 @@ import { urlLegado } from "../lib/legado";
 const NAV = [
   { para: "/", rotulo: "Início", icone: "inicio" },
   { para: "/restaurantes", rotulo: "Restaurantes", icone: "restaurantes" },
-  { para: "/recomendar", rotulo: "Recomendar", icone: "recomendar", destaque: true },
+  { para: "/recomendar/conversa", rotulo: "Recomendar", icone: "recomendar", destaque: true },
   { para: "/promocoes", rotulo: "Promoções", icone: "promocoes" },
   { para: "/eventos", rotulo: "Eventos", icone: "eventos" },
 ];
@@ -28,7 +28,7 @@ function Cabecalho() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link to="/recomendar" className="hidden md:inline-flex items-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 hover:bg-terradeep transition-colors">
+          <Link to="/recomendar/conversa" className="hidden md:inline-flex items-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 hover:bg-terradeep transition-colors">
             <Icone nome="recomendar" className="size-4" /> Recomendar
           </Link>
           <a href={urlLegado("login.html")} className="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:text-terra transition-colors">
