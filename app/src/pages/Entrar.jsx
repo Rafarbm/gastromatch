@@ -4,6 +4,10 @@ import { useAuth } from "../contexts/AuthContext";
 import { nomeAmbiente } from "../lib/firebase";
 import { urlLegado } from "../lib/legado";
 
+// Botões que preenchem as contas fictícias do seed. Desligado temporariamente a pedido;
+// para reativar, troque para true (mesmo ligado, só aparece no ambiente local).
+const MOSTRAR_CONTAS_DEMO = false;
+
 // Contas fictícias do seed: só aparecem no ambiente local (emulador), nunca em produção.
 const CONTAS_DEMO = [
   { rotulo: "Cliente", email: "cliente@demo.gastromatch" },
@@ -84,7 +88,7 @@ export default function Entrar() {
           </button>
         </form>
 
-        {nomeAmbiente === "local" && (
+        {MOSTRAR_CONTAS_DEMO && nomeAmbiente === "local" && (
           <div className="mt-6 rounded-2xl bg-butter/30 p-4 text-sm">
             <p className="font-semibold">Contas de demonstração (senha demo1234)</p>
             <p className="text-xs text-inksoft">Só existem no ambiente local. Toque para preencher.</p>

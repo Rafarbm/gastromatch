@@ -30,7 +30,7 @@ cd app && npm install && npm run dev
 
 App: `http://127.0.0.1:5173`. O sistema antigo (painéis) é servido pelo próprio app em `/legado/` (ex.: `/legado/painel-restaurante.html`), no mesmo endereço, então **um único login vale para os dois**. Painel do emulador: `http://127.0.0.1:4000`.
 
-Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`. Em `/entrar`, no ambiente local, há botões que preenchem essas contas.
+Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`. Os botões que preenchem essas contas em `/entrar` estão desligados (`MOSTRAR_CONTAS_DEMO` em `app/src/pages/Entrar.jsx`).
 
 > `firestore.rules` deste repositório é **permissivo e só para o emulador**. Nunca publicar.
 
