@@ -44,7 +44,7 @@ Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.ga
 2. Reinicie `npm run dev`. O assistente flutuante (botão "Ajuda para escolher", em todas as páginas) passa a usar a IA.
 
 - A chave fica só no servidor (proxy `/api/ia` em `app/server/ia.js`); nunca vai para o navegador nem para o Git.
-- A IA apenas interpreta a conversa; os restaurantes são escolhidos por `app/src/lib/recomendacao.js` sobre os dados do banco.
+- A IA interpreta a conversa e responde perguntas livres usando só o catálogo enviado; o ranking das recomendações vem de `app/src/lib/recomendacao.js`, e só viram cards restaurantes que existem no banco.
 - Sem chave ou sem internet, o assistente segue no **modo rápido** (botões e palavras-chave, sem IA); a recomendação por etapas (`/recomendar`) continua disponível.
 - Botões de resposta rápida não chamam a IA. O catálogo só é enviado quando a mensagem parece uma pergunta livre.
 - Plano gratuito da Groq: 8.000 tokens/min. Uma pergunta livre usa ~3.100 (≈ 2 por minuto); acima disso o turno é respondido no modo rápido.
