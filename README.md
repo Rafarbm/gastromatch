@@ -48,6 +48,7 @@ Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.ga
 - Sem chave ou sem internet, o assistente segue no **modo rápido** (botões e palavras-chave, sem IA); a recomendação por etapas (`/recomendar`) continua disponível.
 - Botões de resposta rápida não chamam a IA. O catálogo só é enviado quando a mensagem parece uma pergunta livre.
 - Plano gratuito da Groq: 8.000 tokens/min. Uma pergunta livre usa ~3.100 (≈ 2 por minuto); acima disso o turno é respondido no modo rápido.
+- **Resumo da experiência** (página do restaurante): gerado por IA em `/api/resumo` a partir dos dados cadastrados, com cache em `app/server/.cache/` (fora do Git). Sem IA, aparece um resumo automático. Recriar os dados com o seed muda os ids e invalida o cache.
 - **Produção:** o proxy atual só existe no servidor de desenvolvimento do Vite. Para publicar, ele precisa virar uma função de servidor (ex.: Netlify Functions).
 
 ## Checklist antes de levar para produção
