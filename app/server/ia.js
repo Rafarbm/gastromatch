@@ -7,10 +7,10 @@
 //  2. responde perguntas livres usando SOMENTE o catálogo de restaurantes enviado.
 // O ranking das recomendações continua no motor de regras (src/lib/recomendacao.js).
 
-const URL_GROQ = "https://api.groq.com/openai/v1/chat/completions";
+export const URL_GROQ = "https://api.groq.com/openai/v1/chat/completions";
 // Modelo aberto (open-weight) hospedado na Groq. Em out/2026 a Groq não oferece
 // mais Llama para conversa; gpt-oss-120b foi o que completou o fluxo nos testes.
-const MODELO_PADRAO = "openai/gpt-oss-120b";
+export const MODELO_PADRAO = "openai/gpt-oss-120b";
 const MAX_MENSAGENS = 10;
 const MAX_CARACTERES = 500;
 const MAX_CATALOGO = 12000;
@@ -64,13 +64,13 @@ Responda APENAS com um objeto JSON neste formato exato:
 - "dispensados" = itens com "tanto faz" (valores: experiencia, cozinha, local, preco).`;
 }
 
-async function lerCorpo(req) {
+export async function lerCorpo(req) {
   const partes = [];
   for await (const p of req) partes.push(p);
   return JSON.parse(Buffer.concat(partes).toString("utf8") || "{}");
 }
 
-function responder(res, status, dados) {
+export function responder(res, status, dados) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(dados));

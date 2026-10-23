@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import Galeria from "../components/Galeria";
+import ResumoExperiencia from "../components/ResumoExperiencia";
 import Icone from "../components/Icone";
 import { CardEvento } from "../components/Cards";
 import { Carregando, Erro, Vazio } from "../components/Estados";
@@ -117,6 +118,9 @@ export default function Restaurante() {
               {r.telefone && <li className="flex items-center gap-2"><Icone nome="telefone" className="size-4 shrink-0" />{r.telefone}</li>}
             </ul>
           </header>
+
+          {/* Resumo da experiência (IA, com reserva automática sem IA) */}
+          <ResumoExperiencia restaurante={r} conteudo={{ menus, promocoes, eventos }} />
 
           {/* Sobre */}
           <Bloco id="sobre" titulo="Sobre">

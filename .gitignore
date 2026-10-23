@@ -16,6 +16,9 @@ firestore-debug.log
 ui-debug.log
 emulator-data/
 
+# Cache local dos resumos gerados por IA
+app/server/.cache/
+
 # Configuração local do Claude Code (pessoal desta máquina)
 .claude/settings.local.json
 
