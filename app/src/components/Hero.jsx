@@ -94,10 +94,18 @@ export default function Hero({ slides }) {
               <h1 className="mt-3 font-display font-semibold text-4xl sm:text-5xl leading-[1.02] text-balance">{s.titulo}</h1>
               <p className="mt-3 text-base sm:text-lg text-cream/85 text-pretty">{s.descricao}</p>
               {s.cta && (
-                <Link to={s.cta.para} tabIndex={i === atual ? 0 : -1} className="mt-6 w-fit inline-flex items-center gap-2 rounded-full bg-cream text-ink font-semibold text-sm py-3 px-5 hover:bg-terra hover:text-cream transition-colors">
-                  {s.cta.icone && <Icone nome={s.cta.icone} className="size-4" />}
-                  {s.cta.rotulo}
-                </Link>
+                // CTA pode navegar (para) ou executar uma ação (ex.: abrir o assistente).
+                s.cta.acao ? (
+                  <button type="button" onClick={s.cta.acao} tabIndex={i === atual ? 0 : -1} className="mt-6 w-fit inline-flex items-center gap-2 rounded-full bg-cream text-ink font-semibold text-sm py-3 px-5 hover:bg-terra hover:text-cream transition-colors">
+                    {s.cta.icone && <Icone nome={s.cta.icone} className="size-4" />}
+                    {s.cta.rotulo}
+                  </button>
+                ) : (
+                  <Link to={s.cta.para} tabIndex={i === atual ? 0 : -1} className="mt-6 w-fit inline-flex items-center gap-2 rounded-full bg-cream text-ink font-semibold text-sm py-3 px-5 hover:bg-terra hover:text-cream transition-colors">
+                    {s.cta.icone && <Icone nome={s.cta.icone} className="size-4" />}
+                    {s.cta.rotulo}
+                  </Link>
+                )
               )}
               </div>
             </div>

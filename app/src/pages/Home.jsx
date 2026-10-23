@@ -9,6 +9,7 @@ import { CardEvento, CardPromocao } from "../components/Cards";
 import { Carregando, Erro, Vazio } from "../components/Estados";
 import { useCarregar } from "../hooks/useCarregar";
 import { useLocalidade } from "../contexts/LocalidadeContext";
+import { useChat } from "../contexts/ChatContext";
 import { listarEventos, listarPromocoes, listarRestaurantes, obterSuperEvento } from "../services/dados";
 import { comDistancia, filtrarRestaurantes, filtrosParaURL } from "../lib/filtros";
 import { OCASIOES, SUGESTOES_EXPERIENCIA } from "../lib/catalogo";
@@ -33,6 +34,7 @@ async function carregarHome() {
 
 export default function Home() {
   const { busca, posicaoAtual } = useLocalidade();
+  const { abrir: abrirChat } = useChat();
   const { dados, carregando, erro } = useCarregar(carregarHome);
   const [filtroData, setFiltroData] = useState("todos");
 
@@ -55,7 +57,7 @@ export default function Home() {
       titulo: "Escolha o restaurante pela experiência",
       descricao: "Romântico, alegre, tranquilo ou sofisticado: diga o clima e a gente encontra a mesa certa.",
       foto: "/img/vinho-1.jpg",
-      cta: { rotulo: "Recomendar com IA", para: "/recomendar/conversa", icone: "recomendar" },
+      cta: { rotulo: "Recomendar com IA", acao: abrirChat, icone: "recomendar" },
     },
     dados?.superEvento && {
       selo: "Evento",
@@ -93,13 +95,13 @@ export default function Home() {
       <Hero slides={slides} />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-6">
-        <Link to="/recomendar/conversa" className="flex items-center justify-between gap-4 rounded-[28px] bg-terra text-cream p-5 sm:p-6 hover:bg-terradeep transition-colors">
+        <button type="button" onClick={abrirChat} className="w-full text-left flex items-center justify-between gap-4 rounded-[28px] bg-terra text-cream p-5 sm:p-6 hover:bg-terradeep transition-colors">
           <span>
             <span className="block font-display font-semibold text-xl sm:text-2xl">Recomendar com IA</span>
             <span className="text-sm text-cream/85">Converse como falaria com um amigo e receba sugestões explicadas.</span>
           </span>
           <span aria-hidden="true" className="text-2xl">→</span>
-        </Link>
+        </button>
       </div>
 
       {carregando && <div className="mx-auto max-w-6xl px-4 sm:px-8"><Carregando /></div>}

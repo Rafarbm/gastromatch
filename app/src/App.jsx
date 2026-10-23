@@ -8,11 +8,13 @@ import Restaurante from "./pages/Restaurante";
 import Promocoes from "./pages/Promocoes";
 import Eventos from "./pages/Eventos";
 import Recomendar from "./pages/Recomendar";
-import Conversa from "./pages/Conversa";
+import AbrirChat from "./pages/AbrirChat";
+import { ChatProvider } from "./contexts/ChatContext";
 
 export default function App() {
   return (
     <LocalidadeProvider>
+      <ChatProvider>
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
@@ -20,13 +22,14 @@ export default function App() {
             <Route path="restaurantes" element={<Catalogo />} />
             <Route path="restaurantes/:id" element={<Restaurante />} />
             <Route path="recomendar" element={<Recomendar />} />
-            <Route path="recomendar/conversa" element={<Conversa />} />
+            <Route path="recomendar/conversa" element={<AbrirChat />} />
             <Route path="promocoes" element={<Promocoes />} />
             <Route path="eventos" element={<Eventos />} />
             <Route path="*" element={<EmConstrucao titulo="Página não encontrada" />} />
           </Route>
         </Routes>
       </BrowserRouter>
+      </ChatProvider>
     </LocalidadeProvider>
   );
 }

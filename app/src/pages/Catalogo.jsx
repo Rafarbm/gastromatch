@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import CardRestaurante from "../components/CardRestaurante";
 import Icone from "../components/Icone";
 import { Carregando, Erro, Vazio } from "../components/Estados";
 import { useCarregar } from "../hooks/useCarregar";
 import { useLocalidade } from "../contexts/LocalidadeContext";
+import { useChat } from "../contexts/ChatContext";
 import { listarRestaurantes } from "../services/dados";
 import { cidadesEBairros, comDistancia, filtrarRestaurantes, filtrosDaURL, filtrosParaURL } from "../lib/filtros";
 import { EXPERIENCIAS, FAIXAS_PRECO, OCASIOES } from "../lib/catalogo";
@@ -34,6 +35,7 @@ function alternar(lista, valor) {
 export default function Catalogo() {
   const [params, setParams] = useSearchParams();
   const { busca, setBusca, posicaoAtual } = useLocalidade();
+  const { abrir: abrirChat } = useChat();
   const { dados: restaurantes, carregando, erro } = useCarregar(listarRestaurantes);
   const [gavetaAberta, setGavetaAberta] = useState(false);
 
@@ -116,13 +118,13 @@ export default function Catalogo() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-6">
-      <Link to="/recomendar/conversa" className="flex items-center justify-between gap-4 rounded-[24px] bg-terra text-cream px-5 py-4 hover:bg-terradeep transition-colors">
+      <button type="button" onClick={abrirChat} className="w-full text-left flex items-center justify-between gap-4 rounded-[24px] bg-terra text-cream px-5 py-4 hover:bg-terradeep transition-colors">
         <span className="flex items-center gap-3">
           <Icone nome="recomendar" />
           <span><strong className="font-semibold">Não sabe o que escolher?</strong> <span className="text-cream/85">Receba uma recomendação.</span></span>
         </span>
         <span aria-hidden="true">→</span>
-      </Link>
+      </button>
 
       <header className="mt-8 flex flex-wrap items-end justify-between gap-3">
         <div>

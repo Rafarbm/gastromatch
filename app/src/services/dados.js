@@ -156,6 +156,11 @@ export async function obterConteudoRestaurante(id) {
   };
 }
 
+export async function listarMenus() {
+  const snap = await getDocs(collection(db, "menus"));
+  return snap.docs.map((d) => ({ ...normalizarMenu(d.id, d.data()), restauranteId: d.data().restauranteId || "" }));
+}
+
 export async function listarPromocoes() {
   const snap = await getDocs(collection(db, "promocoes"));
   return snap.docs.map((d) => normalizarPromocao(d.id, d.data()));

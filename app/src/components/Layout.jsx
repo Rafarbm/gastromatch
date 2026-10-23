@@ -1,17 +1,21 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Icone from "./Icone";
+import ChatWidget from "./ChatWidget";
 import { urlLegado } from "../lib/legado";
+import { useChat } from "../contexts/ChatContext";
 
 const NAV = [
   { para: "/", rotulo: "Início", icone: "inicio" },
   { para: "/restaurantes", rotulo: "Restaurantes", icone: "restaurantes" },
-  { para: "/recomendar/conversa", rotulo: "Recomendar", icone: "recomendar", destaque: true },
+  // "Recomendar" não é uma página: abre o assistente flutuante.
+  { abreChat: true, rotulo: "Recomendar", icone: "recomendar", destaque: true },
   { para: "/promocoes", rotulo: "Promoções", icone: "promocoes" },
   { para: "/eventos", rotulo: "Eventos", icone: "eventos" },
 ];
 
 function Cabecalho() {
+  const { abrir } = useChat();
   return (
     <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-ink/5">
       <div className="mx-auto max-w-6xl px-4 sm:px-8 flex items-center justify-between py-3 md:py-4">
@@ -28,9 +32,9 @@ function Cabecalho() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link to="/recomendar/conversa" className="hidden md:inline-flex items-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 hover:bg-terradeep transition-colors">
+          <button type="button" onClick={abrir} className="hidden md:inline-flex items-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 hover:bg-terradeep transition-colors">
             <Icone nome="recomendar" className="size-4" /> Recomendar
-          </Link>
+          </button>
           <a href={urlLegado("login.html")} className="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:text-terra transition-colors">
             Entrar
           </a>
@@ -41,7 +45,13 @@ function Cabecalho() {
       <nav aria-label="Principal (mobile)" className="md:hidden">
         <ul className="flex justify-between gap-1 overflow-x-auto scroll-oculto px-2 pb-2">
           {NAV.map((i) => (
-            <li key={i.para} className="flex-1 min-w-[4.25rem]">
+            <li key={i.rotulo} className="flex-1 min-w-[4.25rem]">
+              {i.abreChat ? (
+                <button type="button" onClick={abrir} className="w-full flex flex-col items-center gap-1 rounded-2xl py-1.5 text-[11px] font-medium text-terra">
+                  <span className="grid place-items-center size-10 rounded-2xl bg-terra text-cream"><Icone nome={i.icone} /></span>
+                  {i.rotulo}
+                </button>
+              ) : (
               <NavLink
                 to={i.para}
                 end={i.para === "/"}
@@ -60,6 +70,7 @@ function Cabecalho() {
                   </>
                 )}
               </NavLink>
+              )}
             </li>
           ))}
         </ul>
@@ -99,6 +110,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <Rodape />
+      <ChatWidget />
     </div>
   );
 }
