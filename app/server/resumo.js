@@ -90,7 +90,28 @@ export function criarMiddlewareResumo(env) {
 }
 
 // Chama a IA, valida e salva no cache. Devolve { status, corpo } para a resposta HTTP.
+// Se o resumo citar um preço que não existe nos dados, tenta uma segunda vez
+// pedindo para não citar preços; só depois desiste (e a tela usa o resumo automático).
 async function gerar(env, restaurante, assinatura) {
+  const precos = precosDosDados(restaurante);
+  const tentativas = [null, "Não cite NENHUM valor em reais (R$) no resumo nem nos destaques."];
+  for (const instrucaoExtra of tentativas) {
+    const r = await tentar(env, restaurante, precos, instrucaoExtra);
+    if (r.conteudo) {
+      // Relê o arquivo na hora de salvar para não apagar resumos gravados em paralelo.
+      const cache = lerCache();
+      cache[restaurante.id] = { assinatura, conteudo: r.conteudo, geradoEm: new Date().toISOString() };
+      salvarCache(cache);
+      return { status: 200, corpo: { ...r.conteudo, fonte: "ia" } };
+    }
+    if (!r.reprovado) return r.falha; // erro de rede/limite: não adianta repetir agora
+  }
+  return { status: 502, corpo: { erro: "Resumo gerado não passou na verificação." } };
+}
+
+// Uma chamada à IA. Devolve { conteudo } se aprovado, { reprovado: true } se falhou na
+// verificação de preços, ou { falha: { status, corpo } } em erro de comunicação.
+async function tentar(env, restaurante, precos, instrucaoExtra) {
   const modelo = env.GROQ_MODEL || MODELO_PADRAO;
   const controle = new AbortController();
   const timer = setTimeout(() => controle.abort(), TIMEOUT_MS);
@@ -106,15 +127,18 @@ async function gerar(env, restaurante, assinatura) {
         ...(modelo.startsWith("openai/gpt-oss") ? { reasoning_effort: "low" } : {}),
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: PROMPT },
+          { role: "system", content: instrucaoExtra ? `${PROMPT}
+
+${instrucaoExtra}` : PROMPT },
           // Dados vindos do banco: tratados como dados, nunca como instruções.
-          { role: "user", content: `DADOS DO RESTAURANTE (JSON):\n${JSON.stringify(restaurante).slice(0, 6000)}` },
+          { role: "user", content: `DADOS DO RESTAURANTE (JSON):
+${JSON.stringify(restaurante).slice(0, 6000)}` },
         ],
       }),
     });
     if (!resp.ok) {
       console.error(`[resumo] Groq respondeu ${resp.status}`);
-      return { status: resp.status === 429 ? 429 : 502, corpo: { erro: "Resumo por IA indisponível no momento." } };
+      return { falha: { status: resp.status === 429 ? 429 : 502, corpo: { erro: "Resumo por IA indisponível no momento." } } };
     }
 
     const dados = await resp.json();
@@ -123,32 +147,28 @@ async function gerar(env, restaurante, assinatura) {
     try {
       bruto = JSON.parse(dados.choices?.[0]?.message?.content || "{}");
     } catch {
-      return { status: 502, corpo: { erro: "Resumo em formato inesperado." } };
+      return { reprovado: true };
     }
 
     // Validação antes de salvar: tamanho e preços conferidos com os dados reais.
-    const precos = precosDosDados(restaurante);
     const resumo = String(bruto.resumo || "").trim().slice(0, 320);
     const destaques = (Array.isArray(bruto.destaques) ? bruto.destaques : [])
       .map((d) => String(d).trim().slice(0, 80))
       .filter((d) => d && precosValidos(d, precos))
       .slice(0, 3);
     if (!resumo || !precosValidos(resumo, precos)) {
-      console.error("[resumo] resumo descartado: vazio ou com preço que não existe nos dados");
-      return { status: 502, corpo: { erro: "Resumo gerado não passou na verificação." } };
+      const citados = [...resumo.matchAll(/R\$\s*[\d.,]+/g)].map((m) => m[0]).join(", ");
+      console.error(`[resumo] reprovado (${instrucaoExtra ? "2ª tentativa" : "1ª tentativa"}): preço inexistente nos dados: ${citados || "resumo vazio"}`);
+      return { reprovado: true };
     }
-
-    const conteudo = { resumo, destaques };
-    // Relê o arquivo na hora de salvar para não apagar resumos gravados em paralelo.
-    const cache = lerCache();
-    cache[restaurante.id] = { assinatura, conteudo, geradoEm: new Date().toISOString() };
-    salvarCache(cache);
-    return { status: 200, corpo: { ...conteudo, fonte: "ia" } };
+    return { conteudo: { resumo, destaques } };
   } catch (erro) {
     console.error("[resumo]", erro.name === "AbortError" ? "timeout" : erro.message);
-    return erro.name === "AbortError"
-      ? { status: 504, corpo: { erro: "Resumo por IA não respondeu a tempo." } }
-      : { status: 502, corpo: { erro: "Falha ao gerar o resumo." } };
+    return {
+      falha: erro.name === "AbortError"
+        ? { status: 504, corpo: { erro: "Resumo por IA não respondeu a tempo." } }
+        : { status: 502, corpo: { erro: "Falha ao gerar o resumo." } },
+    };
   } finally {
     clearTimeout(timer);
   }

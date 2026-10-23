@@ -305,6 +305,15 @@ async function main() {
     foto: "/img/churrasco-1.jpg", restauranteId: uid["brasa-lenha"], restauranteNome: "Brasa & Lenha", dataResgate: agora,
   });
 
+  // Cupom já resgatado pela cliente demo (mesmo formato que o app novo grava).
+  await gravar("salvos/salvo-cupom-demo", {
+    usuarioId: uidCliente, usuarioEmail: "cliente@demo.gastromatch", usuarioNome: "Ana Demo",
+    cupomId: "cupom-0", codigo: "BRASA15", desconto: "15%", validadeFim: dataRelativa(30),
+    condicoes: "Cupom fictício de demonstração. Válido para consumo no local.",
+    titulo: "Cupom BRASA15", descricao: "Cupom fictício de demonstração.", foto: "/img/churrasco-1.jpg",
+    restauranteId: uid["brasa-lenha"], restauranteNome: "Brasa & Lenha", dataResgate: agora,
+  });
+
   await gravar("contatos_suporte/contato-demo", {
     nome: "Visitante Demo", email: "visitante@demo.gastromatch", assunto: "Dúvida de demonstração",
     mensagem: "Mensagem fictícia para testar a caixa de suporte.", data: dataRelativa(0),

@@ -18,23 +18,19 @@ Pré-requisitos: Node 18+, Firebase CLI, **Java 21+** (emuladores), Python 3.
 
 ```bash
 # Terminal 1 — emuladores (Auth :9099, Firestore :8080, painel :4000)
-firebase emulators:start --project demo-gastromatch
+# --import/--export-on-exit guardam os dados entre execuções (pasta emulator-data/, fora do Git)
+firebase emulators:start --project demo-gastromatch --import=./emulator-data --export-on-exit
 
-# Terminal 2 — dados de demonstração (apaga e recria tudo no emulador)
+# Só na primeira vez (ou para recomeçar do zero) — apaga e recria tudo no emulador
 node scripts/seed-emulator.mjs
 
-# Terminal 3 — app novo (React) — MVP
+# Terminal 2 — app (React) + sistema antigo em /legado/
 cd app && npm install && npm run dev
-
-# Terminal 4 (opcional) — páginas legadas (login, painéis)
-python -m http.server 5500 --bind 127.0.0.1 --directory "TCC - Atualizado"
 ```
 
-App novo: `http://127.0.0.1:5173`. Legado: `http://127.0.0.1:5500/index.html`. Painel do emulador: `http://127.0.0.1:4000`.
+App: `http://127.0.0.1:5173`. O sistema antigo (painéis) é servido pelo próprio app em `/legado/` (ex.: `/legado/painel-restaurante.html`), no mesmo endereço, então **um único login vale para os dois**. Painel do emulador: `http://127.0.0.1:4000`.
 
-O app novo e o legado rodam em portas diferentes, então o login **não** é compartilhado entre eles localmente.
-
-Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`.
+Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`. Em `/entrar`, no ambiente local, há botões que preenchem essas contas.
 
 > `firestore.rules` deste repositório é **permissivo e só para o emulador**. Nunca publicar.
 

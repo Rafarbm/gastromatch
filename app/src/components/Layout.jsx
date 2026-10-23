@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Icone from "./Icone";
 import ChatWidget from "./ChatWidget";
-import { urlLegado } from "../lib/legado";
+import MenuUsuario from "./MenuUsuario";
 import { useChat } from "../contexts/ChatContext";
 
 const NAV = [
@@ -35,9 +35,7 @@ function Cabecalho() {
           <button type="button" onClick={abrir} className="hidden md:inline-flex items-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 hover:bg-terradeep transition-colors">
             <Icone nome="recomendar" className="size-4" /> Recomendar
           </button>
-          <a href={urlLegado("login.html")} className="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:text-terra transition-colors">
-            Entrar
-          </a>
+          <MenuUsuario />
         </div>
       </div>
 

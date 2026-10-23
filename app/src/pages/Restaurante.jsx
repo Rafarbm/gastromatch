@@ -1,7 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import Galeria from "../components/Galeria";
 import ResumoExperiencia from "../components/ResumoExperiencia";
+import BotaoSalvar from "../components/BotaoSalvar";
+import { useAuth } from "../contexts/AuthContext";
+import { listarSalvos } from "../services/salvos";
 import Icone from "../components/Icone";
 import { CardEvento } from "../components/Cards";
 import { Carregando, Erro, Vazio } from "../components/Estados";
@@ -72,6 +75,18 @@ export default function Restaurante() {
   const { id } = useParams();
   const { hash } = useLocation();
   const { dados, carregando, erro } = useCarregar(() => carregar(id), [id]);
+  const { usuario } = useAuth();
+  const [salvos, setSalvos] = useState([]);
+
+  // Itens que o cliente já salvou, para os botões mostrarem "resgatado".
+  useEffect(() => {
+    if (usuario?.papel !== "cliente") {
+      setSalvos([]);
+      return;
+    }
+    listarSalvos(usuario.uid).then(setSalvos).catch((e) => console.error(e));
+  }, [usuario]);
+  const aoSalvar = (novo) => setSalvos((s) => [...s, novo]);
 
   // Links como /restaurantes/x#promocoes rolam até a seção depois do carregamento.
   useEffect(() => {
@@ -170,6 +185,7 @@ export default function Restaurante() {
                     <p className="mt-2 font-display font-semibold text-lg">{p.titulo}</p>
                     <p className="text-sm text-inksoft">{p.descricao}</p>
                     {p.valor && <p className="mt-2 font-display font-semibold text-xl text-terra">{p.valor}</p>}
+                    <BotaoSalvar item={{ tipo: "promocao", id: p.id, titulo: p.titulo, descricao: p.descricao, foto: p.foto, valor: p.valor, restauranteId: r.id, restauranteNome: r.nome }} salvos={salvos} aoSalvar={aoSalvar} />
                   </li>
                 ))}
               </ul>
@@ -186,6 +202,7 @@ export default function Restaurante() {
                     <p className="font-semibold">{c.desconto}</p>
                     <p className="text-xs text-inksoft">{c.condicoes}</p>
                     {c.validadeFim && <p className="mt-2 text-xs font-semibold">Válido até {dataCurta(c.validadeFim)}</p>}
+                    <BotaoSalvar item={{ tipo: "cupom", id: c.id, titulo: `Cupom ${c.codigo}`, descricao: c.condicoes, foto: r.fotos[0], codigo: c.codigo, desconto: c.desconto, condicoes: c.condicoes, validadeFim: c.validadeFim, restauranteId: r.id, restauranteNome: r.nome }} salvos={salvos} aoSalvar={aoSalvar} />
                   </li>
                 ))}
               </ul>
