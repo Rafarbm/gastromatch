@@ -67,6 +67,24 @@ Responda APENAS com um objeto JSON neste formato exato:
 - "dispensados" = itens com "tanto faz" (valores: experiencia, cozinha, local, preco).`;
 }
 
+// ---------- "disjuntor" da IA ----------
+// Se a Groq recusar por chave inválida, crédito/limite diário esgotado (401, 402, 403) ou pedir
+// para esperar muito (429 com retry-after longo), a IA fica "pausada" por um tempo: as próximas
+// chamadas respondem 503 na hora e o site usa o modo sem IA, em vez de esperar a Groq falhar de novo.
+let pausadaAte = 0;
+export function iaPausada() {
+  return Date.now() < pausadaAte;
+}
+export function registrarFalhaGroq(status, retryAfter) {
+  let segundos = 0;
+  if ([401, 402, 403].includes(status)) segundos = 10 * 60;
+  else if (status === 429 && retryAfter > 60) segundos = Math.min(retryAfter, 60 * 60);
+  if (segundos) {
+    pausadaAte = Date.now() + segundos * 1000;
+    console.error(`[ia] IA pausada por ${Math.round(segundos / 60)} min (Groq respondeu ${status}). O site segue no modo sem IA.`);
+  }
+}
+
 export async function lerCorpo(req) {
   const partes = [];
   for await (const p of req) partes.push(p);
@@ -84,6 +102,7 @@ export function criarMiddlewareIA(env) {
     if (req.url !== "/api/ia") return next();
     if (req.method !== "POST") return responder(res, 405, { erro: "Use POST." });
     if (!env.GROQ_API_KEY) return responder(res, 503, { erro: "IA não configurada (GROQ_API_KEY ausente)." });
+    if (iaPausada()) return responder(res, 503, { erro: "IA indisponível no momento." });
 
     let corpo;
     try {
@@ -147,6 +166,7 @@ export function criarMiddlewareIA(env) {
       if (!resp.ok) {
         // Nunca repassa detalhes da Groq ao navegador (podem conter dados da conta).
         console.error(`[ia] Groq respondeu ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
+        registrarFalhaGroq(resp.status, Number(resp.headers.get("retry-after")) || 0);
         if (resp.status === 429) {
           const espera = Number(resp.headers.get("retry-after")) || 20;
           return responder(res, 429, { erro: "A IA está ocupada no momento.", esperarSegundos: espera });

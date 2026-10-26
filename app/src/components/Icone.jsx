@@ -22,6 +22,11 @@ const CAMINHOS = {
   imprimir: "M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z",
   planilha: "M5 3h10l4 4v14H5zM8 12h8M8 16h8M12 9v10",
   check: "M5 12l5 5L20 7",
+  olho: "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  olhoFechado: "M3 3l18 18M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2",
+  editar: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4",
+  lixeira: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
+  mais: "M12 5v14M5 12h14",
 };
 
 export default function Icone({ nome, className = "size-5" }) {

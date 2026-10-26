@@ -131,9 +131,9 @@ export default function ChatWidget() {
   return (
     <>
       {!aberto && (
-        <div className={`fixed right-4 sm:right-6 z-40 flex flex-col items-end gap-3 ${posicaoBotao}`}>
+        <div className={`fixed right-3 sm:right-6 z-40 flex flex-col items-end gap-2 sm:gap-3 ${posicaoBotao}`}>
           {convite && (
-            <div role="status" className="relative max-w-64 rounded-2xl rounded-br-md bg-ink text-cream px-4 py-3 text-sm shadow-clay-lg">
+            <div role="status" className="relative hidden sm:block max-w-64 rounded-2xl rounded-br-md bg-ink text-cream px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm shadow-clay-lg">
               <button type="button" onClick={fecharConvite} aria-label="Fechar convite" className="absolute -top-2 -left-2 grid place-items-center size-6 rounded-full bg-paper text-ink ring-1 ring-ink/10">
                 <Icone nome="fechar" className="size-3.5" />
               </button>
@@ -148,10 +148,11 @@ export default function ChatWidget() {
             type="button"
             onClick={abrirChat}
             aria-label="Abrir assistente para escolher restaurante"
-            className="group flex items-center gap-2 rounded-full bg-terra text-cream shadow-clay-lg pl-4 pr-5 py-3.5 hover:bg-terradeep transition-colors"
+            className="group flex items-center gap-2 rounded-full bg-terra text-cream shadow-clay-lg p-3 sm:pl-4 sm:pr-5 sm:py-3.5 hover:bg-terradeep transition-colors"
           >
-            <Icone nome="recomendar" className="size-6" />
-            <span className="text-sm font-semibold">Ajuda para escolher</span>
+            <Icone nome="recomendar" className="size-5 sm:size-6" />
+            {/* No celular fica só o ícone (botão compacto); o texto aparece a partir do tablet. */}
+            <span className="hidden sm:inline text-sm font-semibold">Ajuda para escolher</span>
           </button>
         </div>
       )}

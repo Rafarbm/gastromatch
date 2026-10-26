@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import CampoSenha from "../components/CampoSenha";
 import { nomeAmbiente } from "../lib/firebase";
 import { urlLegado } from "../lib/legado";
 
@@ -43,7 +44,7 @@ export default function Entrar() {
   function irParaInicio(papel) {
     if (voltar) return navegar(voltar, { replace: true });
     if (papel === "restaurante") return navegar("/restaurante", { replace: true });
-    if (papel === "admin") return window.location.assign(urlLegado("suporte.html"));
+    if (papel === "admin") return navegar("/suporte", { replace: true });
     navegar("/minha-conta", { replace: true });
   }
 
@@ -80,7 +81,7 @@ export default function Entrar() {
               <span className="font-semibold">Senha</span>
               <a href={urlLegado("esqueceu-senha.html")} className="text-xs text-terra hover:underline">Esqueceu a senha?</a>
             </span>
-            <input type="password" required autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} className="mt-1 w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra/40" />
+            <CampoSenha required autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} className="mt-1 w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra/40" />
           </label>
           {erro && <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">{erro}</p>}
           <button type="submit" disabled={enviando} className="w-full rounded-2xl bg-terra text-cream py-3.5 font-semibold hover:bg-terradeep disabled:opacity-60">

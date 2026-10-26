@@ -19,6 +19,8 @@ import CupomDetalhe from "./pages/CupomDetalhe";
 import Ingresso from "./pages/Ingresso";
 import Validar from "./pages/Validar";
 import AreaRestaurante from "./pages/AreaRestaurante";
+import PainelSuporte from "./pages/PainelSuporte";
+import { EventoDetalhe, Prato, PromocaoDetalhe } from "./pages/Detalhes";
 
 export default function App() {
   return (
@@ -34,11 +36,15 @@ export default function App() {
             <Route path="recomendar" element={<Recomendar />} />
             <Route path="recomendar/conversa" element={<AbrirChat />} />
             <Route path="promocoes" element={<Promocoes />} />
+            <Route path="promocoes/:id" element={<PromocaoDetalhe />} />
             <Route path="eventos" element={<Eventos />} />
+            <Route path="eventos/:id" element={<EventoDetalhe />} />
+            <Route path="pratos/:id" element={<Prato />} />
             <Route path="cupons/:id" element={<CupomDetalhe />} />
             <Route path="ingresso/:id" element={<Ingresso />} />
             <Route path="validar/:codigo?" element={<Validar />} />
             <Route path="restaurante" element={<AreaRestaurante />} />
+            <Route path="suporte" element={<PainelSuporte />} />
             <Route path="entrar" element={<Entrar />} />
             <Route path="cadastro" element={<Cadastro />} />
             <Route path="minha-conta" element={<MinhaConta />} />

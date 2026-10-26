@@ -30,7 +30,7 @@ cd app && npm install && npm run dev
 
 App: `http://127.0.0.1:5173`. O sistema antigo (painéis) é servido pelo próprio app em `/legado/` (ex.: `/legado/painel-restaurante.html`), no mesmo endereço, então **um único login vale para os dois**. Painel do emulador: `http://127.0.0.1:4000`.
 
-Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`, além de `cliente01`…`cliente40@demo.gastromatch` e uma conta por restaurante (`node scripts/seed-emulator.mjs --listar` mostra todas). O seed cria 108 restaurantes em 26 cidades de 12 estados, ~1.000 avaliações, cupons com limite e resgates. Os botões que preenchem contas em `/entrar` estão desligados (`MOSTRAR_CONTAS_DEMO` em `app/src/pages/Entrar.jsx`).
+Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`, além de `cliente01`…`cliente40@demo.gastromatch` e uma conta por restaurante (`node scripts/seed-emulator.mjs --listar` mostra todas). O seed cria 188 restaurantes em 26 cidades de 12 estados (cobrindo todas as combinações cozinha × experiência e cozinha × faixa de preço), ~1.750 avaliações, cupons com limite e resgates. Os botões que preenchem contas em `/entrar` estão desligados (`MOSTRAR_CONTAS_DEMO` em `app/src/pages/Entrar.jsx`).
 
 ### Testes
 
@@ -50,7 +50,9 @@ npm run build          # confere que o app compila
 | `/restaurantes/:id` | Avaliações (restaurante e pratos, 1–5 estrelas), resumo por IA que usa as avaliações, resgate de cupom |
 | `/ingresso/:id` | Cupom resgatado: código único + QR Code, versão para imprimir |
 | `/validar/:codigo` | Restaurante valida o QR Code (uso único) |
-| `/restaurante` | Área do restaurante: resgates, validação e importação de cardápio por Excel (modelo + relatório de erros) |
+| `/pratos/:id`, `/promocoes/:id`, `/eventos/:id` | Páginas individuais (prato com avaliações próprias) |
+| `/restaurante?aba=…` | Painel do restaurante: dados (cozinha, experiências, ocasiões, endereço, horários, fotos), cardápio, cupons, promoções, eventos, resgates |
+| `/suporte?aba=…` | Painel de suporte: usuários (busca, banir/restaurar, destaque), mensagens, moderação de avaliações |
 | `/ajuda` | Perguntas frequentes, Fale conosco (grava para o suporte) e resumo de privacidade |
 
 Segurança e dados: `firestore.rules` (com testes em `app/tests/regras.test.js`). CPF/CNPJ ficam em `usuarios/{uid}/privado` (só o dono lê); chaves únicas por ID de documento (`documentos/{hash}`, `avaliacoes/{alvo}_{uid}`, `resgates/{cupom}_{uid}`, `codigosResgate/{codigo}`); admin = documento em `admins/{uid}`.
@@ -67,6 +69,7 @@ Segurança e dados: `firestore.rules` (com testes em `app/tests/regras.test.js`)
 - Plano gratuito da Groq: 8.000 tokens/min. Uma pergunta livre usa ~3.100 (≈ 2 por minuto); acima disso o turno é respondido no modo rápido.
 - **Resumo da experiência** (página do restaurante): gerado por IA em `/api/resumo` a partir dos dados cadastrados, com cache em `app/server/.cache/` (fora do Git). Sem IA, aparece um resumo automático. Recriar os dados com o seed muda os ids e invalida o cache.
 - **Datas especiais** (Home): as datas vêm de uma tabela conferida (`app/src/lib/regioes.js`); a IA só escreve a frase de cada data (`/api/datas`), e o texto é conferido antes de aparecer.
+- **Sem crédito/limite na IA:** um "disjuntor" em `app/server/ia.js` pausa a IA por um tempo quando a Groq recusa por chave/crédito/limite diário; o site continua no modo sem IA (recomendação por regras, resumo automático, textos padrão).
 - **Produção:** os proxies atuais (`/api/ia`, `/api/resumo`, `/api/datas`) só existem no servidor de desenvolvimento do Vite. Para publicar, ele precisa virar uma função de servidor (ex.: Netlify Functions).
 
 ## Checklist antes de levar para produção

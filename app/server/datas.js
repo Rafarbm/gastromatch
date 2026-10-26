@@ -11,7 +11,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { lerCorpo, MODELO_PADRAO, responder, URL_GROQ } from "./ia.js";
+import { iaPausada, lerCorpo, MODELO_PADRAO, registrarFalhaGroq, responder, URL_GROQ } from "./ia.js";
 
 const ARQUIVO_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache", "datas.json");
 const TIMEOUT_MS = 20000;
@@ -71,7 +71,7 @@ export function criarMiddlewareDatas(env) {
     const chave = createHash("sha1").update(`v${VERSAO_PROMPT}:${JSON.stringify(datas)}`).digest("hex");
     const salvo = lerCache()[chave];
     if (salvo) return responder(res, 200, { textos: salvo.textos, fonte: "cache" });
-    if (!env.GROQ_API_KEY) return responder(res, 503, { erro: "IA não configurada." });
+    if (!env.GROQ_API_KEY || iaPausada()) return responder(res, 503, { erro: "IA indisponível." });
 
     if (!emAndamento.has(chave)) emAndamento.set(chave, gerar(env, datas, chave).finally(() => emAndamento.delete(chave)));
     const { status, corpo: resposta } = await emAndamento.get(chave);
@@ -102,6 +102,7 @@ async function gerar(env, datas, chave) {
     });
     if (!resp.ok) {
       console.error(`[datas] Groq respondeu ${resp.status}`);
+      registrarFalhaGroq(resp.status, Number(resp.headers.get("retry-after")) || 0);
       return { status: resp.status === 429 ? 429 : 502, corpo: { erro: "IA indisponível no momento." } };
     }
     const dados = await resp.json();

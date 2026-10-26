@@ -14,7 +14,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { lerCorpo, MODELO_PADRAO, responder, URL_GROQ } from "./ia.js";
+import { iaPausada, lerCorpo, MODELO_PADRAO, registrarFalhaGroq, responder, URL_GROQ } from "./ia.js";
 
 const ARQUIVO_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache", "resumos.json");
 const TIMEOUT_MS = 20000;
@@ -81,7 +81,7 @@ export function criarMiddlewareResumo(env) {
     const salvo = cache[restaurante.id];
     if (salvo?.assinatura === assinatura) return responder(res, 200, { ...salvo.conteudo, fonte: "cache" });
 
-    if (!env.GROQ_API_KEY) return responder(res, 503, { erro: "IA não configurada." });
+    if (!env.GROQ_API_KEY || iaPausada()) return responder(res, 503, { erro: "IA indisponível." });
 
     if (!emAndamento.has(assinatura)) {
       emAndamento.set(assinatura, gerar(env, restaurante, assinatura).finally(() => emAndamento.delete(assinatura)));
@@ -140,6 +140,7 @@ ${JSON.stringify(restaurante).slice(0, 6000)}` },
     });
     if (!resp.ok) {
       console.error(`[resumo] Groq respondeu ${resp.status}`);
+      registrarFalhaGroq(resp.status, Number(resp.headers.get("retry-after")) || 0);
       return { falha: { status: resp.status === 429 ? 429 : 502, corpo: { erro: "Resumo por IA indisponível no momento." } } };
     }
 

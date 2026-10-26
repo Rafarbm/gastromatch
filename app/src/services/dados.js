@@ -196,6 +196,21 @@ export async function obterCupom(id) {
   return { ...c, vigente: cupomValido(c) };
 }
 
+export async function obterMenu(id) {
+  const snap = await getDoc(doc(db, "menus", id));
+  return snap.exists() ? { ...normalizarMenu(snap.id, snap.data()), restauranteId: snap.data().restauranteId || "" } : null;
+}
+
+export async function obterPromocao(id) {
+  const snap = await getDoc(doc(db, "promocoes", id));
+  return snap.exists() ? normalizarPromocao(snap.id, snap.data()) : null;
+}
+
+export async function obterEvento(id) {
+  const snap = await getDoc(doc(db, "eventos", id));
+  return snap.exists() ? normalizarEvento(snap.id, snap.data()) : null;
+}
+
 export async function listarMenus() {
   const snap = await getDocs(collection(db, "menus"));
   return snap.docs.map((d) => ({ ...normalizarMenu(d.id, d.data()), restauranteId: d.data().restauranteId || "" }));

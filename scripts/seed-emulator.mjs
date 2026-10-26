@@ -220,6 +220,8 @@ const COZINHAS = {
   Francesa: { nomes: ["Petit Paris", "Le Jardin", "Chez Marie"], fotos: ["/img/francesa-1.jpg", "/img/vinho-1.jpg"], vibes: ["Romântica", "Sofisticada", "Tranquila"], precos: [3, 4], pratos: [["Boeuf bourguignon", "Prato Principal", 128], ["Quiche lorraine", "Entrada", 42], ["Ratatouille", "Prato Principal", 86], ["Mousse au chocolat", "Sobremesa", 32]] },
   Contemporânea: { nomes: ["Estação Autoral", "Mesa do Chef", "Laboratório Gastronômico", "Terroir"], fotos: ["/img/restaurante-2.jpg", "/img/comida-1.jpg"], vibes: ["Sofisticada", "Romântica"], precos: [3, 4], pratos: [["Menu degustação 5 tempos", "Prato Principal", 240], ["Peixe do dia com purê de baroa", "Prato Principal", 118], ["Tartar de atum", "Entrada", 58], ["Sorvete artesanal da estação", "Sobremesa", 28]] },
   Cafeteria: { nomes: ["Grão Nobre Café", "Café com Prosa", "Torra Fina", "Coado & Cia"], fotos: ["/img/cafe-1.jpg", "/img/saudavel-1.jpg"], vibes: ["Cafeteria", "Tranquila"], precos: [1], pratos: [["Brunch completo", "Prato Principal", 52], ["Tosta de fermentação natural", "Prato Principal", 34], ["Pão de queijo", "Entrada", 12], ["Bolo de cenoura", "Sobremesa", 14]] },
+  Tailandesa: { nomes: ["Bangkok Street", "Thai Garden", "Siam Cozinha"], fotos: ["/img/japonesa-1.jpg", "/img/saudavel-1.jpg"], vibes: ["Descontraída", "Alegre"], precos: [2, 3], pratos: [["Pad thai de camarão", "Prato Principal", 68], ["Curry verde", "Prato Principal", 62], ["Rolinho vietnamita", "Entrada", 28], ["Arroz doce com manga", "Sobremesa", 24]] },
+  Indiana: { nomes: ["Taj Mahal", "Masala House", "Namastê Cozinha"], fotos: ["/img/comida-1.jpg", "/img/interior-4.jpg"], vibes: ["Tranquila", "Descontraída"], precos: [2, 3], pratos: [["Frango tikka masala", "Prato Principal", 64], ["Biryani de cordeiro", "Prato Principal", 78], ["Samosa", "Entrada", 26], ["Gulab jamun", "Sobremesa", 22]] },
   Mediterrânea: { nomes: ["Azeite & Sal", "Costa Grega", "Santorini"], fotos: ["/img/saudavel-1.jpg", "/img/interior-3.jpg"], vibes: ["Tranquila", "Romântica"], precos: [2, 3], pratos: [["Paella marinera", "Prato Principal", 128], ["Salada grega", "Entrada", 38], ["Moussaka", "Prato Principal", 76], ["Iogurte com mel", "Sobremesa", 22]] },
 };
 
@@ -311,6 +313,44 @@ function gerarRestaurantes() {
   return lista;
 }
 
+// Cobertura de testes: em 4 cidades, um restaurante de CADA cozinha. As experiências giram
+// de modo que cada cozinha tenha as 8 experiências (somando as cidades) e as 4 faixas de preço.
+// Assim qualquer combinação "cozinha + clima" ou "cozinha + preço" tem resposta.
+const EXPERIENCIAS_TODAS = ["Romântica", "Alegre", "Tranquila", "Sofisticada", "Familiar", "Descontraída", "Noturna", "Cafeteria"];
+const CIDADES_COBERTURA = [["DF", "Brasília"], ["SP", "São Paulo"], ["RJ", "Rio de Janeiro"], ["GO", "Goiânia"]];
+
+function gerarCobertura(nomesUsados) {
+  const lista = [];
+  Object.keys(COZINHAS).forEach((cozinha, i) => {
+    CIDADES_COBERTURA.forEach(([uf, cidade], k) => {
+      const modelo = COZINHAS[cozinha];
+      const qtdVibes = k === 2 ? 2 : 3;
+      const inicio = k === 3 ? i : k * 3 + i;
+      const vibes = Array.from({ length: qtdVibes }, (_, j) => EXPERIENCIAS_TODAS[(inicio + j) % 8]);
+      const preco = ((i + k) % 4) + 1;
+      const fator = [0.8, 1, 1.25, 1.6][preco - 1];
+      const base = modelo.nomes.find((n) => !nomesUsados.has(n)) || `${modelo.nomes[k % modelo.nomes.length]} ${cidade}`;
+      const nome = nomesUsados.has(base) ? `${base} ${["Centro", "Jardins", "Orla", "Praça"][k]}` : base;
+      if (nomesUsados.has(nome)) return;
+      nomesUsados.add(nome);
+      const bairro = escolher(Object.keys(LOCAIS[uf][cidade]));
+      lista.push({
+        chave: slug(`${nome}-${cidade}`).slice(0, 40),
+        email: `${slug(nome).slice(0, 24)}.${slug(cidade).slice(0, 12)}@demo.gastromatch`,
+        nome, cozinha, vibes, uf, cidade, bairro, preco,
+        destaque: false,
+        ocasioes: [...new Set([...vibes.flatMap((v) => OCASIOES_POR_VIBE[v] || []), ...(i % 3 === 0 ? ["aniversario", "confraternizacao"] : [])])],
+        fotos: modelo.fotos,
+        descricao: `${cozinha === "Cafeteria" ? "Cafeteria" : `Cozinha ${cozinha.toLowerCase()}`} em ${bairro}, ${cidade}, com ${vibes.map((v) => DESCRICOES[v]).join(" e ")}.`,
+        pratos: modelo.pratos.map(([t, c, p]) => [t, c, Math.round(p * fator * 10) / 10]),
+        qualidade: Math.round((3 + aleatorio() * 1.9) * 10) / 10,
+        semAvaliacoes: aleatorio() < 0.08,
+      });
+    });
+  });
+  return lista;
+}
+
 // ---------- clientes e avaliações ----------
 
 const PRIMEIROS = ["Ana", "Bruno", "Carla", "Diego", "Eduarda", "Felipe", "Gabriela", "Henrique", "Isabela", "João", "Karina", "Lucas", "Mariana", "Nicolas", "Olívia", "Pedro", "Rafaela", "Samuel", "Tatiane", "Vinícius", "Yasmin", "Thiago", "Beatriz", "Rodrigo", "Letícia", "Marcos", "Juliana", "André", "Camila", "Fernando", "Larissa", "Gustavo", "Patrícia", "Ricardo", "Aline", "Daniel", "Sofia", "Matheus", "Helena", "Caio"];
@@ -351,7 +391,13 @@ async function main() {
   await requisitar(`${AUTH}/emulator/v1/projects/${PROJETO}/accounts`, { method: "DELETE" });
 
   const agora = new Date();
-  const restaurantes = [...ORIGINAIS, ...gerarRestaurantes()];
+  const gerados = gerarRestaurantes();
+  const restaurantes = [...ORIGINAIS, ...gerados, ...gerarCobertura(new Set([...ORIGINAIS, ...gerados].map((r) => r.nome)))];
+  const chaves = new Set();
+  for (const r of restaurantes) {
+    while (chaves.has(r.chave)) r.chave += "-2";
+    chaves.add(r.chave);
+  }
 
   // ----- contas -----
   console.log(`Criando contas (${restaurantes.length} restaurantes + clientes + admin)...`);
@@ -574,6 +620,10 @@ async function main() {
   const cidades = new Set(restaurantes.map((r) => r.cidade));
   console.log(`\nPronto: ${gravados} documentos.`);
   console.log(`  ${restaurantes.length} restaurantes em ${cidades.size} cidades de ${estados.size} estados`);
+  const pares = new Set(restaurantes.flatMap((r) => r.vibes.map((v) => `${r.cozinha}|${v}`)));
+  const paresPreco = new Set(restaurantes.map((r) => `${r.cozinha}|${r.preco}`));
+  const nCoz = Object.keys(COZINHAS).length;
+  console.log(`  cobertura: ${pares.size}/${nCoz * 8} combinações cozinha×experiência, ${paresPreco.size}/${nCoz * 4} cozinha×preço`);
   console.log(`  ${clientes.length} clientes, ${totalAvaliacoes} avaliações, ${cupons.length} cupons, ${totalResgates} resgates, ${promocoes.length} promoções, ${eventos.length + 1} eventos`);
   console.log(`\nContas demo (senha: ${SENHA_DEMO}):`);
   console.log("  cliente@demo.gastromatch      (cliente Ana Demo)");

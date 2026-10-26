@@ -4,9 +4,9 @@ import Galeria from "../components/Galeria";
 import ResumoExperiencia from "../components/ResumoExperiencia";
 import BotaoSalvar from "../components/BotaoSalvar";
 import BotaoResgatar from "../components/BotaoResgatar";
-import Avaliacoes, { FormAvaliacao } from "../components/Avaliacoes";
+import Avaliacoes from "../components/Avaliacoes";
 import { Nota } from "../components/Estrelas";
-import { idAvaliacao, listarAvaliacoesDoRestaurante } from "../services/avaliacoes";
+import { listarAvaliacoesDoRestaurante } from "../services/avaliacoes";
 import { listarMeusResgates } from "../services/resgates";
 import { useAuth } from "../contexts/AuthContext";
 import { listarSalvos } from "../services/salvos";
@@ -84,7 +84,6 @@ export default function Restaurante() {
   const [salvos, setSalvos] = useState([]);
   const [resgates, setResgates] = useState([]);
   const [avaliacoes, setAvaliacoes] = useState(null);
-  const [pratoAvaliando, setPratoAvaliando] = useState(null);
 
   // Itens que o cliente já salvou/resgatou, para os botões mostrarem o estado certo.
   useEffect(() => {
@@ -191,33 +190,18 @@ export default function Restaurante() {
                 <ul className="space-y-3">
                   {menus.filter((m) => m.categoria === c).map((m) => (
                     <li key={m.id}>
-                      <div className="flex gap-4 items-center">
+                      <Link to={`/pratos/${m.id}`} className="group flex gap-4 items-center rounded-2xl -mx-2 px-2 py-1 hover:bg-cream">
                         {m.foto && <img src={m.foto} alt="" loading="lazy" className="size-16 rounded-2xl object-cover shrink-0" />}
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold">{m.titulo}</p>
-                          {m.descricao && <p className="text-xs text-inksoft">{m.descricao}</p>}
+                          <p className="font-semibold group-hover:text-terra">{m.titulo}</p>
+                          {m.descricao && <p className="text-xs text-inksoft line-clamp-1">{m.descricao}</p>}
                           <p className="mt-1 flex flex-wrap items-center gap-2">
                             <Nota media={notasPratos[m.id]?.media || 0} total={notasPratos[m.id]?.total || 0} className="text-xs" />
-                            {usuario?.papel === "cliente" && (
-                              <button type="button" onClick={() => setPratoAvaliando(pratoAvaliando === m.id ? null : m.id)} className="text-[11px] font-semibold text-terra underline">
-                                {pratoAvaliando === m.id ? "Fechar" : "Avaliar prato"}
-                              </button>
-                            )}
+                            <span className="text-[11px] font-semibold text-terra">Ver prato e avaliar →</span>
                           </p>
                         </div>
                         {m.preco != null && <p className="font-display font-semibold text-terra whitespace-nowrap">{moeda(m.preco)}</p>}
-                      </div>
-                      {pratoAvaliando === m.id && (
-                        <FormAvaliacao
-                          compacto
-                          alvo="prato"
-                          alvoId={m.id}
-                          restauranteId={r.id}
-                          tituloPrato={m.titulo}
-                          minha={(avaliacoes || []).find((a) => a.id === idAvaliacao(m.id, usuario.uid))}
-                          aoMudar={recarregarAvaliacoes}
-                        />
-                      )}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -232,7 +216,7 @@ export default function Restaurante() {
                 {promocoes.map((p) => (
                   <li key={p.id} className="rounded-2xl bg-cream p-4 ring-1 ring-ink/5">
                     <span className="rounded-full bg-terra text-cream px-2.5 py-0.5 text-[10px] font-semibold uppercase">Promoção</span>
-                    <p className="mt-2 font-display font-semibold text-lg">{p.titulo}</p>
+                    <Link to={`/promocoes/${p.id}`} className="mt-2 block font-display font-semibold text-lg hover:text-terra">{p.titulo} →</Link>
                     <p className="text-sm text-inksoft">{p.descricao}</p>
                     {p.valor && <p className="mt-2 font-display font-semibold text-xl text-terra">{p.valor}</p>}
                     <BotaoSalvar item={{ tipo: "promocao", id: p.id, titulo: p.titulo, descricao: p.descricao, foto: p.foto, valor: p.valor, restauranteId: r.id, restauranteNome: r.nome }} salvos={salvos} aoSalvar={aoSalvar} />
@@ -248,7 +232,7 @@ export default function Restaurante() {
               <ul className="grid sm:grid-cols-2 gap-4">
                 {cupons.map((c) => (
                   <li key={c.id} className="rounded-2xl border-2 border-dashed border-terra/40 p-4">
-                    <p className="font-mono font-bold text-lg tracking-wider text-terra">{c.codigo}</p>
+                    <Link to={`/cupons/${c.id}`} className="font-mono font-bold text-lg tracking-wider text-terra hover:underline">{c.codigo}</Link>
                     <p className="font-semibold">{c.desconto}</p>
                     <p className="text-xs text-inksoft">{c.condicoes}</p>
                     {c.validadeFim && <p className="mt-2 text-xs font-semibold">Válido até {dataCurta(c.validadeFim)}</p>}
@@ -266,14 +250,14 @@ export default function Restaurante() {
 
           {/* Avaliações de clientes */}
           <Bloco id="avaliacoes" titulo="Avaliações">
-            {avaliacoes ? <Avaliacoes restaurante={r} avaliacoes={avaliacoes} aoMudar={recarregarAvaliacoes} /> : <Carregando texto="Carregando avaliações..." />}
+            {avaliacoes ? <Avaliacoes alvo="restaurante" alvoId={r.id} restauranteId={r.id} avaliacoes={avaliacoes} aoMudar={recarregarAvaliacoes} /> : <Carregando texto="Carregando avaliações..." />}
           </Bloco>
 
           {/* Eventos */}
           {eventos.length > 0 && (
             <Bloco id="eventos" titulo="Eventos">
               <div className="grid sm:grid-cols-2 gap-4">
-                {eventos.map((e) => <CardEvento key={e.id} evento={{ ...e, restauranteId: "" }} />)}
+                {eventos.map((e) => <CardEvento key={e.id} evento={e} />)}
               </div>
             </Bloco>
           )}

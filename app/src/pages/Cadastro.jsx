@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import CampoSenha from "../components/CampoSenha";
 import { cadastrar } from "../services/cadastro";
 import { COZINHAS, FAIXAS_PRECO } from "../lib/catalogo";
 import { ESTADOS } from "../lib/regioes";
@@ -168,11 +169,11 @@ export default function Cadastro() {
             </span>
           </Campo>
           <Campo rotulo="Senha" erro={erros.senha}>
-            <input type="password" value={f.senha} onChange={mudar("senha")} autoComplete="new-password" className={estiloInput(erros.senha)} />
+            <CampoSenha value={f.senha} onChange={mudar("senha")} autoComplete="new-password" className={estiloInput(erros.senha)} />
             <span className="mt-1 block text-[11px] text-inksoft">Mínimo 8 caracteres, com letras e números.</span>
           </Campo>
           <Campo rotulo="Confirme a senha" erro={erros.confirmacao}>
-            <input type="password" value={f.confirmacao} onChange={mudar("confirmacao")} autoComplete="new-password" className={estiloInput(erros.confirmacao)} />
+            <CampoSenha value={f.confirmacao} onChange={mudar("confirmacao")} autoComplete="new-password" className={estiloInput(erros.confirmacao)} />
           </Campo>
 
           <label className="sm:col-span-2 flex items-start gap-3 text-sm">

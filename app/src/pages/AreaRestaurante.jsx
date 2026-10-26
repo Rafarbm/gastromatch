@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
+import BuscaLista, { filtrarPorTexto } from "../components/BuscaLista";
+import { AbaCardapio, AbaCupons, AbaDados, AbaEventos, AbaPromocoes } from "./AbasRestaurante";
 import Icone from "../components/Icone";
 import { Carregando, Erro } from "../components/Estados";
 import { useAuth } from "../contexts/AuthContext";
@@ -133,6 +135,8 @@ function ImportarCardapio({ usuario }) {
 function ResgatesRecentes({ usuario }) {
   const [lista, setLista] = useState(null);
   const [erro, setErro] = useState(false);
+  const [texto, setTexto] = useState("");
+  const [filtro, setFiltro] = useState("todos");
   useEffect(() => {
     listarResgatesDoRestaurante(usuario.uid).then(setLista).catch((e) => {
       console.error(e);
@@ -141,6 +145,7 @@ function ResgatesRecentes({ usuario }) {
   }, [usuario.uid]);
 
   const usados = (lista || []).filter((r) => r.status === "usado").length;
+  const visiveis = filtrarPorTexto((lista || []).filter((r) => filtro === "todos" || r.status === filtro), texto, (r) => [r.codigo, formatarCodigo(r.codigo), r.usuarioNome, r.codigoCupom]);
   return (
     <Cartao titulo="Cupons resgatados">
       {erro && <Erro />}
@@ -149,16 +154,26 @@ function ResgatesRecentes({ usuario }) {
         <>
           <p className="text-sm text-inksoft">{lista.length} resgates · {usados} utilizados · {lista.length - usados} aguardando uso</p>
           {lista.length > 0 && (
-            <ul className="mt-3 divide-y divide-ink/5 max-h-80 overflow-y-auto">
-              {lista.map((r) => (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <BuscaLista valor={texto} onChange={setTexto} placeholder="Buscar por código, cliente ou cupom" total={`${visiveis.length}`} className="flex-1 min-w-56" />
+              {[["todos", "Todos"], ["ativo", "Ativos"], ["usado", "Usados"]].map(([v, r]) => (
+                <button key={v} type="button" aria-pressed={filtro === v} onClick={() => setFiltro(v)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${filtro === v ? "bg-terra text-cream" : "bg-cream ring-1 ring-ink/10"}`}>{r}</button>
+              ))}
+            </div>
+          )}
+          {visiveis.length > 0 && (
+            <ul className="mt-3 divide-y divide-ink/5 max-h-96 overflow-y-auto">
+              {visiveis.map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                   <span className="min-w-0">
                     <span className="font-mono font-semibold">{formatarCodigo(r.codigo)}</span>
                     <span className="ml-2 text-inksoft">{r.usuarioNome} · {r.codigoCupom}</span>
                   </span>
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase ${r.status === "usado" ? "bg-ink/10 text-inksoft" : "bg-sage/25"}`}>
-                    {r.status === "usado" ? "Usado" : "Ativo"}
-                  </span>
+                  {r.status === "usado" ? (
+                    <span className="shrink-0 rounded-full bg-ink/10 px-2.5 py-0.5 text-[11px] font-bold uppercase text-inksoft">Usado</span>
+                  ) : (
+                    <Link to={`/validar/${r.codigo}`} className="shrink-0 rounded-full bg-sage/25 px-2.5 py-0.5 text-[11px] font-bold uppercase hover:bg-terra hover:text-cream">Ativo · validar</Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -169,41 +184,78 @@ function ResgatesRecentes({ usuario }) {
   );
 }
 
-// Área do restaurante no app novo: validar cupons, ver resgates e importar cardápio.
-// O cadastro completo (dados, cupons, promoções, eventos) continua no painel antigo.
+const ABAS = [
+  { id: "inicio", rotulo: "Início" },
+  { id: "dados", rotulo: "Dados do restaurante" },
+  { id: "cardapio", rotulo: "Cardápio" },
+  { id: "cupons", rotulo: "Cupons" },
+  { id: "promocoes", rotulo: "Promoções" },
+  { id: "eventos", rotulo: "Eventos" },
+];
+
+// Painel do restaurante (substitui o painel antigo): dados, cardápio, cupons, promoções,
+// eventos, resgates e validação de cupons, tudo no mesmo visual do site.
 export default function AreaRestaurante() {
   const { usuario, carregando } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const aba = ABAS.some((a) => a.id === params.get("aba")) ? params.get("aba") : "inicio";
   if (carregando) return <div className="mx-auto max-w-5xl px-4"><Carregando /></div>;
   if (!usuario) return <Navigate to="/entrar?voltar=/restaurante" replace />;
   if (usuario.papel !== "restaurante") return <Navigate to="/minha-conta" replace />;
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-8 pt-8 pb-12 space-y-6">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-terra">Área do restaurante</p>
-        <h1 className="mt-1 font-display font-semibold text-4xl">{usuario.nome}</h1>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-terra">Painel do restaurante</p>
+          <h1 className="mt-1 font-display font-semibold text-4xl">{usuario.nome}</h1>
+        </div>
+        <Link to={`/restaurantes/${usuario.uid}`} className="rounded-full bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">Ver minha página pública</Link>
       </header>
 
-      <div className="grid sm:grid-cols-3 gap-4">
-        <Link to="/validar" className="rounded-[24px] bg-terra text-cream p-5 hover:bg-terradeep">
-          <Icone nome="qr" className="size-7" />
-          <p className="mt-3 font-display font-semibold text-xl">Validar cupom</p>
-          <p className="text-sm text-cream/85">Leia o QR Code ou digite o código do cliente.</p>
-        </Link>
-        <Link to={`/restaurantes/${usuario.uid}`} className="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay hover:text-terra">
-          <Icone nome="restaurantes" className="size-7 text-terra" />
-          <p className="mt-3 font-display font-semibold text-xl">Minha página</p>
-          <p className="text-sm text-inksoft">Veja como os clientes veem seu restaurante.</p>
-        </Link>
-        <a href={urlLegado("painel-restaurante.html")} className="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay hover:text-terra">
-          <Icone nome="filtro" className="size-7 text-terra" />
-          <p className="mt-3 font-display font-semibold text-xl">Painel completo</p>
-          <p className="text-sm text-inksoft">Dados, cupons, promoções e eventos.</p>
-        </a>
-      </div>
+      <nav aria-label="Seções do painel" className="-mx-4 px-4 overflow-x-auto scroll-oculto">
+        <ul className="flex gap-2 w-max">
+          {ABAS.map((a) => (
+            <li key={a.id}>
+              <button type="button" onClick={() => setParams(a.id === "inicio" ? {} : { aba: a.id }, { replace: true })} aria-current={aba === a.id ? "page" : undefined} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${aba === a.id ? "bg-ink text-cream" : "bg-paper ring-1 ring-ink/10 hover:text-terra"}`}>
+                {a.rotulo}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-      <ResgatesRecentes usuario={usuario} />
-      <ImportarCardapio usuario={usuario} />
+      {aba === "inicio" && (
+        <>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link to="/validar" className="rounded-[24px] bg-terra text-cream p-5 hover:bg-terradeep">
+              <Icone nome="qr" className="size-7" />
+              <p className="mt-3 font-display font-semibold text-xl">Validar cupom</p>
+              <p className="text-sm text-cream/85">Leia o QR Code ou digite o código do cliente.</p>
+            </Link>
+            <button type="button" onClick={() => setParams({ aba: "cardapio" })} className="text-left rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 shadow-clay hover:text-terra">
+              <Icone nome="planilha" className="size-7 text-terra" />
+              <p className="mt-3 font-display font-semibold text-xl">Cardápio</p>
+              <p className="text-sm text-inksoft">Cadastre pratos ou importe uma planilha.</p>
+            </button>
+          </div>
+          <ResgatesRecentes usuario={usuario} />
+        </>
+      )}
+      {aba === "dados" && <Cartao titulo="Dados do restaurante"><AbaDados /></Cartao>}
+      {aba === "cardapio" && (
+        <>
+          <Cartao titulo="Cardápio"><AbaCardapio /></Cartao>
+          <ImportarCardapio usuario={usuario} />
+        </>
+      )}
+      {aba === "cupons" && <Cartao titulo="Cupons"><AbaCupons /></Cartao>}
+      {aba === "promocoes" && <Cartao titulo="Promoções"><AbaPromocoes /></Cartao>}
+      {aba === "eventos" && <Cartao titulo="Eventos"><AbaEventos /></Cartao>}
+
+      <p className="text-center text-xs text-inksoft">
+        Precisa de algo que ainda não está aqui? <a href={urlLegado("painel-restaurante.html")} className="font-semibold text-terra underline">Abrir o painel antigo</a>
+      </p>
     </div>
   );
 }

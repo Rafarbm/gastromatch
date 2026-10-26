@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import {
   initializeFirestore,
+  terminate,
   connectFirestoreEmulator,
   persistentLocalCache,
   persistentMultipleTabManager,
@@ -66,3 +67,14 @@ if (ambiente.usarEmulador) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
   connectFirestoreEmulator(db, "127.0.0.1", 8080);
 }
+
+// Cache de voltar/avançar do navegador (bfcache): ao sair, a página pode ficar "congelada"
+// com a conexão do Firestore aberta, e as gravações da página seguinte travavam
+// (achado nos testes automatizados). Ao sair, encerramos a conexão; se a página
+// voltar do cache, recarregamos para abrir uma conexão nova.
+window.addEventListener("pagehide", (e) => {
+  if (e.persisted) terminate(db).catch(() => {});
+});
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) window.location.reload();
+});

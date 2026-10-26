@@ -4,7 +4,7 @@ import { useLocalidade } from "../contexts/LocalidadeContext";
 import { distanciaKm } from "../lib/geo";
 import { useCarregar } from "../hooks/useCarregar";
 import { listarRestaurantes } from "../services/dados";
-import { cidadesEBairros, estadoDaCidade } from "../lib/filtros";
+import { cidadesEBairros, estadoDaCidade, filtrarRestaurantes } from "../lib/filtros";
 import { ESTADOS } from "../lib/regioes";
 
 const CHAVE_CONVITE = "gastromatch:convite-gps";
@@ -23,10 +23,12 @@ export default function SeletorLocalidade() {
   const [aberto, setAberto] = useState(false);
   const [cep, setCep] = useState("");
   const [msgCep, setMsgCep] = useState("");
+  const [cepAberto, setCepAberto] = useState(false);
   const [conviteRespondido, setConviteRespondido] = useState(lerConviteRespondido);
 
   const estados = useMemo(() => [...new Set((restaurantes || []).map((r) => r.estado).filter(Boolean))].sort(), [restaurantes]);
   const opcoes = useMemo(() => cidadesEBairros(restaurantes || [], busca.estado), [restaurantes, busca.estado]);
+  const totalNaLocalidade = useMemo(() => filtrarRestaurantes(restaurantes || [], busca).length, [restaurantes, busca]);
   const todasCidades = useMemo(() => cidadesEBairros(restaurantes || []), [restaurantes]);
 
   // Com o GPS ativo, sugere a cidade do restaurante mais próximo como localidade de busca.
@@ -62,6 +64,7 @@ export default function SeletorLocalidade() {
       const bairro = todasCidades[dados.localidade].includes(dados.bairro) ? dados.bairro : "";
       setBusca({ estado: dados.uf || estadoDaCidade(restaurantes, dados.localidade), cidade: dados.localidade, bairro });
       setMsgCep("");
+      setAberto(false);
     } catch {
       setMsgCep("Sem conexão para consultar o CEP. Escolha a cidade na lista.");
     }
@@ -142,14 +145,33 @@ export default function SeletorLocalidade() {
               </select>
             </label>
 
-            <form onSubmit={buscarCep} className="flex flex-col gap-1">
-              <label htmlFor="cep" className="text-xs font-semibold">CEP</label>
-              <div className="flex gap-2">
-                <input id="cep" inputMode="numeric" value={cep} onChange={(e) => setCep(e.target.value)} placeholder="00000-000" className="min-w-0 flex-1 rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10" />
-                <button type="submit" className="rounded-xl bg-ink text-cream px-3 font-semibold">OK</button>
-              </div>
+            <div className="md:col-span-1 flex flex-col gap-1">
+              {cepAberto ? (
+                <form onSubmit={buscarCep} className="flex flex-col gap-1">
+                  <label htmlFor="cep" className="text-xs font-semibold">CEP <span className="font-normal text-inksoft">(opcional)</span></label>
+                  <div className="flex gap-2">
+                    <input id="cep" inputMode="numeric" value={cep} onChange={(e) => setCep(e.target.value)} placeholder="00000-000" className="min-w-0 flex-1 rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10" />
+                    <button type="submit" className="rounded-xl bg-ink text-cream px-3 font-semibold">OK</button>
+                  </div>
+                </form>
+              ) : (
+                <button type="button" onClick={() => setCepAberto(true)} className="mt-5 text-left text-xs font-semibold text-terra underline">
+                  Prefere informar o CEP?
+                </button>
+              )}
               {msgCep && <p className="text-xs text-inksoft">{msgCep}</p>}
-            </form>
+            </div>
+
+            {/* Confirmação: a escolha vale na hora; o CEP não é necessário. */}
+            <div className="md:col-span-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-sage/15 px-4 py-3">
+              <p role="status" aria-live="polite" className="flex items-center gap-2 font-semibold">
+                <Icone nome="check" className="size-4 text-sage shrink-0" />
+                {totalNaLocalidade === 0 ? `Ainda não temos restaurantes em ${resumo}.` : `Mostrando ${totalNaLocalidade} ${totalNaLocalidade === 1 ? "restaurante" : "restaurantes"} em ${resumo}.`}
+              </p>
+              <button type="button" onClick={() => setAberto(false)} className="rounded-full bg-terra text-cream px-5 py-2.5 text-sm font-semibold hover:bg-terradeep">
+                Pronto
+              </button>
+            </div>
           </div>
         )}
       </div>

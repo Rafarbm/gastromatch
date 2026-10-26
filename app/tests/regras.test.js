@@ -122,6 +122,28 @@ describe("perfis e administração", () => {
   });
 });
 
+describe("painéis novos", () => {
+  it("restaurante atualiza o próprio perfil (cozinha nova, experiências, cidade)", async () => {
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "usuarios", RESTAURANTE), { cozinha: "Nordestina", vibes: ["Alegre", "Familiar"], estado: "PE", cidade: "Recife" }));
+  });
+  it("restaurante não escolhe mais de 3 experiências nem edita outro restaurante", async () => {
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "usuarios", RESTAURANTE), { vibes: ["Alegre", "Familiar", "Noturna", "Tranquila"] }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "usuarios", OUTRO_RESTAURANTE), { cozinha: "Árabe" }));
+  });
+  it("admin dá e tira destaque; restaurante e cliente não", async () => {
+    await assertSucceeds(updateDoc(doc(como(ADMIN), "usuarios", RESTAURANTE), { destaque: true }));
+    await assertFails(updateDoc(doc(como(CLIENTE), "usuarios", RESTAURANTE), { destaque: true }));
+  });
+  it("restaurante edita o próprio cupom sem mexer no contador", async () => {
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { codigo: "BRASA20", limiteTotal: 10 }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { resgatados: 0, codigo: "BRASA20" }).then(() => updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { resgatados: 5 })));
+  });
+  it("admin lista todos os usuários (painel de suporte); cliente não", async () => {
+    await assertSucceeds(getDocs(collection(como(ADMIN), "usuarios")));
+    await assertFails(getDocs(collection(como(CLIENTE), "usuarios")));
+  });
+});
+
 describe("cupom como ingresso (limite e uso único)", () => {
   it("cliente resgata com transação completa", async () => {
     await assertSucceeds(resgatar(como(CLIENTE), CLIENTE));

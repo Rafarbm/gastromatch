@@ -3,7 +3,7 @@ import { periodo } from "../lib/formato";
 
 export function CardPromocao({ promocao: p, className = "" }) {
   return (
-    <Link to={`/restaurantes/${p.restauranteId}#promocoes`} className={`group block rounded-[28px] bg-paper p-3 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-transform ${className}`}>
+    <Link to={`/promocoes/${p.id}`} className={`group block rounded-[28px] bg-paper p-3 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-transform ${className}`}>
       <div className="relative">
         <img src={p.foto} alt="" loading="lazy" className="w-full aspect-[4/3] rounded-[20px] object-cover" />
         <span className="absolute top-3 left-3 rounded-full bg-terra text-cream px-3 py-1 text-[11px] font-semibold">Promoção</span>
@@ -19,9 +19,8 @@ export function CardPromocao({ promocao: p, className = "" }) {
 }
 
 export function CardEvento({ evento: ev, className = "" }) {
-  const destino = ev.restauranteId ? `/restaurantes/${ev.restauranteId}#eventos` : "/eventos";
   return (
-    <Link to={destino} className={`group block rounded-[28px] bg-paper p-3 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-transform ${className}`}>
+    <Link to={`/eventos/${ev.id}`} className={`group block rounded-[28px] bg-paper p-3 ring-1 ring-ink/5 shadow-clay hover:-translate-y-1 transition-transform ${className}`}>
       <div className="relative">
         <img src={ev.foto} alt="" loading="lazy" className="w-full aspect-[16/10] rounded-[20px] object-cover" />
         <span className="absolute top-3 left-3 rounded-full bg-ink text-cream px-3 py-1 text-[11px] font-semibold">{periodo(ev.inicio, ev.fim)}</span>

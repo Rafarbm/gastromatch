@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import BuscaLista, { filtrarPorTexto } from "../components/BuscaLista";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Carregando, Erro, Vazio } from "../components/Estados";
@@ -26,14 +27,14 @@ function BotaoRemover({ aoRemover }) {
   );
 }
 
-function PainelAtalho({ titulo, texto, pagina }) {
+function PainelAtalho({ titulo, texto, para }) {
   return (
-    <div className="mt-8 rounded-[28px] bg-paper p-7 ring-1 ring-ink/5 shadow-clay">
+    <div className="mt-8 rounded-[28px] bg-terra text-cream p-7">
       <h2 className="font-display font-semibold text-2xl">{titulo}</h2>
-      <p className="mt-1 text-sm text-inksoft">{texto}</p>
-      <a href={urlLegado(pagina)} className="mt-5 inline-flex rounded-full bg-terra text-cream px-5 py-3 text-sm font-semibold hover:bg-terradeep">
+      <p className="mt-1 text-sm text-cream/85">{texto}</p>
+      <Link to={para} className="mt-5 inline-flex rounded-full bg-cream text-ink px-5 py-3 text-sm font-semibold">
         Abrir painel
-      </a>
+      </Link>
     </div>
   );
 }
@@ -42,6 +43,7 @@ export default function MinhaConta() {
   const { usuario, carregando } = useAuth();
   const [salvos, setSalvos] = useState(null);
   const [resgates, setResgates] = useState([]);
+  const [texto, setTexto] = useState("");
   const [erro, setErro] = useState(false);
 
   useEffect(() => {
@@ -66,7 +68,8 @@ export default function MinhaConta() {
     setSalvos((s) => s.filter((x) => x.id !== id));
   }
 
-  const porTipo = (tipo) => (salvos || []).filter((s) => s.tipo === tipo);
+  const porTipo = (tipo) => filtrarPorTexto((salvos || []).filter((s) => s.tipo === tipo), texto, (s) => [s.titulo, s.descricao, s.restauranteNome, s.codigo]);
+  const resgatesVisiveis = filtrarPorTexto(resgates, texto, (r) => [r.restauranteNome, r.desconto, r.codigoCupom, r.codigo]);
   const cupons = porTipo("cupom");
   const promocoes = porTipo("promocao");
   const eventos = porTipo("evento");
@@ -77,17 +80,10 @@ export default function MinhaConta() {
       <h1 className="mt-1 font-display font-semibold text-4xl">Olá, {usuario.nome.split(" ")[0]}!</h1>
 
       {usuario.papel === "restaurante" && (
-        <>
-          <div className="mt-8 rounded-[28px] bg-terra text-cream p-7">
-            <h2 className="font-display font-semibold text-2xl">Área do restaurante</h2>
-            <p className="mt-1 text-sm text-cream/85">Validar cupons pelo QR Code, ver resgates e importar cardápio por planilha.</p>
-            <Link to="/restaurante" className="mt-5 inline-flex rounded-full bg-cream text-ink px-5 py-3 text-sm font-semibold">Abrir área</Link>
-          </div>
-          <PainelAtalho titulo="Painel do restaurante" texto="Gerencie dados, cardápio, cupons, promoções e eventos, e veja quem salvou suas ofertas." pagina="painel-restaurante.html" />
-        </>
+        <PainelAtalho titulo="Painel do restaurante" texto="Dados, cardápio (inclusive por planilha), cupons, promoções, eventos e validação de cupons." para="/restaurante" />
       )}
       {usuario.papel === "admin" && (
-        <PainelAtalho titulo="Painel de suporte" texto="Moderação, eventos da plataforma e mensagens de suporte." pagina="suporte.html" />
+        <PainelAtalho titulo="Painel de suporte" texto="Usuários e restaurantes (banir, restaurar, destacar), mensagens e moderação de avaliações." para="/suporte" />
       )}
 
       {usuario.papel === "cliente" && (
@@ -98,10 +94,14 @@ export default function MinhaConta() {
           {erro && <div className="mt-6"><Erro /></div>}
           {!salvos && !erro && <Carregando />}
 
-          {resgates.length > 0 && (
+          {(resgates.length + (salvos?.length || 0)) > 3 && (
+            <BuscaLista valor={texto} onChange={setTexto} placeholder="Buscar nos meus cupons e salvos" className="mt-6" />
+          )}
+
+          {resgatesVisiveis.length > 0 && (
             <Secao titulo="Meus cupons">
               <ul className="grid sm:grid-cols-2 gap-4">
-                {resgates.map((r) => {
+                {resgatesVisiveis.map((r) => {
                   const usado = r.status === "usado";
                   const vencido = !usado && !cupomValido({ validadeInicio: "", validadeFim: r.validadeFim });
                   return (

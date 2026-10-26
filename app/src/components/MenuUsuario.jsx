@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { urlLegado } from "../lib/legado";
 
 const PAINEL = {
-  restaurante: { rotulo: "Painel do restaurante", pagina: "painel-restaurante.html" },
-  admin: { rotulo: "Painel de suporte", pagina: "suporte.html" },
+  restaurante: { rotulo: "Painel do restaurante", para: "/restaurante" },
+  admin: { rotulo: "Painel de suporte", para: "/suporte" },
 };
 
 export default function MenuUsuario() {
@@ -58,16 +57,13 @@ export default function MenuUsuario() {
           <Link role="menuitem" to="/minha-conta" onClick={() => setAberto(false)} className={item}>
             {usuario.papel === "cliente" ? "Meus cupons e salvos" : "Minha conta"}
           </Link>
-          {usuario.papel === "restaurante" && (
-            <>
-              <Link role="menuitem" to="/restaurante" onClick={() => setAberto(false)} className={item}>Área do restaurante</Link>
-              <Link role="menuitem" to="/validar" onClick={() => setAberto(false)} className={item}>Validar cupom</Link>
-            </>
-          )}
           {painel && (
-            <a role="menuitem" href={urlLegado(painel.pagina)} className={item}>
+            <Link role="menuitem" to={painel.para} onClick={() => setAberto(false)} className={item}>
               {painel.rotulo}
-            </a>
+            </Link>
+          )}
+          {usuario.papel === "restaurante" && (
+            <Link role="menuitem" to="/validar" onClick={() => setAberto(false)} className={item}>Validar cupom</Link>
           )}
           <button
             role="menuitem"

@@ -35,6 +35,9 @@ const MIGRADAS = {
   "/salvos.html": () => "/minha-conta",
   "/pagina-restaurante.html": (p) => (p.get("id") ? `/restaurantes/${encodeURIComponent(p.get("id"))}` : "/restaurantes"),
   "/cupom-detalhes.html": (p) => (p.get("id") ? `/cupons/${encodeURIComponent(p.get("id"))}` : "/promocoes"),
+  "/menu-detalhes.html": (p) => (p.get("id") ? `/pratos/${encodeURIComponent(p.get("id"))}` : "/restaurantes"),
+  "/promocoes-detalhes.html": (p) => (p.get("id") ? `/promocoes/${encodeURIComponent(p.get("id"))}` : "/promocoes"),
+  "/evento-detalhes.html": (p) => (p.get("id") ? `/eventos/${encodeURIComponent(p.get("id"))}` : "/eventos"),
 };
 
 export function criarMiddlewareLegado() {
