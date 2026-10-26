@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detalhes do Cupom — GastroMatch</title>
+
+  <!-- Tailwind CSS v4 CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <!-- CSS local -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
+
+  <style>
+    #barra-progresso {
+      width: 0%;
+      transition: width 0.05s linear;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-cream text-ink font-body antialiased flex flex-col justify-between">
+
+  <!-- Header Padronizado -->
+  <header class="mx-auto max-w-6xl px-5 sm:px-8 w-full">
+    <nav class="flex items-center justify-between py-5 border-b border-ink/10">
+      <a href="index.html" class="font-display font-semibold text-2xl tracking-tight">GastroMatch<span class="text-terra">.</span></a>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <ul id="nav-links" class="flex items-center gap-6 text-sm font-medium text-ink">
+          <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+          <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+          <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+          <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+        </ul>
+      </div>
+
+      <div id="nav-auth-container" class="flex items-center gap-3">
+        <a href="login.html" class="inline-flex items-center rounded-full bg-paper text-ink text-sm font-semibold py-2 px-4 ring-1 ring-ink/10 hover:bg-cream hover:text-terra transition-colors">
+          Entrar
+        </a>
+        <a href="cadastro.html" class="inline-flex items-center rounded-full bg-terra text-cream text-sm font-semibold py-2 px-4 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors">
+          Fazer Cadastro
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="mx-auto max-w-6xl px-5 sm:px-8 pt-6 pb-20 w-full">
+
+    <!-- Botão Voltar Dinâmico -->
+    <div class="mb-6">
+      <a id="btn-voltar-dinamico" href="index.html" class="inline-flex items-center gap-2 text-xs font-semibold text-inksoft hover:text-terra transition-colors">
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+        <span id="texto-voltar-dinamico">Voltar para o Início</span>
+      </a>
+    </div>
+
+    <!-- Card Principal do Cupom -->
+    <section class="relative rounded-[32px] overflow-hidden bg-paper shadow-clay ring-1 ring-ink/5 p-6 sm:p-10 space-y-6">
+
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-ink/10">
+        <div class="space-y-2">
+          <span id="cupom-tag" class="inline-flex items-center gap-1.5 rounded-full bg-terra/10 text-terra text-xs font-semibold px-3 py-1 uppercase tracking-wider">
+            <span class="material-symbols-outlined text-sm">local_offer</span> Cupom Exclusivo
+          </span>
+          <h1 id="cupom-codigo" class="font-display font-bold text-4xl sm:text-6xl text-terra uppercase tracking-wider">
+            CARREGANDO...
+          </h1>
+          <p id="cupom-restaurante" class="text-base font-semibold text-ink">
+            Parceiro GastroMatch
+          </p>
+        </div>
+
+        <!-- Destaque do Desconto -->
+        <div class="bg-cream rounded-2xl p-4 ring-1 ring-ink/10 text-center shrink-0 min-w-[200px]">
+          <span class="text-xs uppercase font-bold text-inksoft block">Valor / Desconto</span>
+          <span id="cupom-desconto" class="font-display font-semibold text-2xl sm:text-3xl text-ink mt-0.5 block">
+            --% de desconto
+          </span>
+        </div>
+      </div>
+
+      <!-- Informações do Cupom e Regras -->
+      <div class="space-y-4">
+        <h3 class="font-display font-semibold text-lg text-ink">Regras e Condições de Uso</h3>
+        <p id="cupom-condicoes" class="text-sm text-inksoft leading-relaxed">
+          A carregar condições do cupom...
+        </p>
+
+        <!-- Detalhes do Local, Dias e Horários -->
+        <div class="pt-4 border-t border-ink/10 space-y-2.5 text-xs text-inksoft">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-terra text-lg">location_on</span>
+            <span id="restaurante-endereco">Endereço: A carregar...</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-terra text-lg">restaurant</span>
+            <span id="cupom-prato-vinculado">Prato / Menu Vinculado: Todos</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-terra text-lg">event</span>
+            <span id="cupom-validade">Validade: A carregar...</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-terra text-lg">calendar_today</span>
+            <span id="cupom-dias">Dias de Validade: A carregar...</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-terra text-lg">schedule</span>
+            <span id="cupom-horario">Horário: A carregar...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão Interativo "Resgatar Cupom" com Press & Hold -->
+      <div class="pt-6 border-t border-ink/10 flex flex-col gap-3">
+        <div class="relative overflow-hidden rounded-full w-full sm:w-auto">
+          <button id="btn-resgatar" type="button" class="relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-3.5 px-8 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors shadow-sm cursor-pointer select-none">
+            <span class="material-symbols-outlined text-lg">local_offer</span>
+            <span id="texto-botao">Mantenha pressionado para resgatar cupom</span>
+          </button>
+          <div id="barra-progresso" class="absolute bottom-0 left-0 h-1 bg-amber-400 pointer-events-none"></div>
+        </div>
+
+        <!-- Mini Card de Sucesso -->
+        <div id="mini-card-sucesso" class="hidden rounded-2xl bg-emerald-50 ring-1 ring-emerald-500/20 p-4 shadow-sm flex items-start gap-3 transition-all duration-300 max-w-md">
+          <div class="grid place-items-center size-8 rounded-full bg-emerald-500 text-cream shrink-0">
+            <span class="material-symbols-outlined text-lg">check_circle</span>
+          </div>
+          <div class="space-y-1">
+            <h4 class="font-display font-semibold text-sm text-emerald-900">Cupom Resgatado com Sucesso!</h4>
+            <p class="text-xs text-emerald-700 leading-relaxed">Redirecionando para os seus itens salvos...</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full pt-12 pb-10 mt-auto border-t border-ink/10">
+    <div class="mx-auto max-w-6xl px-5 sm:px-8 text-center text-xs text-inksoft">
+      <p>© 2026 GastroMatch. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT UNIFICADO DE AUTENTICAÇÃO E LÓGICA -->
+  <script type="module">
+    import { db, observarEstadoAutenticacao, fazerLogout } from './firebase-config.js';
+    import { doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let usuarioAtual = null;
+    let dadosCupomCache = null;
+    let resgateExistenteId = null;
+
+    const paramsURL = new URLSearchParams(window.location.search);
+    if (paramsURL.get('origem') === 'painel') {
+      const btnVoltar = document.getElementById('btn-voltar-dinamico');
+      const textoVoltar = document.getElementById('texto-voltar-dinamico');
+      if (btnVoltar && textoVoltar) {
+        btnVoltar.href = 'painel-restaurante.html';
+        textoVoltar.textContent = 'Voltar para o Painel Restaurante';
+      }
+    }
+
+    // --- 1. RENDERIZAÇÃO DO HEADER DINÂMICO E AUTENTICAÇÃO ---
+    const navAuthContainer = document.getElementById('nav-auth-container');
+    const navLinksList = document.getElementById('nav-links');
+
+    if (navAuthContainer) {
+      observarEstadoAutenticacao(async ({ logado, user, dadosUsuario }) => {
+        if (logado && user) {
+          usuarioAtual = { uid: user.uid, email: user.email, ...dadosUsuario };
+
+          if (dadosCupomCache) {
+            await verificarSeJaSalvo();
+          }
+
+          const isSuporte = user.email && user.email.endsWith('@sugama.com');
+          const isRestaurante = dadosUsuario?.tipo === 'restaurante';
+
+          // Atualização do Menu Superior
+          if (navLinksList) {
+            if (isSuporte) {
+              navLinksList.innerHTML = `
+                                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                                <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                                <li><a href="suporte.html" class="text-terra font-semibold">Painel Suporte</a></li>
+                            `;
+            } else if (isRestaurante) {
+              navLinksList.innerHTML = `
+                                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                                <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                                <li><a href="painel-restaurante.html" class="hover:text-terra transition-colors">Painel Restaurante</a></li>
+                            `;
+            } else {
+              navLinksList.innerHTML = `
+                                <li><a href="index.html" class="hover:text-terra transition-colors">Início</a></li>
+                                <li><a href="promocoes.html" class="hover:text-terra transition-colors">Promoções</a></li>
+                                <li><a href="eventos.html" class="hover:text-terra transition-colors">Eventos</a></li>
+                                <li><a href="index.html#como-funciona" class="hover:text-terra transition-colors">Como Funciona</a></li>
+                                <li><a href="salvos.html" class="hover:text-terra transition-colors">Salvos</a></li>
+                            `;
+            }
+          }
+
+          // Nome e Dropdown
+          let nomeExibicao = 'Usuário';
+          let subrotuloHTML = '';
+
+          if (isSuporte) {
+            nomeExibicao = 'Suporte';
+            subrotuloHTML = '<span class="text-[10px] uppercase font-bold text-terra block">Administração</span>';
+          } else if (isRestaurante) {
+            const nomeBruto = dadosUsuario?.nomeRestaurante || dadosUsuario?.nomeResponsavel || user?.email?.split('@')[0];
+            const primeiroNome = nomeBruto.trim().split(' ')[0];
+            nomeExibicao = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
+            subrotuloHTML = '<span class="text-[10px] uppercase font-bold text-terra block">Conta Parceiro</span>';
+          } else {
+            const nomeBruto = dadosUsuario?.nome || user?.email?.split('@')[0] || 'Usuário';
+            const primeiroNome = nomeBruto.trim().split(' ')[0];
+            nomeExibicao = primeiroNome.charAt(0).toUpperCase() + primeiroNome.slice(1).toLowerCase();
+          }
+
+          let botoesDropdownHTML = '';
+          if (isSuporte) {
+            botoesDropdownHTML = `
+                            <a href="suporte.html" class="flex items-center justify-center rounded-full bg-terra text-xs font-bold text-cream hover:bg-terradeep transition-colors py-3 text-center">Painel Suporte</a>
+                            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 hover:bg-red-50 hover:text-red-600 py-3 cursor-pointer">Sair da conta</button>
+                        `;
+          } else if (isRestaurante) {
+            botoesDropdownHTML = `
+                            <a href="painel-restaurante.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors py-3 text-center">Painel Restaurante</a>
+                            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 hover:bg-red-50 hover:text-red-600 py-3 cursor-pointer">Sair da conta</button>
+                        `;
+          } else {
+            botoesDropdownHTML = `
+                            <a href="perfil-usuario.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors py-3 text-center">Ver perfil</a>
+                            <a href="salvos.html" class="flex items-center justify-center rounded-full bg-ink text-xs font-bold text-cream hover:bg-terra transition-colors py-3 text-center">Salvos</a>
+                            <button id="btn-sair" type="button" class="rounded-full bg-cream text-xs font-bold text-ink ring-1 ring-ink/10 hover:bg-red-50 hover:text-red-600 py-3 cursor-pointer">Sair da conta</button>
+                        `;
+          }
+
+          navAuthContainer.innerHTML = `
+                        <div style="position: relative !important; display: inline-block !important;">
+                            <button type="button" id="btn-user-dropdown" class="group inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 ring-1 ring-ink/10 hover:bg-terra hover:ring-terra transition-all cursor-pointer shadow-sm">
+                                <span class="text-sm font-semibold text-ink group-hover:text-cream whitespace-nowrap">${nomeExibicao}</span>
+                                <svg id="arrow-icon" class="size-4 text-inksoft group-hover:text-cream transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-3 rounded-3xl bg-paper shadow-2xl ring-1 ring-ink/10 z-50" style="background-color: #fcfbfa !important; border-radius: 1.5rem !important; width: 240px !important; padding: 20px !important;">
+                                <p class="text-base font-bold text-ink truncate">${user.email}</p>
+                                ${subrotuloHTML}
+                                <div style="margin: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1);"></div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">${botoesDropdownHTML}</div>
+                            </div>
+                        </div>
+                    `;
+
+          const btnDropdown = document.getElementById('btn-user-dropdown');
+          const dropdownMenu = document.getElementById('dropdown-menu');
+          if (btnDropdown) {
+            btnDropdown.addEventListener('click', (e) => {
+              e.stopPropagation();
+              dropdownMenu.classList.toggle('hidden');
+            });
+          }
+          document.addEventListener('click', () => dropdownMenu?.classList.add('hidden'));
+          document.getElementById('btn-sair')?.addEventListener('click', fazerLogout);
+
+        } else {
+          usuarioAtual = null;
+        }
+      });
+    }
+
+    // --- 2. CARREGAMENTO DOS DADOS DO CUPOM ---
+    document.addEventListener("DOMContentLoaded", async () => {
+      const cupomId = paramsURL.get('id');
+
+      if (!cupomId) {
+        document.getElementById('cupom-codigo').textContent = "Cupom não encontrado";
+        document.getElementById('cupom-condicoes').textContent = "Nenhum ID de cupom especificado na URL.";
+        return;
+      }
+
+      try {
+        const cupomSnap = await getDoc(doc(db, "cupons", cupomId));
+
+        if (!cupomSnap.exists()) {
+          document.getElementById('cupom-codigo').textContent = "Cupom não encontrado";
+          return;
+        }
+
+        dadosCupomCache = { id: cupomSnap.id, ...cupomSnap.data() };
+
+        // Trata código e desconto
+        const codigo = dadosCupomCache.codigo || "CUPOM";
+        document.getElementById('cupom-codigo').textContent = codigo;
+
+        let valorBruto = String(dadosCupomCache.desconto || "Desconto Especial").trim();
+        valorBruto = valorBruto.replace(/%?\s*de\s*desconto/gi, '').replace(/%?\s*off/gi, '').replace(/%/g, '').trim();
+        let descontoTexto = (!isNaN(valorBruto) && valorBruto !== "") ? `${valorBruto}% de desconto` : (valorBruto || "Desconto Especial");
+
+        document.getElementById('cupom-desconto').textContent = descontoTexto;
+        document.getElementById('cupom-condicoes').textContent = dadosCupomCache.condicoes || dadosCupomCache.descricao || "Sem regras adicionais especificadas.";
+
+        // Formatador de datas
+        function formatarDataBR(dataStr) {
+          if (!dataStr) return '';
+          if (!dataStr.includes('-')) return dataStr;
+          const partes = dataStr.split('T')[0].split('-');
+          return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dataStr;
+        }
+
+        const inicio = formatarDataBR(dadosCupomCache.validadeInicio || dadosCupomCache.inicio || '');
+        const fim = formatarDataBR(dadosCupomCache.validadeFim || dadosCupomCache.fim || '');
+        const validadeStr = inicio && fim ? `${inicio} até ${fim}` : (inicio || 'Indefinida');
+        document.getElementById('cupom-validade').textContent = `Validade: ${validadeStr}`;
+
+        // Dias e Horário
+        const diasStr = dadosCupomCache.diasValidos && dadosCupomCache.diasValidos.length > 0 ? dadosCupomCache.diasValidos.join(', ') : "Todos os dias";
+        document.getElementById('cupom-dias').textContent = `Dias de Validade: ${diasStr}`;
+
+        let horaTexto = "Livre / Sem restrição de horário";
+        if (dadosCupomCache.horaInicio && dadosCupomCache.horaFim) {
+          horaTexto = `Das ${dadosCupomCache.horaInicio} às ${dadosCupomCache.horaFim}`;
+        }
+        document.getElementById('cupom-horario').textContent = `Horário: ${horaTexto}`;
+
+        // Prato Vinculado
+        document.getElementById('cupom-prato-vinculado').textContent = `Prato Vinculado: ${dadosCupomCache.prato || 'Todos os itens'}`;
+
+        // Busca dados do restaurante parceiro
+        if (dadosCupomCache.restauranteId) {
+          const restSnap = await getDoc(doc(db, "usuarios", dadosCupomCache.restauranteId));
+          const elRestaurante = document.getElementById('cupom-restaurante');
+
+          if (restSnap.exists()) {
+            const rData = restSnap.data();
+            const nomeRest = rData.nomeRestaurante || rData.nome || 'Parceiro GastroMatch';
+
+            elRestaurante.innerHTML = `
+            <a href="pagina-restaurante.html?id=${dadosCupomCache.restauranteId}" class="inline-flex items-center gap-1 text-terra font-semibold no-underline cursor-pointer">
+                <span class="material-symbols-outlined text-base">storefront</span> ${nomeRest}
+            </a>
+        `;
+            document.getElementById('restaurante-endereco').textContent = `Endereço: ${rData.endereco || 'Brasília - DF'}`;
+          } else {
+            const nomeRest = dadosCupomCache.restaurante || 'Parceiro GastroMatch';
+            elRestaurante.innerHTML = `
+            <a href="pagina-restaurante.html?id=${dadosCupomCache.restauranteId}" class="inline-flex items-center gap-1 text-terra font-semibold no-underline cursor-pointer">
+                <span class="material-symbols-outlined text-base">storefront</span> ${nomeRest}
+            </a>
+        `;
+          }
+        }
+
+        if (usuarioAtual) {
+          await verificarSeJaSalvo();
+        }
+
+      } catch (error) {
+        console.error("Erro ao carregar os dados do cupom:", error);
+      }
+    });
+
+    // --- 3. VERIFICAÇÃO DE CUPOM SALVO / RESGATADO ---
+    async function verificarSeJaSalvo() {
+      if (!usuarioAtual || !dadosCupomCache) return;
+
+      try {
+        const q = query(
+          collection(db, "salvos"),
+          where("usuarioId", "==", usuarioAtual.uid),
+          where("cupomId", "==", dadosCupomCache.id)
+        );
+        const querySnapshot = await getDocs(q);
+
+        const btnResgatar = document.getElementById('btn-resgatar');
+        const textoBotao = document.getElementById('texto-botao');
+        const barraProgresso = document.getElementById('barra-progresso');
+
+        if (!querySnapshot.empty) {
+          resgateExistenteId = querySnapshot.docs[0].id;
+          btnResgatar.className = "relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-red-600 text-cream text-sm font-semibold py-3.5 px-8 ring-1 ring-red-700/30 hover:bg-red-700 transition-colors shadow-sm cursor-pointer select-none";
+          textoBotao.textContent = "Mantenha pressionado para cancelar resgate";
+          if (barraProgresso) barraProgresso.className = "absolute bottom-0 left-0 h-1 bg-amber-200 pointer-events-none";
+        } else {
+          resgateExistenteId = null;
+          btnResgatar.className = "relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-terra text-cream text-sm font-semibold py-3.5 px-8 ring-1 ring-terradeep/30 hover:bg-terradeep transition-colors shadow-sm cursor-pointer select-none";
+          textoBotao.textContent = "Mantenha pressionado para resgatar cupom";
+          if (barraProgresso) barraProgresso.className = "absolute bottom-0 left-0 h-1 bg-amber-400 pointer-events-none";
+        }
+      } catch (error) {
+        console.error("Erro ao verificar cupom salvo:", error);
+      }
+    }
+
+    // --- 4. PRESS & HOLD PARA RESGATAR / CANCELAR ---
+    const btnResgatar = document.getElementById('btn-resgatar');
+    const barraProgresso = document.getElementById('barra-progresso');
+    const textoBotao = document.getElementById('texto-botao');
+    const miniCardSucesso = document.getElementById('mini-card-sucesso');
+
+    let timerPressao = null;
+    let intervaloProgresso = null;
+    let tempoInicio = 0;
+    const tempoNecessario = 1500;
+
+    function iniciarPressao(e) {
+      if (e.cancelable) e.preventDefault();
+
+      if (!usuarioAtual) {
+        alert("Você precisa estar cadastrado e com sessão iniciada para realizar esta ação.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      textoBotao.textContent = resgateExistenteId ? "Segure para cancelar..." : "Segure para resgatar...";
+      tempoInicio = Date.now();
+      barraProgresso.style.width = "0%";
+
+      intervaloProgresso = setInterval(() => {
+        let tempoDecorrido = Date.now() - tempoInicio;
+        let porcentagem = (tempoDecorrido / tempoNecessario) * 100;
+        if (porcentagem > 100) porcentagem = 100;
+        barraProgresso.style.width = `${porcentagem}%`;
+      }, 30);
+
+      timerPressao = setTimeout(() => {
+        if (resgateExistenteId) {
+          executarCancelamentoSalvar();
+        } else {
+          executarSalvarCupom();
+        }
+      }, tempoNecessario);
+    }
+
+    function cancelarPressao() {
+      if (timerPressao) clearTimeout(timerPressao);
+      if (intervaloProgresso) clearInterval(intervaloProgresso);
+      barraProgresso.style.width = "0%";
+
+      if (!textoBotao.textContent.includes("✔") && !textoBotao.textContent.includes("✖")) {
+        textoBotao.textContent = resgateExistenteId ? "Mantenha pressionado para cancelar resgate" : "Mantenha pressionado para resgatar cupom";
+      }
+    }
+
+    async function executarSalvarCupom() {
+      cancelarPressao();
+
+      try {
+        const dadosSalvar = {
+          usuarioId: usuarioAtual.uid,
+          usuarioEmail: usuarioAtual.email,
+          usuarioNome: usuarioAtual.nome || usuarioAtual.email.split('@')[0],
+          cupomId: dadosCupomCache.id,
+          titulo: `Cupom ${dadosCupomCache.codigo || 'GastroMatch'}`,
+          codigo: dadosCupomCache.codigo || "CUPOM",
+          desconto: dadosCupomCache.desconto || "",
+          restauranteId: dadosCupomCache.restauranteId || "",
+          restauranteNome: dadosCupomCache.restaurante || "Parceiro",
+          dataResgate: serverTimestamp()
+        };
+
+        const docRef = await addDoc(collection(db, "salvos"), dadosSalvar);
+        resgateExistenteId = docRef.id;
+
+        btnResgatar.classList.remove('bg-terra', 'hover:bg-terradeep');
+        btnResgatar.classList.add('bg-emerald-600');
+        textoBotao.textContent = "✔ Cupom Resgatado";
+
+        if (miniCardSucesso) {
+          miniCardSucesso.querySelector('h4').textContent = "Cupom Resgatado com Sucesso!";
+          miniCardSucesso.querySelector('p').textContent = "Redirecionando para os seus itens salvos...";
+          miniCardSucesso.classList.remove('hidden');
+        }
+
+        setTimeout(() => {
+          window.location.href = "salvos.html";
+        }, 1500);
+
+      } catch (error) {
+        console.error("Erro ao resgatar cupom:", error);
+        alert("Ocorreu um erro ao resgatar. Tente novamente.");
+      }
+    }
+
+    async function executarCancelamentoSalvar() {
+      cancelarPressao();
+
+      try {
+        if (!resgateExistenteId) return;
+
+        await deleteDoc(doc(db, "salvos", resgateExistenteId));
+        resgateExistenteId = null;
+
+        textoBotao.textContent = "✖ Resgate Cancelado";
+        btnResgatar.classList.remove('bg-red-600', 'hover:bg-red-700');
+        btnResgatar.classList.add('bg-zinc-600');
+
+        if (miniCardSucesso) {
+          miniCardSucesso.querySelector('h4').textContent = "Resgate Cancelado";
+          miniCardSucesso.querySelector('p').textContent = "O cupom foi removido dos seus salvos.";
+          miniCardSucesso.classList.remove('hidden');
+        }
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+
+      } catch (error) {
+        console.error("Erro ao cancelar resgate:", error);
+        alert("Ocorreu um erro ao cancelar. Tente novamente.");
+      }
+    }
+
+    if (btnResgatar) {
+      btnResgatar.addEventListener('mousedown', iniciarPressao);
+      btnResgatar.addEventListener('mouseup', cancelarPressao);
+      btnResgatar.addEventListener('mouseleave', cancelarPressao);
+
+      btnResgatar.addEventListener('touchstart', iniciarPressao, { passive: false });
+      btnResgatar.addEventListener('touchend', cancelarPressao);
+      btnResgatar.addEventListener('touchcancel', cancelarPressao);
+    }
+  </script>
+</body>
+
+</html>
