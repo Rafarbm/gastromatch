@@ -474,6 +474,12 @@
           <textarea id="cupom-condicoes" rows="2" required class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Ex: Válido para consumo no local..."></textarea>
         </div>
 
+        <div>
+          <label class="block font-semibold text-ink mb-1">Limite de resgates <span class="text-xs font-normal text-inksoft">(vazio = sem limite)</span></label>
+          <input type="number" id="cupom-limite" min="1" max="100000" step="1" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra" placeholder="Ex: 50">
+          <p class="mt-1 text-[11px] text-inksoft">Cada cliente resgata uma vez e recebe um código único com QR Code.</p>
+        </div>
+
         <button type="submit" class="w-full rounded-full bg-terra text-cream font-semibold py-3 px-4 hover:bg-terradeep transition-colors shadow-sm cursor-pointer">Criar Cupom</button>
       </form>
     </div>
@@ -553,6 +559,10 @@
         <div>
           <label class="block font-semibold text-ink mb-1">Condições</label>
           <textarea id="edit-cupom-condicoes" rows="2" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra"></textarea>
+        </div>
+        <div>
+          <label class="block font-semibold text-ink mb-1">Limite de resgates <span class="text-xs font-normal text-inksoft">(vazio = sem limite)</span></label>
+          <input type="number" id="edit-cupom-limite" min="1" max="100000" step="1" class="w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
         </div>
         <button type="submit" class="w-full rounded-full bg-terra text-cream font-semibold py-3 px-4 hover:bg-terradeep transition-colors shadow-sm cursor-pointer">Salvar Alterações</button>
       </form>
@@ -1127,6 +1137,7 @@
           document.getElementById('edit-cupom-hora-inicio').value = c.horaInicio || '';
           document.getElementById('edit-cupom-hora-fim').value = c.horaFim || '';
           document.getElementById('edit-cupom-condicoes').value = c.condicoes || '';
+          document.getElementById('edit-cupom-limite').value = c.limiteTotal || '';
 
           carregarSelecaoDiasParaEdicao('edit-cupom', c.diasValidos);
           modalEditarCupom.classList.remove('hidden');
@@ -1728,6 +1739,8 @@
             horaFim: document.getElementById('cupom-hora-fim').value || "",
             diasValidos,
             condicoes: document.getElementById('cupom-condicoes').value,
+            // Limite de resgates (null = ilimitado). O contador "resgatados" é controlado pelas regras do banco.
+            limiteTotal: Number(document.getElementById('cupom-limite').value) || null,
             prato: tipoPrato === 'existente' ? document.getElementById('cupom-menu-select').value : "Cupom Avulso",
             criadoEm: new Date()
           });
@@ -1752,7 +1765,8 @@
             horaInicio: document.getElementById('edit-cupom-hora-inicio').value || "",
             horaFim: document.getElementById('edit-cupom-hora-fim').value || "",
             diasValidos,
-            condicoes: document.getElementById('edit-cupom-condicoes').value
+            condicoes: document.getElementById('edit-cupom-condicoes').value,
+            limiteTotal: Number(document.getElementById('edit-cupom-limite').value) || null
           });
           fecharModalEditarCupom();
           mostrarToast("Cupom atualizado com sucesso!");
@@ -1904,7 +1918,8 @@
                 btnApagarConta.textContent = "A apagar tudo...";
                 btnApagarConta.disabled = true;
 
-                const colecoes = ["menus", "cupons", "promocoes", "eventos", "salvos"];
+                // "salvos" não entra: são dados dos clientes, não do restaurante (protegidos pelas regras).
+                const colecoes = ["menus", "cupons", "promocoes", "eventos"];
                 for (const colName of colecoes) {
                   const qCol = query(collection(db, colName), where("restauranteId", "==", user.uid));
                   const snapCol = await getDocs(qCol);

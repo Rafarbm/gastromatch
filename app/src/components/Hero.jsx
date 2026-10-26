@@ -88,6 +88,7 @@ export default function Hero({ slides }) {
           >
             <img src={s.foto} alt="" className="absolute inset-0 size-full object-cover" />
             <div className="absolute inset-0 bg-linear-to-t from-ink/85 via-ink/40 to-ink/10 sm:bg-linear-to-r sm:from-ink/85 sm:via-ink/45 sm:to-transparent" />
+            {s.credito && <p className="absolute right-3 top-2 text-[10px] text-cream/70">{s.credito}</p>}
             <div className="relative h-full mx-auto max-w-6xl px-4 sm:px-8 pb-14 sm:pb-0 flex flex-col justify-end sm:justify-center text-cream">
               <div className="max-w-xl">
               {s.selo && <span className="w-fit rounded-full bg-terra px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]">{s.selo}</span>}

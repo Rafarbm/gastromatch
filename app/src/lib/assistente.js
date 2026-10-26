@@ -43,8 +43,9 @@ export function proximoSlot(pref) {
   return SLOTS.find((s) => !r[s]) || null;
 }
 
-// Botões de resposta rápida para a pergunta da vez.
-export function opcoesRapidas(slot, vocabulario) {
+// Botões de resposta rápida para a pergunta da vez. "minhaCidade" (do seletor do site)
+// vira o primeiro botão do local: a pessoa escolhe, nada é aplicado sem ela saber.
+export function opcoesRapidas(slot, vocabulario, minhaCidade = "") {
   const tantoFaz = { rotulo: TANTO_FAZ, texto: TANTO_FAZ, slot, valor: null };
   if (slot === "experiencia") {
     return [
@@ -56,10 +57,15 @@ export function opcoesRapidas(slot, vocabulario) {
     return [...vocabulario.cozinhas.map((c) => ({ rotulo: c, texto: c, slot, valor: c })), tantoFaz];
   }
   if (slot === "local") {
+    const cidades = Object.keys(vocabulario.locais).sort((a, b) => a.localeCompare(b, "pt-BR"));
     const opcoes = [];
-    for (const [cidade, bairros] of Object.entries(vocabulario.locais)) {
-      opcoes.push({ rotulo: cidade, texto: `Em ${cidade}`, slot, valor: { cidade, bairro: "" } });
-      bairros.forEach((b) => opcoes.push({ rotulo: b, texto: `${b}, ${cidade}`, slot, valor: { cidade, bairro: b } }));
+    if (minhaCidade && vocabulario.locais[minhaCidade]) {
+      opcoes.push({ rotulo: `📍 Na minha cidade (${minhaCidade})`, texto: `Em ${minhaCidade}`, slot, valor: { cidade: minhaCidade, bairro: "" } });
+    }
+    // Com muitas cidades, bairros ficam de fora dos botões (a pessoa pode digitar o bairro).
+    for (const cidade of cidades) {
+      if (cidade !== minhaCidade) opcoes.push({ rotulo: cidade, texto: `Em ${cidade}`, slot, valor: { cidade, bairro: "" } });
+      if (cidades.length <= 3) vocabulario.locais[cidade].forEach((b) => opcoes.push({ rotulo: b, texto: `${b}, ${cidade}`, slot, valor: { cidade, bairro: b } }));
     }
     return [...opcoes, tantoFaz];
   }
@@ -98,14 +104,26 @@ const SINONIMOS_EXPERIENCIA = {
 };
 
 const SINONIMOS_COZINHA = {
-  Churrasco: ["churrasc", "carne", "picanha", "rodizio"],
-  Japonesa: ["japones", "sushi", "temaki", "lamen"],
-  Italiana: ["italian", "massa", "pizza", "lasanha"],
+  Churrasco: ["churrasc", "picanha", "rodizio de carne", "costela", "gaucho"],
+  Japonesa: ["japones", "sushi", "temaki", "sashimi"],
+  Italiana: ["italian", "massa", "lasanha", "risoto"],
+  Pizzaria: ["pizza"],
   Francesa: ["frances"],
-  Mexicana: ["mexican", "taco", "nacho"],
-  Brasileira: ["brasileir", "caseira", "feijoada", "mineira", "goiana"],
-  Mediterrânea: ["mediterr", "peixe", "frutos do mar"],
+  Mexicana: ["mexican", "taco", "nacho", "burrito"],
+  Brasileira: ["brasileir", "caseira", "feijoada", "comida mineira", "goiana"],
+  Nordestina: ["nordestin", "baiao", "carne de sol", "acaraje", "moqueca", "tapioca"],
+  Mediterrânea: ["mediterr"],
+  "Frutos do Mar": ["frutos do mar", "peixe", "camarao", "lagosta", "ostra"],
   Contemporânea: ["contempor", "autoral", "degustacao"],
+  Árabe: ["arabe", "esfiha", "kibe", "libanes", "shawarma"],
+  Vegetariana: ["vegetarian", "vegan", "sem carne"],
+  Hamburgueria: ["hamburguer", "burger", "lanche"],
+  Chinesa: ["chines", "yakisoba", "rolinho primavera"],
+  Peruana: ["peruan", "ceviche"],
+  Portuguesa: ["portugues", "bacalhau"],
+  Cafeteria: ["cafeteria", "cafe da manha"],
+  Tailandesa: ["tailandes", "pad thai"],
+  Indiana: ["indian", "curry", "masala"],
 };
 
 export function extrairPorPalavras(texto, vocabulario, prefAtual) {
@@ -156,6 +174,33 @@ export function precisaCatalogo(texto) {
   return t.length > 60 || PALAVRAS_DE_PERGUNTA.test(t);
 }
 
+// Com muitos restaurantes o catálogo inteiro estoura o limite da IA. Enviamos só os
+// mais relevantes para a pergunta (técnica parecida com "RAG", sem banco vetorial):
+// pontua cada restaurante pelas palavras da pergunta e pelas preferências já coletadas.
+const PALAVRAS_VAZIAS = new Set(["restaurante", "restaurantes", "algum", "alguma", "quero", "comer", "onde", "qual", "quais", "para", "perto", "lugar", "existe", "voces", "indica", "recomenda"]);
+
+export function selecionarCatalogo(catalogo, texto, pref = {}, limite = 25) {
+  if (catalogo.length <= limite) return catalogo;
+  // Radical simples (corta o final): "peruano" casa com "Peruana", "japoneses" com "Japonesa".
+  const palavras = semAcento(texto)
+    .split(/[^a-z0-9]+/)
+    .filter((p) => p.length > 3 && !PALAVRAS_VAZIAS.has(p))
+    .map((p) => (p.length > 5 ? p.slice(0, p.length - 2) : p));
+  const pontuados = catalogo.map((r) => {
+    const alvo = semAcento([r.nome, r.cozinha, r.cidade, r.bairro, r.estado, r.clima.join(" "), r.pratos.join(" "), r.promocoes.join(" "), r.ocasioes.join(" ")].join(" "));
+    let p = palavras.filter((w) => alvo.includes(w)).length;
+    if (pref.cidade && r.cidade === pref.cidade) p += 3;
+    if (pref.cozinha && r.cozinha === pref.cozinha) p += 3;
+    if (pref.experiencias?.some((e) => r.clima.includes(e))) p += 1;
+    if (pref.preco && r.faixaPreco === pref.preco) p += 1;
+    return { r, p };
+  });
+  return pontuados
+    .sort((a, b) => b.p - a.p || (b.r.nota || 0) - (a.r.nota || 0))
+    .slice(0, limite)
+    .map((x) => x.r);
+}
+
 // Uma linha por restaurante: bem mais curto que JSON e fácil para a IA ler.
 export function catalogoEmTexto(catalogo) {
   return catalogo
@@ -165,7 +210,8 @@ export function catalogoEmTexto(catalogo) {
         r.nome,
         r.cozinha,
         `clima: ${r.clima.join("/")}`,
-        `${r.bairro}, ${r.cidade}`,
+        `${r.bairro}, ${r.cidade}${r.estado ? `-${r.estado}` : ""}`,
+        r.nota ? `nota ${r.nota} (${r.totalAvaliacoes} avaliações)` : "",
         `preço ${"$".repeat(r.faixaPreco || 0)}`,
         `horário: ${r.horarios.join("; ")}`,
         r.pratos.length ? `pratos: ${r.pratos.join("; ")}` : "",
@@ -187,8 +233,11 @@ export function montarCatalogo(restaurantes, menus = [], promocoes = []) {
     cozinha: r.cozinha,
     clima: r.experiencias,
     cidade: r.cidade,
+    estado: r.estado,
     bairro: r.bairro,
     faixaPreco: r.faixaPreco,
+    nota: r.notaMedia,
+    totalAvaliacoes: r.totalAvaliacoes,
     descricao: r.descricao,
     horarios: r.horarios.map((h) => `${h.dias}: ${h.inicio}-${h.fim}`),
     ocasioes: r.ocasioes,

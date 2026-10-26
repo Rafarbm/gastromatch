@@ -3,7 +3,8 @@
 // { resumo, destaques, fonte }.
 //
 // Proteções:
-//  - a IA só pode usar os dados recebidos (sem avaliações, não pode "elogiar");
+//  - a IA só pode usar os dados recebidos (sem avaliações, não pode "elogiar";
+//    com avaliações, resume o que os clientes disseram, com equilíbrio);
 //  - todo preço citado é conferido contra os preços reais; o que não bater é descartado;
 //  - o resultado fica em cache em arquivo: cada restaurante só gasta IA uma vez
 //    (e de novo apenas se os dados mudarem). Isso poupa o limite gratuito da Groq
@@ -18,7 +19,7 @@ import { lerCorpo, MODELO_PADRAO, responder, URL_GROQ } from "./ia.js";
 const ARQUIVO_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache", "resumos.json");
 const TIMEOUT_MS = 20000;
 // Mudou o prompt? Aumente a versão: os resumos em cache são gerados de novo.
-const VERSAO_PROMPT = 2;
+const VERSAO_PROMPT = 3;
 // Pedidos simultâneos do mesmo resumo compartilham uma única chamada à IA.
 const emAndamento = new Map();
 
@@ -41,7 +42,8 @@ Regras obrigatórias:
 - Use SOMENTE os dados recebidos. Não invente pratos, preços, horários, ambiente ou serviços.
 - Não acrescente NENHUM detalhe que não esteja escrito nos dados (ex.: "à la carte", "aconchegante", "vista", "atendimento"), nem adjetivos de valor como "perfeito", "imperdível", "incrível".
 - Se não houver avaliações de clientes, NÃO diga que é elogiado, bem avaliado, excelente, delicioso, o melhor etc. Descreva, não opine.
-- Se houver avaliações, resuma o que elas dizem de forma equilibrada (pontos positivos e negativos).
+- Se houver avaliações, mencione a nota média e resuma o que os comentários dizem de forma equilibrada (pontos positivos e negativos). Não cite nomes de clientes. Não invente opiniões que não estejam nos comentários.
+- Ao citar a nota média, copie o número exatamente como em "notaMedia".
 - Português do Brasil, linguagem simples.
 - "resumo": no máximo 2 frases e 280 caracteres, dizendo para quem/que ocasião o lugar combina, o tipo de comida e o clima.
 - "destaques": até 3 itens curtos (máx. 60 caracteres cada), no formato "Rótulo: valor". Exemplos de rótulos: "Ideal para", "Destaque", "Preço", "Funcionamento", "Promoção".

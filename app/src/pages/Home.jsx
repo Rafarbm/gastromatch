@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import BarraBusca from "../components/BarraBusca";
+import DatasEspeciais from "../components/DatasEspeciais";
+import { bannerDaRegiao, ESTADOS } from "../lib/regioes";
 import SeletorLocalidade from "../components/SeletorLocalidade";
 import Hero from "../components/Hero";
 import Secao from "../components/Secao";
@@ -37,13 +40,21 @@ export default function Home() {
   const { abrir: abrirChat } = useChat();
   const { dados, carregando, erro } = useCarregar(carregarHome);
   const [filtroData, setFiltroData] = useState("todos");
+  const navegar = useNavigate();
+  const local = { estado: busca.estado, cidade: busca.cidade, bairro: busca.bairro };
+  const nomeLocal = busca.bairro || busca.cidade || ESTADOS[busca.estado] || "";
+  const banner = bannerDaRegiao(busca.estado);
 
   const vista = useMemo(() => {
     if (!dados) return null;
     const naLocalidade = comDistancia(filtrarRestaurantes(dados.restaurantes, busca), posicaoAtual);
     const idsLocal = new Set(naLocalidade.map((r) => r.id));
-    const destaques = [...naLocalidade].sort((a, b) => Number(b.destaque) - Number(a.destaque)).slice(0, 8);
+    // Destaque pago primeiro; depois a melhor nota (com pelo menos 1 avaliação).
+    const destaques = [...naLocalidade]
+      .sort((a, b) => Number(b.destaque) - Number(a.destaque) || (b.notaMedia || 0) - (a.notaMedia || 0))
+      .slice(0, 8);
     return {
+      naLocalidade,
       destaques,
       promocoes: dados.promocoes.filter((p) => idsLocal.has(p.restauranteId)),
       eventos: dados.eventos.filter((e) => e.global || idsLocal.has(e.restauranteId)),
@@ -52,6 +63,15 @@ export default function Home() {
   }, [dados, busca, posicaoAtual]);
 
   const slides = [
+    // Banner da região: aparece primeiro quando o usuário escolhe um estado.
+    banner && {
+      selo: "Sua região",
+      titulo: busca.cidade && busca.cidade !== banner.titulo ? `${busca.cidade}, ${banner.titulo}` : banner.titulo,
+      descricao: banner.texto,
+      foto: banner.foto,
+      credito: banner.credito,
+      cta: { rotulo: `Restaurantes em ${nomeLocal}`, para: `/restaurantes?${filtrosParaURL(local)}` },
+    },
     {
       selo: "Novo",
       titulo: "Escolha o restaurante pela experiência",
@@ -87,12 +107,17 @@ export default function Home() {
     return vista.eventos.filter((e) => eventoNoIntervalo(e, isoHoje(f.de), isoHoje(f.ate)));
   }, [vista, filtroData]);
 
-  const localQuery = filtrosParaURL({ cidade: busca.cidade, bairro: busca.bairro });
+  const localQuery = filtrosParaURL(local);
 
   return (
     <>
       <SeletorLocalidade />
-      <Hero slides={slides} />
+      {/* key: ao trocar de estado o carrossel recomeça no banner da nova região. */}
+      <Hero key={busca.estado || "brasil"} slides={slides} />
+
+      <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-6">
+        <BarraBusca grande onBuscar={(q) => navegar(`/restaurantes?${filtrosParaURL({ q })}`)} />
+      </div>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-6">
         <button type="button" onClick={abrirChat} className="w-full text-left flex items-center justify-between gap-4 rounded-[28px] bg-terra text-cream p-5 sm:p-6 hover:bg-terradeep transition-colors">
@@ -109,7 +134,7 @@ export default function Home() {
 
       {vista && (
         <>
-          <Secao id="destaques" sobretitulo="Em destaque" titulo={busca.cidade ? `Restaurantes em ${busca.bairro || busca.cidade}` : "Restaurantes em destaque"} acao={{ rotulo: "Ver mais", para: `/restaurantes${localQuery ? `?${localQuery}` : ""}` }}>
+          <Secao id="destaques" sobretitulo="Em destaque" titulo={nomeLocal ? `Restaurantes em ${nomeLocal}` : "Restaurantes em destaque"} acao={{ rotulo: "Ver mais", para: `/restaurantes${localQuery ? `?${localQuery}` : ""}` }}>
             {vista.destaques.length ? (
               <Carrossel rotulo="Restaurantes em destaque">
                 {vista.destaques.map((r) => (
@@ -124,7 +149,7 @@ export default function Home() {
           <Secao id="experiencias" sobretitulo="Sugestões" titulo="Qual experiência você procura?">
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {SUGESTOES_EXPERIENCIA.map((s) => {
-                const q = filtrosParaURL({ experiencias: s.experiencias, ocasiao: s.ocasiao, cidade: busca.cidade, bairro: busca.bairro });
+                const q = filtrosParaURL({ experiencias: s.experiencias, ocasiao: s.ocasiao, ...local });
                 return (
                   <Link key={s.titulo} to={`/restaurantes?${q}`} className="group relative overflow-hidden rounded-[24px] aspect-[4/3] sm:aspect-[16/9]">
                     <img src={s.foto} alt="" loading="lazy" className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -135,6 +160,8 @@ export default function Home() {
               })}
             </div>
           </Secao>
+
+          <DatasEspeciais estado={busca.estado} restaurantes={vista.naLocalidade} />
 
           {vista.promocoes.length > 0 && (
             <Secao id="promocoes" sobretitulo="Promoções da semana" titulo="Na mesa esta semana" acao={{ rotulo: "Ver todas", para: "/promocoes" }}>
@@ -169,7 +196,7 @@ export default function Home() {
             <Secao id="ocasioes" sobretitulo="Datas especiais" titulo="Para comemorar">
               <div className="flex flex-wrap gap-3">
                 {vista.ocasioes.map((o) => (
-                  <Link key={o.id} to={`/restaurantes?${filtrosParaURL({ ocasiao: o.id, cidade: busca.cidade, bairro: busca.bairro })}`} className="rounded-2xl bg-paper px-5 py-4 ring-1 ring-ink/5 shadow-clay hover:text-terra transition-colors">
+                  <Link key={o.id} to={`/restaurantes?${filtrosParaURL({ ocasiao: o.id, ...local })}`} className="rounded-2xl bg-paper px-5 py-4 ring-1 ring-ink/5 shadow-clay hover:text-terra transition-colors">
                     <span className="block font-display font-semibold text-lg">{o.rotulo}</span>
                     <span className="text-xs text-inksoft">{o.total} {o.total === 1 ? "restaurante preparado" : "restaurantes preparados"}</span>
                   </Link>

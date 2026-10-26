@@ -472,10 +472,8 @@
           <label class="block font-semibold text-ink mb-1" id="label-nome-principal">Nome</label>
           <input type="text" id="add-nome" required class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
         </div>
-        <div>
-          <label class="block font-semibold text-ink mb-1" id="label-doc-principal">Documento</label>
-          <input type="text" id="add-documento" required class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
-        </div>
+        <!-- LGPD: o suporte não coleta nem vê CPF/CNPJ. O documento é informado pelo
+             próprio usuário no cadastro e fica em área privada (só o dono acessa). -->
         <div>
           <label class="block font-semibold text-ink mb-1">E-mail</label>
           <input type="email" id="add-email" required class="w-full rounded-2xl bg-cream px-4 py-2.5 text-xs ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra">
@@ -530,8 +528,8 @@
   </div>
 
   <script type="module">
-    import { auth, db, fazerLogout, firebaseConfig } from './firebase-config.js';
-    import { onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { auth, db, fazerLogout, firebaseConfig, nomeAmbiente } from './firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setDoc, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -582,18 +580,15 @@
       document.getElementById('add-tipo-conta').value = tipo;
       const tituloModal = document.getElementById('modal-add-titulo');
       const labelNome = document.getElementById('label-nome-principal');
-      const labelDoc = document.getElementById('label-doc-principal');
       const campoExtra = document.getElementById('campo-extra-restaurante');
 
       if (tipo === 'restaurante') {
         tituloModal.textContent = "Adicionar Restaurante";
         labelNome.textContent = "Nome do Responsável";
-        labelDoc.textContent = "CNPJ (14 dígitos - Apenas números)";
         campoExtra.classList.remove('hidden');
       } else {
         tituloModal.textContent = "Adicionar Usuário";
         labelNome.textContent = "Nome Completo";
-        labelDoc.textContent = "CPF (11 dígitos - Apenas números)";
         campoExtra.classList.add('hidden');
       }
 
@@ -647,7 +642,7 @@
                     <h4 class="font-display font-semibold text-base text-ink">${r.nomeRestaurante || 'Sem Nome'}</h4>
                     ${badgeStatus}
                   </div>
-                  <p class="text-xs text-inksoft">CNPJ: <strong class="text-ink">${r.cnpj || 'Não informado'}</strong> | Cozinha: ${r.cozinha || 'N/A'}</p>
+                  <p class="text-xs text-inksoft">Cidade: <strong class="text-ink">${[r.cidade, r.estado].filter(Boolean).join('/') || 'Não informada'}</strong> | Cozinha: ${r.cozinha || 'N/A'}</p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   ${!isExcluido ? `
@@ -683,7 +678,7 @@
                     <h4 class="font-display font-semibold text-base text-ink">${u.nome || u.email || 'Usuário'}</h4>
                     ${badgeStatus}
                   </div>
-                  <p class="text-xs text-inksoft">CPF: <strong class="text-ink">${u.cpf || 'Não informado'}</strong></p>
+                  <p class="text-xs text-inksoft">E-mail: <strong class="text-ink">${u.email || 'Não informado'}</strong></p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   ${!isExcluido ? `
@@ -886,7 +881,7 @@
           ${r.nomeRestaurante || 'Sem Nome'}
         </a>
         <p class="text-[10px] text-inksoft">
-          CNPJ: ${r.cnpj || 'Não informado'}
+          ${[r.cidade, r.estado].filter(Boolean).join('/') || 'Cidade não informada'}
         </p>
       </div>
 
@@ -908,7 +903,7 @@
             <div class="flex items-center justify-between bg-cream p-2.5 rounded-xl text-xs gap-2">
               <div>
                 <p class="font-bold text-ink">${u.nome || u.email || 'Usuário'}</p>
-                <p class="text-[10px] text-inksoft">CPF: ${u.cpf || 'Não informado'}</p>
+                <p class="text-[10px] text-inksoft">${u.email || ''}</p>
               </div>
               <button type="button" onclick="excluirCadastroDefinitivo('${u.id}', 'cliente')" class="text-red-600 font-semibold hover:underline cursor-pointer">Excluir</button>
             </div>
@@ -1041,41 +1036,39 @@
     document.getElementById('form-adicionar-usuario').addEventListener('submit', async (e) => {
       e.preventDefault();
       const tipo = document.getElementById('add-tipo-conta').value;
-      const nome = document.getElementById('add-nome').value;
-      const documento = document.getElementById('add-documento').value.replace(/\D/g, '');
-      const email = document.getElementById('add-email').value;
+      const nome = document.getElementById('add-nome').value.trim();
+      const email = document.getElementById('add-email').value.trim();
       const senha = document.getElementById('add-senha').value;
 
       try {
-        const adminAtual = auth.currentUser;
-        const adminEmail = adminAtual ? adminAtual.email : null;
-        const adminPass = prompt("Digite a sua senha de Administrador atual para confirmar a criação deste novo registo:");
-        if (!adminPass) return;
-
+        // App Firebase temporário: cria a conta nova SEM trocar a sessão do admin.
+        // Quem grava o perfil é a própria conta nova (exigência das regras do Firestore).
         const tempApp = initializeApp(firebaseConfig, "TempApp_" + Date.now());
-        const { getAuth: getAuthTemp, createUserWithEmailAndPassword: createTemp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-        const tempAuth = getAuthTemp(tempApp);
+        const authMod = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+        const fsMod = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        const tempAuth = authMod.getAuth(tempApp);
+        const tempDb = fsMod.getFirestore(tempApp);
+        if (nomeAmbiente === "local") {
+          authMod.connectAuthEmulator(tempAuth, "http://127.0.0.1:9099", { disableWarnings: true });
+          fsMod.connectFirestoreEmulator(tempDb, "127.0.0.1", 8080);
+        }
 
-        const userCredential = await createTemp(tempAuth, email, senha);
+        const userCredential = await authMod.createUserWithEmailAndPassword(tempAuth, email, senha);
         const user = userCredential.user;
 
+        // Sem CPF/CNPJ: o suporte não coleta documentos (LGPD).
         let dadosNovo = { email: email, tipo: tipo, status: 'ativo', criadoEm: new Date() };
         if (tipo === 'restaurante') {
           dadosNovo.nomeResponsavel = nome;
-          dadosNovo.cnpj = documento;
-          dadosNovo.nomeRestaurante = document.getElementById('add-rest-nome').value;
-          dadosNovo.telefone = document.getElementById('add-rest-tel').value;
-          dadosNovo.endereco = document.getElementById('add-rest-end').value;
+          dadosNovo.nomeRestaurante = document.getElementById('add-rest-nome').value.trim();
+          dadosNovo.telefone = document.getElementById('add-rest-tel').value.trim();
+          dadosNovo.endereco = document.getElementById('add-rest-end').value.trim();
         } else {
           dadosNovo.nome = nome;
-          dadosNovo.cpf = documento;
         }
 
-        await setDoc(doc(db, "usuarios", user.uid), dadosNovo);
-        await tempAuth.signOut();
-        if (adminEmail && adminPass) {
-          await signInWithEmailAndPassword(auth, adminEmail, adminPass);
-        }
+        await fsMod.setDoc(fsMod.doc(tempDb, "usuarios", user.uid), dadosNovo);
+        await authMod.signOut(tempAuth);
 
         fecharModalAdicionarUsuario();
         alert("Cadastro criado com sucesso!");

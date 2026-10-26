@@ -8,10 +8,10 @@ import { auth, db } from "../lib/firebase";
 
 const AuthContext = createContext(null);
 
-// Mesma regra do sistema antigo: admin é identificado pelo domínio do e-mail.
-// (Regra fraca, apontada na auditoria; a proteção real depende das regras do Firestore.)
-function definirPapel(user, perfil) {
-  if (user.email?.endsWith("@sugama.com")) return "admin";
+// Admin = existe o documento admins/{uid} (criado só pelo console/servidor).
+// É a mesma verificação das regras do Firestore; o domínio do e-mail não basta.
+function definirPapel(ehAdmin, perfil) {
+  if (ehAdmin) return "admin";
   if (perfil?.tipo === "restaurante") return "restaurante";
   return "cliente";
 }
@@ -19,9 +19,12 @@ function definirPapel(user, perfil) {
 const STATUS_BLOQUEADOS = { banido: "Esta conta foi banida. Fale com o suporte.", excluido: "Esta conta foi excluída." };
 
 async function carregarPerfil(user) {
-  const snap = await getDoc(doc(db, "usuarios", user.uid));
+  const [snap, snapAdmin] = await Promise.all([
+    getDoc(doc(db, "usuarios", user.uid)),
+    getDoc(doc(db, "admins", user.uid)).catch(() => null),
+  ]);
   const perfil = snap.exists() ? snap.data() : {};
-  const papel = definirPapel(user, perfil);
+  const papel = definirPapel(Boolean(snapAdmin?.exists()), perfil);
   const nome = papel === "restaurante" ? perfil.nomeRestaurante || perfil.nomeResponsavel : perfil.nome;
   return { uid: user.uid, email: user.email, papel, nome: nome || user.email.split("@")[0], status: perfil.status || "ativo" };
 }
@@ -69,7 +72,16 @@ export function AuthProvider({ children }) {
 
   const sair = useCallback(() => signOut(auth), []);
 
-  const valor = useMemo(() => ({ usuario, carregando, entrar, sair }), [usuario, carregando, entrar, sair]);
+  // Depois do cadastro: o perfil é gravado logo após a criação da conta, então
+  // recarrega para pegar o papel e o nome corretos.
+  const recarregar = useCallback(async () => {
+    if (!auth.currentUser) return null;
+    const perfil = await carregarPerfil(auth.currentUser);
+    setUsuario(perfil);
+    return perfil;
+  }, []);
+
+  const valor = useMemo(() => ({ usuario, carregando, entrar, sair, recarregar }), [usuario, carregando, entrar, sair, recarregar]);
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
 }
 

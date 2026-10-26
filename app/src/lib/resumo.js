@@ -18,8 +18,11 @@ const CLIMA_MASCULINO = {
   Cafeteria: "de cafeteria",
 };
 
-// Só dados PÚBLICOS do restaurante. "avaliacoes" fica vazio até existir esse recurso.
-export function montarDadosResumo(r, conteudo) {
+// Só dados PÚBLICOS do restaurante. As avaliações vão sem nome do cliente
+// (as mais recentes, para caber no limite da IA).
+export function montarDadosResumo(r, conteudo, avaliacoes = []) {
+  const doRestaurante = avaliacoes.filter((a) => a.alvo === "restaurante");
+  const media = doRestaurante.length ? Math.round((doRestaurante.reduce((s, a) => s + a.nota, 0) / doRestaurante.length) * 10) / 10 : null;
   const faixa = FAIXAS_PRECO.find((f) => f.id === r.faixaPreco);
   return {
     id: r.id,
@@ -35,7 +38,13 @@ export function montarDadosResumo(r, conteudo) {
     pratos: conteudo.menus.map((m) => ({ titulo: m.titulo, categoria: m.categoria, preco: m.preco })),
     promocoes: conteudo.promocoes.map((p) => `${p.titulo}: ${p.descricao} ${p.valor}`.trim()),
     eventos: conteudo.eventos.map((e) => `${e.titulo} (${e.inicio}${e.fim && e.fim !== e.inicio ? ` a ${e.fim}` : ""})`),
-    avaliacoes: [],
+    notaMedia: media,
+    totalAvaliacoes: doRestaurante.length,
+    avaliacoes: avaliacoes.slice(0, 25).map((a) => ({
+      sobre: a.alvo === "prato" ? `prato ${a.tituloPrato}` : "restaurante",
+      nota: a.nota,
+      ...(a.comentario ? { comentario: a.comentario.slice(0, 200) } : {}),
+    })),
   };
 }
 
@@ -51,7 +60,7 @@ export function resumoLocal(d) {
     destaques: [
       principal && `Destaque: ${principal.titulo} (${moeda(principal.preco)})`,
       d.faixaPreco && `Preço: ${d.faixaPreco}`,
-      d.horarios[0] && `Funcionamento: ${d.horarios[0]}`,
+      d.totalAvaliacoes ? `Clientes: nota ${String(d.notaMedia).replace(".", ",")} em ${d.totalAvaliacoes} ${d.totalAvaliacoes === 1 ? "avaliação" : "avaliações"}` : d.horarios[0] && `Funcionamento: ${d.horarios[0]}`,
     ].filter(Boolean),
   };
 }

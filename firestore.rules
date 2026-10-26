@@ -1,19 +1,258 @@
 // ============================================================================
-//  ATENÇÃO — REGRAS SOMENTE PARA O EMULADOR LOCAL. NÃO PUBLICAR.
+//  Regras de segurança do Firestore — GastroMatch
 //
-//  Estas regras liberam leitura e escrita para qualquer pessoa. Se forem
-//  publicadas em um projeto real (produção ou staging), o banco fica
-//  totalmente aberto. O .firebaserc aponta apenas para "demo-gastromatch",
-//  um projeto que não existe na nuvem, então um "firebase deploy" falha.
+//  Valem para o emulador local e são a base para produção. Princípios:
+//  - nada é permitido por padrão (o que não está escrito aqui é negado);
+//  - cada usuário só altera os próprios dados; admin tem poderes limitados;
+//  - CPF/CNPJ ficam em subcoleção privada (só o dono lê; nem o suporte);
+//  - "chaves primárias" por ID de documento: 1 CPF/CNPJ por conta,
+//    1 avaliação por cliente/alvo, 1 resgate por cliente/cupom, código único;
+//  - textos não aceitam < > " ` (bloqueia injeção de HTML nas páginas antigas).
 //
-//  As regras reais de segurança serão escritas na Etapa 3, a partir das
-//  regras atualmente publicadas em produção.
+//  Testes automatizados: app/tests/regras.test.js (npm run test:regras).
 // ============================================================================
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    // ---------- quem é quem ----------
+    function logado() { return request.auth != null; }
+    function meuUid() { return request.auth.uid; }
+    // Caminho de um documento: coleção e ID separados (um "$( )" só vale para UM segmento).
+    function doc(colecao, id) { return /databases/$(database)/documents/$(colecao)/$(id); }
+    function admin() { return logado() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function meuPerfil() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
+    function temPerfil() { return logado() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)); }
+    function contaAtiva() { return temPerfil() && meuPerfil().get('status', 'ativo') == 'ativo'; }
+    function cliente() { return contaAtiva() && meuPerfil().tipo == 'cliente'; }
+    function restaurante() { return contaAtiva() && meuPerfil().tipo == 'restaurante'; }
+
+    // ---------- validação de dados ----------
+    // (?s) faz o "." aceitar quebras de linha: sem isso, "linha\n<script>" passaria.
+    function texto(v, max) { return v is string && v.size() <= max && !v.matches('(?s).*[<>"`].*'); }
+    function textoOpc(d, campo, max) { return !(campo in d) || d[campo] == null || texto(d[campo], max); }
+    function numeroOpc(d, campo, min, max) { return !(campo in d) || d[campo] == null || (d[campo] is number && d[campo] >= min && d[campo] <= max); }
+    function listaOpc(d, campo, max) { return !(campo in d) || (d[campo] is list && d[campo].size() <= max); }
+    function inalterados(campos) { return !request.resource.data.diff(resource.data).affectedKeys().hasAny(campos); }
+    function soAlterou(campos) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos); }
+
+    // ============================================================ usuarios
+    // Perfil público do restaurante e perfil do cliente. CPF/CNPJ NÃO ficam aqui.
+    function camposPerfil() {
+      return ['email', 'tipo', 'status', 'nome', 'telefone', 'criadoEm', 'aceiteTermosEm', 'atualizadoEm',
+              'nomeRestaurante', 'nomeResponsavel', 'cozinha', 'vibes', 'ocasioes', 'faixaPreco',
+              'estado', 'cidade', 'bairro', 'endereco', 'lat', 'lng', 'whatsapp', 'descricao', 'fotos', 'foto',
+              'diasSemana', 'inicioSemana', 'fimSemana', 'diasFim', 'inicioFds', 'fimFds',
+              'excluidoEm', 'banidoEm', 'motivoBanimento', 'destaque'];
+    }
+    function perfilValido(d) {
+      return d.keys().hasOnly(camposPerfil())
+        && textoOpc(d, 'nome', 120) && textoOpc(d, 'nomeRestaurante', 120) && textoOpc(d, 'nomeResponsavel', 120)
+        && textoOpc(d, 'telefone', 30) && textoOpc(d, 'whatsapp', 30) && textoOpc(d, 'cozinha', 40)
+        && textoOpc(d, 'estado', 2) && textoOpc(d, 'cidade', 80) && textoOpc(d, 'bairro', 80)
+        && textoOpc(d, 'endereco', 200) && textoOpc(d, 'descricao', 1000)
+        && textoOpc(d, 'diasSemana', 40) && textoOpc(d, 'diasFim', 40)
+        && numeroOpc(d, 'faixaPreco', 1, 4) && listaOpc(d, 'vibes', 3) && listaOpc(d, 'ocasioes', 10) && listaOpc(d, 'fotos', 10);
+    }
+
+    match /usuarios/{id} {
+      // Restaurantes são públicos; perfis de clientes só para o dono e o admin.
+      allow read: if (logado() && meuUid() == id) || admin() || resource.data.tipo == 'restaurante';
+
+      allow create: if logado() && meuUid() == id
+        && request.resource.data.tipo in ['cliente', 'restaurante']
+        && request.resource.data.status == 'ativo'
+        && request.resource.data.email == request.auth.token.email
+        && !('destaque' in request.resource.data)
+        && perfilValido(request.resource.data);
+
+      // Dono: não muda tipo, e-mail nem destaque; só pode mudar o status para "excluido".
+      allow update: if logado() && meuUid() == id
+        && inalterados(['tipo', 'email', 'destaque', 'criadoEm', 'banidoEm', 'motivoBanimento'])
+        && (request.resource.data.get('status', 'ativo') == resource.data.get('status', 'ativo')
+            || request.resource.data.status == 'excluido')
+        && perfilValido(request.resource.data);
+
+      // Admin: moderação (banir, restaurar, excluir) e destaque; nada mais.
+      allow update: if admin()
+        && soAlterou(['status', 'banidoEm', 'motivoBanimento', 'excluidoEm', 'destaque']);
+
+      allow delete: if logado() && meuUid() == id;
+
+      // Dados sensíveis (CPF/CNPJ): somente o próprio usuário. Nem o suporte lê.
+      match /privado/{docId} {
+        allow read: if logado() && meuUid() == id;
+        allow create, update: if logado() && meuUid() == id
+          && request.resource.data.keys().hasOnly(['cpf', 'cnpj'])
+          && (!('cpf' in request.resource.data) || request.resource.data.cpf.matches('^[0-9]{11}$'))
+          && (!('cnpj' in request.resource.data) || request.resource.data.cnpj.matches('^[0-9]{14}$'));
+        allow delete: if logado() && meuUid() == id;
+      }
+    }
+
+    // Índice de unicidade de CPF/CNPJ: o ID é um hash do documento. Como só existe
+    // "create" (sem update), um segundo cadastro com o mesmo CPF/CNPJ é recusado.
+    match /documentos/{hash} {
+      allow create: if logado()
+        && request.resource.data.keys().hasOnly(['uid', 'tipo'])
+        && request.resource.data.uid == meuUid()
+        && request.resource.data.tipo in ['cpf', 'cnpj'];
+      allow delete: if admin() || (logado() && resource.data.uid == meuUid());
+    }
+
+    // Lista de administradores (definida fora do app; ninguém escreve pelo cliente).
+    match /admins/{id} {
+      allow read: if logado() && meuUid() == id;
+    }
+
+    // ============================================================ conteúdo dos restaurantes
+    function donoDoNovo() { return restaurante() && request.resource.data.restauranteId == meuUid(); }
+    function donoAtual() { return restaurante() && resource.data.restauranteId == meuUid(); }
+
+    match /menus/{id} {
+      allow read: if true;
+      allow create, update: if donoDoNovo()
+        && (resource == null || resource.data.restauranteId == meuUid())
+        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'cozinha', 'titulo', 'categoria', 'preco', 'imagem', 'descricao', 'criadoEm', 'importadoEm'])
+        && texto(request.resource.data.titulo, 120) && texto(request.resource.data.categoria, 60)
+        && request.resource.data.preco is number && request.resource.data.preco >= 0 && request.resource.data.preco <= 100000
+        && textoOpc(request.resource.data, 'descricao', 1000) && textoOpc(request.resource.data, 'restaurante', 120);
+      allow delete: if donoAtual() || admin();
+    }
+
+    match /promocoes/{id} {
+      allow read: if true;
+      allow create, update: if donoDoNovo()
+        && (resource == null || resource.data.restauranteId == meuUid())
+        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'cozinha', 'evento', 'titulo', 'descricao', 'prato', 'valorPromocional', 'diasValidos', 'horaInicio', 'horaFim', 'criadoEm', 'foto', 'imagem'])
+        && texto(request.resource.data.titulo, 120) && textoOpc(request.resource.data, 'descricao', 1000)
+        && textoOpc(request.resource.data, 'prato', 120) && textoOpc(request.resource.data, 'valorPromocional', 60)
+        && textoOpc(request.resource.data, 'evento', 120);
+      allow delete: if donoAtual() || admin();
+    }
+
+    match /cupons/{id} {
+      allow read: if true;
+      // Restaurante cria/edita os próprios cupons, mas não mexe no contador de resgates.
+      allow create: if donoDoNovo()
+        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'codigo', 'desconto', 'validadeInicio', 'validadeFim', 'horaInicio', 'horaFim', 'diasValidos', 'condicoes', 'prato', 'criadoEm', 'limiteTotal', 'resgatados'])
+        && texto(request.resource.data.codigo, 30) && textoOpc(request.resource.data, 'desconto', 60)
+        && textoOpc(request.resource.data, 'condicoes', 500)
+        && numeroOpc(request.resource.data, 'limiteTotal', 1, 100000)
+        && request.resource.data.get('resgatados', 0) == 0;
+      allow update: if donoAtual() && request.resource.data.restauranteId == meuUid()
+        && request.resource.data.get('resgatados', 0) == resource.data.get('resgatados', 0)
+        && texto(request.resource.data.codigo, 30) && textoOpc(request.resource.data, 'condicoes', 500)
+        && numeroOpc(request.resource.data, 'limiteTotal', 1, 100000);
+      // Cliente resgatando: só soma 1 ao contador, respeita o limite e precisa criar o
+      // resgate dele na mesma transação (o resgate ainda não podia existir antes).
+      allow update: if cliente()
+        && soAlterou(['resgatados'])
+        && request.resource.data.resgatados == resource.data.get('resgatados', 0) + 1
+        && (resource.data.get('limiteTotal', null) == null || request.resource.data.resgatados <= resource.data.limiteTotal)
+        && !exists(doc('resgates', id + '_' + meuUid()))
+        && existsAfter(doc('resgates', id + '_' + meuUid()));
+      allow delete: if donoAtual() || admin();
+    }
+
+    // Participar de evento da plataforma: o restaurante só pode se acrescentar na lista.
+    function soSeAcrescentou() {
+      return soAlterou(['restaurantesParticipantes'])
+        && request.resource.data.restaurantesParticipantes.toSet()
+           == resource.data.get('restaurantesParticipantes', []).toSet().union([meuUid()].toSet());
+    }
+
+    match /eventos/{id} {
+      allow read: if true;
+      allow create, update: if donoDoNovo()
+        && (resource == null || resource.data.restauranteId == meuUid())
+        && request.resource.data.get('tipoEvento', '') != 'geral_plataforma'
+        && request.resource.data.keys().hasOnly(['restauranteId', 'restauranteNome', 'cozinha', 'titulo', 'foto', 'imagem', 'inicio', 'fim', 'diasValidos', 'horaInicio', 'horaFim', 'descricao', 'criadoEm'])
+        && texto(request.resource.data.titulo, 120) && textoOpc(request.resource.data, 'descricao', 1000);
+      allow update: if restaurante() && resource.data.get('tipoEvento', '') == 'geral_plataforma' && soSeAcrescentou();
+      allow create, update, delete: if admin();
+      allow delete: if donoAtual();
+    }
+
+    match /configuracoes/{id} {
+      allow read: if true;
+      allow write: if admin();
+      allow update: if restaurante() && id == 'super_evento' && soSeAcrescentou();
+    }
+
+    // ============================================================ ações dos clientes
+    match /salvos/{id} {
+      allow read: if logado() && (resource.data.usuarioId == meuUid() || resource.data.restauranteId == meuUid() || admin());
+      allow create: if cliente()
+        && request.resource.data.usuarioId == meuUid()
+        && request.resource.data.keys().hasOnly(['usuarioId', 'usuarioEmail', 'usuarioNome', 'promocaoId', 'eventoId', 'titulo', 'descricao', 'foto', 'restauranteId', 'restauranteNome', 'dataResgate', 'valor', 'inicio', 'fim'])
+        && texto(request.resource.data.titulo, 200) && textoOpc(request.resource.data, 'descricao', 1000)
+        && textoOpc(request.resource.data, 'usuarioNome', 120) && textoOpc(request.resource.data, 'restauranteNome', 120);
+      allow delete: if logado() && (resource.data.usuarioId == meuUid() || admin());
+    }
+
+    // Resgate de cupom = "ingresso": ID cupomId_uid (1 por cliente), código único.
+    match /resgates/{id} {
+      // resource == null: a transação do resgate consulta "já resgatei?" antes de o documento existir.
+      allow read: if logado() && (resource == null || resource.data.usuarioId == meuUid() || resource.data.restauranteId == meuUid() || admin());
+      allow create: if cliente()
+        && id == request.resource.data.cupomId + '_' + meuUid()
+        && request.resource.data.keys().hasOnly(['cupomId', 'usuarioId', 'usuarioNome', 'restauranteId', 'restauranteNome', 'codigo', 'codigoCupom', 'desconto', 'condicoes', 'validadeFim', 'status', 'criadoEm'])
+        && request.resource.data.usuarioId == meuUid()
+        && request.resource.data.status == 'ativo'
+        && request.resource.data.codigo.matches('^[A-Z0-9]{10}$')
+        && request.resource.data.restauranteId == get(doc('cupons', request.resource.data.cupomId)).data.restauranteId
+        && textoOpc(request.resource.data, 'usuarioNome', 60)
+        && existsAfter(doc('codigosResgate', request.resource.data.codigo))
+        && getAfter(doc('cupons', request.resource.data.cupomId)).data.resgatados
+           == get(doc('cupons', request.resource.data.cupomId)).data.get('resgatados', 0) + 1;
+      // Só o restaurante dono valida, e só uma vez (ativo -> usado).
+      allow update: if restaurante()
+        && resource.data.restauranteId == meuUid()
+        && resource.data.status == 'ativo'
+        && request.resource.data.status == 'usado'
+        && soAlterou(['status', 'usadoEm']);
+    }
+
+    // Índice do código do resgate (chave única). Ler um código exige conhecê-lo.
+    match /codigosResgate/{codigo} {
+      allow get: if logado();
+      allow create: if cliente()
+        && request.resource.data.keys().hasOnly(['resgateId'])
+        && existsAfter(doc('resgates', request.resource.data.resgateId))
+        && getAfter(doc('resgates', request.resource.data.resgateId)).data.codigo == codigo
+        && getAfter(doc('resgates', request.resource.data.resgateId)).data.usuarioId == meuUid();
+    }
+
+    // Avaliações: ID alvoId_uid garante uma por cliente para cada restaurante/prato.
+    function avaliacaoValida(id) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['alvo', 'alvoId', 'restauranteId', 'usuarioId', 'nomeExibicao', 'nota', 'comentario', 'tituloPrato', 'criadoEm', 'atualizadoEm'])
+        && id == d.alvoId + '_' + meuUid()
+        && d.usuarioId == meuUid()
+        && d.alvo in ['restaurante', 'prato']
+        && d.nota is int && d.nota >= 1 && d.nota <= 5
+        && texto(d.nomeExibicao, 40) && textoOpc(d, 'comentario', 500) && textoOpc(d, 'tituloPrato', 120)
+        && (d.alvo == 'restaurante'
+            ? d.alvoId == d.restauranteId && get(doc('usuarios', d.restauranteId)).data.tipo == 'restaurante'
+            : get(doc('menus', d.alvoId)).data.restauranteId == d.restauranteId);
+    }
+    match /avaliacoes/{id} {
+      allow read: if true;
+      allow create: if cliente() && avaliacaoValida(id);
+      allow update: if cliente() && resource.data.usuarioId == meuUid() && avaliacaoValida(id);
+      allow delete: if logado() && (resource.data.usuarioId == meuUid() || admin());
+    }
+
+    // Fale conosco: qualquer pessoa envia; só o suporte lê.
+    match /contatos_suporte/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['nome', 'email', 'assunto', 'mensagem', 'data', 'criadoEm', 'usuarioId'])
+        && texto(request.resource.data.nome, 100)
+        && request.resource.data.email is string && request.resource.data.email.matches('^[^@\\s<>"]+@[^@\\s<>"]+\\.[^@\\s<>"]+$') && request.resource.data.email.size() <= 120
+        && texto(request.resource.data.assunto, 120)
+        && texto(request.resource.data.mensagem, 2000) && request.resource.data.mensagem.size() >= 10
+        && (!('usuarioId' in request.resource.data) || (logado() && request.resource.data.usuarioId == meuUid()));
+      allow read, delete: if admin();
     }
   }
 }

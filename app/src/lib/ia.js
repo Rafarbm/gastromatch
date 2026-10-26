@@ -2,7 +2,7 @@
 // Tudo que a IA devolver fora do vocabulário real do banco é descartado, e só
 // viram cards os restaurantes cujo id existe no catálogo.
 
-import { catalogoEmTexto, precisaCatalogo } from "./assistente.js";
+import { catalogoEmTexto, precisaCatalogo, selecionarCatalogo } from "./assistente.js";
 
 const semAcento = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
@@ -53,11 +53,12 @@ async function chamar(corpo) {
 export async function conversarComIA({ mensagens, vocabulario, catalogo, preferencias }) {
   const ultimaFala = mensagens[mensagens.length - 1]?.texto || "";
   const comCatalogo = precisaCatalogo(ultimaFala);
-  let dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: comCatalogo ? catalogoEmTexto(catalogo) : "" });
+  const relevantes = catalogoEmTexto(selecionarCatalogo(catalogo, ultimaFala, preferencias));
+  let dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: comCatalogo ? relevantes : "" });
 
   // A IA avisa quando precisa do catálogo e ele não foi enviado: reenviamos uma vez.
   if (dados.tipo === "precisa_catalogo" && !comCatalogo) {
-    dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: catalogoEmTexto(catalogo) });
+    dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: relevantes });
   }
 
   const idsValidos = new Set(catalogo.map((r) => r.id));

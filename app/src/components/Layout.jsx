@@ -84,6 +84,11 @@ function Rodape() {
         <p className="font-display font-semibold text-lg text-ink">
           GastroMatch<span className="text-terra">.</span>
         </p>
+        <nav aria-label="Rodapé" className="flex flex-wrap justify-center gap-x-5 gap-y-1">
+          <Link to="/ajuda" className="hover:text-terra">Ajuda e contato</Link>
+          <Link to="/cadastro?tipo=restaurante" className="hover:text-terra">Cadastre seu restaurante</Link>
+          <Link to="/ajuda#termos" className="hover:text-terra">Privacidade</Link>
+        </nav>
         <p>© 2026 GastroMatch. Projeto acadêmico (TCC).</p>
       </div>
     </footer>
@@ -108,7 +113,9 @@ export default function Layout() {
         <Outlet />
       </main>
       <Rodape />
-      <ChatWidget />
+      <div data-chat>
+        <ChatWidget />
+      </div>
     </div>
   );
 }

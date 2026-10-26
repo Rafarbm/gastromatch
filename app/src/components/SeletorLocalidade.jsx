@@ -4,7 +4,8 @@ import { useLocalidade } from "../contexts/LocalidadeContext";
 import { distanciaKm } from "../lib/geo";
 import { useCarregar } from "../hooks/useCarregar";
 import { listarRestaurantes } from "../services/dados";
-import { cidadesEBairros } from "../lib/filtros";
+import { cidadesEBairros, estadoDaCidade } from "../lib/filtros";
+import { ESTADOS } from "../lib/regioes";
 
 const CHAVE_CONVITE = "gastromatch:convite-gps";
 
@@ -24,7 +25,9 @@ export default function SeletorLocalidade() {
   const [msgCep, setMsgCep] = useState("");
   const [conviteRespondido, setConviteRespondido] = useState(lerConviteRespondido);
 
-  const opcoes = useMemo(() => cidadesEBairros(restaurantes || []), [restaurantes]);
+  const estados = useMemo(() => [...new Set((restaurantes || []).map((r) => r.estado).filter(Boolean))].sort(), [restaurantes]);
+  const opcoes = useMemo(() => cidadesEBairros(restaurantes || [], busca.estado), [restaurantes, busca.estado]);
+  const todasCidades = useMemo(() => cidadesEBairros(restaurantes || []), [restaurantes]);
 
   // Com o GPS ativo, sugere a cidade do restaurante mais próximo como localidade de busca.
   useEffect(() => {
@@ -32,7 +35,7 @@ export default function SeletorLocalidade() {
     const maisProximo = [...restaurantes]
       .filter((r) => r.coordenadas)
       .sort((a, b) => distanciaKm(posicaoAtual, a.coordenadas) - distanciaKm(posicaoAtual, b.coordenadas))[0];
-    if (maisProximo) setBusca({ cidade: maisProximo.cidade, bairro: "" });
+    if (maisProximo) setBusca({ estado: maisProximo.estado, cidade: maisProximo.cidade });
   }, [statusGps, posicaoAtual, restaurantes, setBusca]);
 
   function responderConvite(aceitou) {
@@ -55,16 +58,16 @@ export default function SeletorLocalidade() {
       const resp = await fetch(`https://viacep.com.br/ws/${numeros}/json/`);
       const dados = await resp.json();
       if (dados.erro) return setMsgCep("CEP não encontrado.");
-      if (!opcoes[dados.localidade]) return setMsgCep(`Ainda não temos restaurantes em ${dados.localidade}.`);
-      const bairro = opcoes[dados.localidade].includes(dados.bairro) ? dados.bairro : "";
-      setBusca({ cidade: dados.localidade, bairro });
+      if (!todasCidades[dados.localidade]) return setMsgCep(`Ainda não temos restaurantes em ${dados.localidade}.`);
+      const bairro = todasCidades[dados.localidade].includes(dados.bairro) ? dados.bairro : "";
+      setBusca({ estado: dados.uf || estadoDaCidade(restaurantes, dados.localidade), cidade: dados.localidade, bairro });
       setMsgCep("");
     } catch {
       setMsgCep("Sem conexão para consultar o CEP. Escolha a cidade na lista.");
     }
   }
 
-  const resumo = busca.cidade ? [busca.bairro, busca.cidade].filter(Boolean).join(", ") : "Todas as cidades";
+  const resumo = busca.cidade ? [busca.bairro, busca.cidade, busca.estado].filter(Boolean).join(", ") : busca.estado ? ESTADOS[busca.estado] : "Todo o Brasil";
   const textoGps = {
     pedindo: "Obtendo sua localização...",
     ok: "Localização ativa: resultados ordenados por distância.",
@@ -101,7 +104,7 @@ export default function SeletorLocalidade() {
         </button>
 
         {aberto && (
-          <div id="painel-localidade" className="border-t border-ink/5 px-4 py-4 grid gap-4 md:grid-cols-4 text-sm">
+          <div id="painel-localidade" className="border-t border-ink/5 px-4 py-4 grid gap-4 md:grid-cols-5 text-sm">
             <div className="md:col-span-1">
               <button type="button" onClick={pedirPosicao} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-cream px-3 py-2.5 font-semibold ring-1 ring-ink/10 hover:text-terra">
                 <Icone nome="mira" className="size-4" /> Usar minha localização
@@ -110,8 +113,18 @@ export default function SeletorLocalidade() {
             </div>
 
             <label className="flex flex-col gap-1">
+              <span className="text-xs font-semibold">Estado</span>
+              <select value={busca.estado} onChange={(e) => setBusca({ estado: e.target.value })} className="rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10">
+                <option value="">Todos os estados</option>
+                {estados.map((uf) => (
+                  <option key={uf} value={uf}>{ESTADOS[uf] || uf}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1">
               <span className="text-xs font-semibold">Cidade</span>
-              <select value={busca.cidade} onChange={(e) => setBusca({ cidade: e.target.value, bairro: "" })} className="rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10">
+              <select value={busca.cidade} onChange={(e) => setBusca({ estado: busca.estado || estadoDaCidade(restaurantes, e.target.value), cidade: e.target.value })} className="rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10">
                 <option value="">Todas as cidades</option>
                 {Object.keys(opcoes).sort().map((c) => (
                   <option key={c}>{c}</option>

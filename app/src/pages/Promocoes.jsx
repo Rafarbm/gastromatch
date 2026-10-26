@@ -24,7 +24,7 @@ export default function Promocoes() {
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-8">
       <h1 className="font-display font-semibold text-4xl sm:text-5xl">Promoções</h1>
-      <p className="mt-1 text-sm text-inksoft">{busca.cidade ? `Em ${[busca.bairro, busca.cidade].filter(Boolean).join(", ")}` : "Todas as cidades"}</p>
+      <p className="mt-1 text-sm text-inksoft">{busca.cidade || busca.estado ? `Em ${[busca.bairro, busca.cidade, busca.estado].filter(Boolean).join(", ")}` : "Todas as cidades"}</p>
       <div className="mt-6">
         {carregando && <Carregando />}
         {erro && <Erro />}

@@ -6,8 +6,10 @@ import { Carregando, Erro, Vazio } from "../components/Estados";
 import { useCarregar } from "../hooks/useCarregar";
 import { useLocalidade } from "../contexts/LocalidadeContext";
 import { useChat } from "../contexts/ChatContext";
-import { listarRestaurantes } from "../services/dados";
-import { cidadesEBairros, comDistancia, filtrarRestaurantes, filtrosDaURL, filtrosParaURL } from "../lib/filtros";
+import { listarMenus, listarRestaurantes } from "../services/dados";
+import { cidadesEBairros, comDistancia, estadoDaCidade, filtrarRestaurantes, filtrosDaURL, filtrosParaURL } from "../lib/filtros";
+import { ESTADOS } from "../lib/regioes";
+import BarraBusca from "../components/BarraBusca";
 import { EXPERIENCIAS, FAIXAS_PRECO, OCASIOES } from "../lib/catalogo";
 
 function GrupoFiltro({ titulo, children }) {
@@ -37,12 +39,20 @@ export default function Catalogo() {
   const { busca, setBusca, posicaoAtual } = useLocalidade();
   const { abrir: abrirChat } = useChat();
   const { dados: restaurantes, carregando, erro } = useCarregar(listarRestaurantes);
+  const { dados: menus } = useCarregar(listarMenus);
   const [gavetaAberta, setGavetaAberta] = useState(false);
+
+  // Títulos dos pratos por restaurante: a busca também encontra "risoto", "picanha"...
+  const pratosPorRestaurante = useMemo(() => {
+    const mapa = {};
+    for (const m of menus || []) (mapa[m.restauranteId] ??= []).push(m.titulo);
+    return mapa;
+  }, [menus]);
 
   // Sem cidade na URL, usa a localidade escolhida no seletor da Home.
   useEffect(() => {
-    if (!params.has("cidade") && busca.cidade) {
-      const f = { ...filtrosDaURL(params), cidade: busca.cidade, bairro: busca.bairro };
+    if (!params.has("cidade") && !params.has("uf") && !params.has("q") && (busca.cidade || busca.estado)) {
+      const f = { ...filtrosDaURL(params), estado: busca.estado, cidade: busca.cidade, bairro: busca.bairro };
       setParams(filtrosParaURL(f), { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,25 +62,26 @@ export default function Catalogo() {
   const atualizar = (novo) => {
     const f = { ...filtros, ...novo };
     setParams(filtrosParaURL(f), { replace: true });
-    if ("cidade" in novo || "bairro" in novo) setBusca({ cidade: f.cidade, bairro: f.bairro });
+    if ("estado" in novo || "cidade" in novo || "bairro" in novo) setBusca({ estado: f.estado, cidade: f.cidade, bairro: f.bairro });
   };
 
   const opcoes = useMemo(() => {
     const lista = restaurantes || [];
     return {
-      locais: cidadesEBairros(lista),
+      estados: [...new Set(lista.map((r) => r.estado).filter(Boolean))].sort(),
+      locais: cidadesEBairros(lista, filtros.estado),
       cozinhas: [...new Set(lista.map((r) => r.cozinha).filter(Boolean))].sort(),
       experiencias: EXPERIENCIAS.filter((e) => lista.some((r) => r.experiencias.includes(e.id))),
     };
-  }, [restaurantes]);
+  }, [restaurantes, filtros.estado]);
 
   const resultado = useMemo(
-    () => (restaurantes ? comDistancia(filtrarRestaurantes(restaurantes, filtros), posicaoAtual) : []),
+    () => (restaurantes ? comDistancia(filtrarRestaurantes(restaurantes, filtros, pratosPorRestaurante), posicaoAtual) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [restaurantes, params.toString(), posicaoAtual],
+    [restaurantes, params.toString(), posicaoAtual, pratosPorRestaurante],
   );
 
-  const totalAtivos = filtros.experiencias.length + filtros.cozinhas.length + filtros.precos.length + (filtros.cidade ? 1 : 0) + (filtros.ocasiao ? 1 : 0);
+  const totalAtivos = filtros.experiencias.length + filtros.cozinhas.length + filtros.precos.length + (filtros.estado || filtros.cidade ? 1 : 0) + (filtros.ocasiao ? 1 : 0) + (filtros.q ? 1 : 0);
   const ocasiao = OCASIOES.find((o) => o.id === filtros.ocasiao);
 
   const painelFiltros = (
@@ -99,7 +110,11 @@ export default function Catalogo() {
       <fieldset className="rounded-[24px] bg-paper p-5 ring-1 ring-ink/5 space-y-3 text-sm">
         <legend className="sr-only">Localidade</legend>
         <p aria-hidden="true" className="font-display font-semibold text-base">Localidade</p>
-        <select aria-label="Cidade" value={filtros.cidade} onChange={(e) => atualizar({ cidade: e.target.value, bairro: "" })} className="w-full rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10">
+        <select aria-label="Estado" value={filtros.estado} onChange={(e) => atualizar({ estado: e.target.value, cidade: "", bairro: "" })} className="w-full rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10">
+          <option value="">Todos os estados</option>
+          {opcoes.estados.map((uf) => <option key={uf} value={uf}>{ESTADOS[uf] || uf}</option>)}
+        </select>
+        <select aria-label="Cidade" value={filtros.cidade} onChange={(e) => atualizar({ estado: filtros.estado || estadoDaCidade(restaurantes || [], e.target.value), cidade: e.target.value, bairro: "" })} className="w-full rounded-xl bg-cream px-3 py-2.5 ring-1 ring-ink/10">
           <option value="">Todas as cidades</option>
           {Object.keys(opcoes.locais).sort().map((c) => <option key={c}>{c}</option>)}
         </select>
@@ -109,7 +124,7 @@ export default function Catalogo() {
         </select>
       </fieldset>
       {totalAtivos > 0 && (
-        <button type="button" onClick={() => { setParams("", { replace: true }); setBusca({ cidade: "", bairro: "" }); }} className="w-full rounded-full bg-paper py-2.5 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">
+        <button type="button" onClick={() => { setParams("", { replace: true }); setBusca({}); }} className="w-full rounded-full bg-paper py-2.5 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">
           Limpar filtros
         </button>
       )}
@@ -138,6 +153,16 @@ export default function Catalogo() {
           <Icone nome="filtro" className="size-4" /> Filtros{totalAtivos > 0 && ` (${totalAtivos})`}
         </button>
       </header>
+
+      <div className="mt-5">
+        <BarraBusca valorInicial={filtros.q} onBuscar={(q) => atualizar({ q })} />
+        {filtros.q && (
+          <p className="mt-2 text-sm text-inksoft">
+            Buscando por <strong className="text-ink">“{filtros.q}”</strong>{" "}
+            <button type="button" onClick={() => atualizar({ q: "" })} className="font-semibold text-terra underline">limpar busca</button>
+          </p>
+        )}
+      </div>
 
       <div className="mt-6 grid lg:grid-cols-12 gap-8 items-start">
         <aside className="hidden lg:block lg:col-span-4 xl:col-span-3 sticky top-24" aria-label="Filtros">

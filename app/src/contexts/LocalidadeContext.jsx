@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 
 // Guarda DUAS informações diferentes, como pede o requisito:
 // - posicaoAtual: onde o usuário está (GPS do navegador, opcional);
-// - busca: onde ele quer comer (cidade/bairro), que pode ser outra cidade.
+// - busca: onde ele quer comer (estado/cidade/bairro), que pode ser outra cidade.
 
 const LocalidadeContext = createContext(null);
 const CHAVE = "gastromatch:localidade";
@@ -16,7 +16,9 @@ function lerSalvo() {
 }
 
 export function LocalidadeProvider({ children }) {
-  const [busca, setBusca] = useState(() => lerSalvo().busca || { cidade: "", bairro: "" });
+  const [busca, setBuscaBruta] = useState(() => ({ estado: "", cidade: "", bairro: "", ...lerSalvo().busca }));
+  // Sempre guarda os três campos, mesmo quando quem chama passa só parte deles.
+  const setBusca = useCallback((b) => setBuscaBruta({ estado: "", cidade: "", bairro: "", ...b }), []);
   const [posicaoAtual, setPosicaoAtual] = useState(null);
   const [statusGps, setStatusGps] = useState("inativo"); // inativo | pedindo | ok | negado | indisponivel
 

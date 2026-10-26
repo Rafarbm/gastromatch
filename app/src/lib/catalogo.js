@@ -14,13 +14,25 @@ export const EXPERIENCIAS = [
 
 export const COZINHAS = [
   "Brasileira",
+  "Nordestina",
   "Churrasco",
+  "Frutos do Mar",
   "Italiana",
+  "Pizzaria",
   "Japonesa",
+  "Chinesa",
+  "Tailandesa",
+  "Indiana",
+  "Árabe",
   "Francesa",
+  "Portuguesa",
   "Mexicana",
+  "Peruana",
   "Contemporânea",
   "Mediterrânea",
+  "Vegetariana",
+  "Hamburgueria",
+  "Cafeteria",
 ];
 
 export const FAIXAS_PRECO = [

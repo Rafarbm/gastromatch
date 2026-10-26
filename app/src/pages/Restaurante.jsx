@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import Galeria from "../components/Galeria";
 import ResumoExperiencia from "../components/ResumoExperiencia";
 import BotaoSalvar from "../components/BotaoSalvar";
+import BotaoResgatar from "../components/BotaoResgatar";
+import Avaliacoes, { FormAvaliacao } from "../components/Avaliacoes";
+import { Nota } from "../components/Estrelas";
+import { idAvaliacao, listarAvaliacoesDoRestaurante } from "../services/avaliacoes";
+import { listarMeusResgates } from "../services/resgates";
 import { useAuth } from "../contexts/AuthContext";
 import { listarSalvos } from "../services/salvos";
 import Icone from "../components/Icone";
 import { CardEvento } from "../components/Cards";
 import { Carregando, Erro, Vazio } from "../components/Estados";
 import { useCarregar } from "../hooks/useCarregar";
-import { obterConteudoRestaurante, obterRestaurante } from "../services/dados";
+import { calcularNotas, obterConteudoRestaurante, obterRestaurante } from "../services/dados";
 import { FAIXAS_PRECO } from "../lib/catalogo";
 import { dataCurta, moeda } from "../lib/formato";
 
@@ -77,16 +82,34 @@ export default function Restaurante() {
   const { dados, carregando, erro } = useCarregar(() => carregar(id), [id]);
   const { usuario } = useAuth();
   const [salvos, setSalvos] = useState([]);
+  const [resgates, setResgates] = useState([]);
+  const [avaliacoes, setAvaliacoes] = useState(null);
+  const [pratoAvaliando, setPratoAvaliando] = useState(null);
 
-  // Itens que o cliente já salvou, para os botões mostrarem "resgatado".
+  // Itens que o cliente já salvou/resgatou, para os botões mostrarem o estado certo.
   useEffect(() => {
     if (usuario?.papel !== "cliente") {
       setSalvos([]);
+      setResgates([]);
       return;
     }
     listarSalvos(usuario.uid).then(setSalvos).catch((e) => console.error(e));
+    listarMeusResgates(usuario.uid).then(setResgates).catch((e) => console.error(e));
   }, [usuario]);
   const aoSalvar = (novo) => setSalvos((s) => [...s, novo]);
+
+  const recarregarAvaliacoes = useCallback(() => {
+    listarAvaliacoesDoRestaurante(id)
+      .then(setAvaliacoes)
+      .catch((e) => {
+        console.error(e);
+        setAvaliacoes([]);
+      });
+  }, [id]);
+  useEffect(() => {
+    setAvaliacoes(null);
+    recarregarAvaliacoes();
+  }, [recarregarAvaliacoes]);
 
   // Links como /restaurantes/x#promocoes rolam até a seção depois do carregamento.
   useEffect(() => {
@@ -108,7 +131,9 @@ export default function Restaurante() {
   const { restaurante: r, menus, promocoes, cupons, eventos } = dados;
   const faixa = FAIXAS_PRECO.find((f) => f.id === r.faixaPreco);
   const categorias = [...new Set(menus.map((m) => m.categoria))];
-  const ordemCategorias = ["Entrada", "Prato Principal", "Sobremesa"];
+  const ordemCategorias = ["Entrada", "Prato Principal", "Sobremesa", "Bebida"];
+  const notaRestaurante = avaliacoes && calcularNotas(avaliacoes.filter((a) => a.alvo === "restaurante"))[r.id];
+  const notasPratos = calcularNotas((avaliacoes || []).filter((a) => a.alvo === "prato"));
   categorias.sort((a, b) => (ordemCategorias.indexOf(a) + 1 || 99) - (ordemCategorias.indexOf(b) + 1 || 99));
 
   return (
@@ -128,14 +153,18 @@ export default function Restaurante() {
           <header>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-terra">{r.cozinha}{faixa && ` · ${faixa.rotulo} (${faixa.descricao})`}</p>
             <h1 className="mt-1 font-display font-semibold text-4xl sm:text-5xl leading-tight">{r.nome}</h1>
+            <a href="#avaliacoes" className="mt-2 inline-block hover:underline">
+              <Nota media={notaRestaurante?.media || 0} total={notaRestaurante?.total || 0} />
+            </a>
             <ul className="mt-3 space-y-1 text-sm text-inksoft">
-              <li className="flex items-start gap-2"><Icone nome="local" className="size-4 mt-0.5 shrink-0" />{r.endereco || [r.bairro, r.cidade].filter(Boolean).join(", ")}</li>
+              <li className="flex items-start gap-2"><Icone nome="local" className="size-4 mt-0.5 shrink-0" />{r.endereco || [r.bairro, r.cidade, r.estado].filter(Boolean).join(", ")}</li>
               {r.telefone && <li className="flex items-center gap-2"><Icone nome="telefone" className="size-4 shrink-0" />{r.telefone}</li>}
             </ul>
           </header>
 
           {/* Resumo da experiência (IA, com reserva automática sem IA) */}
-          <ResumoExperiencia restaurante={r} conteudo={{ menus, promocoes, eventos }} />
+          {/* Espera as avaliações carregarem para pedir o resumo uma única vez. */}
+          {avaliacoes && <ResumoExperiencia restaurante={r} conteudo={{ menus, promocoes, eventos }} avaliacoes={avaliacoes} />}
 
           {/* Sobre */}
           <Bloco id="sobre" titulo="Sobre">
@@ -161,13 +190,34 @@ export default function Restaurante() {
                 <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-terra mb-3">{c}</h3>
                 <ul className="space-y-3">
                   {menus.filter((m) => m.categoria === c).map((m) => (
-                    <li key={m.id} className="flex gap-4 items-center">
-                      {m.foto && <img src={m.foto} alt="" loading="lazy" className="size-16 rounded-2xl object-cover shrink-0" />}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold">{m.titulo}</p>
-                        {m.descricao && <p className="text-xs text-inksoft">{m.descricao}</p>}
+                    <li key={m.id}>
+                      <div className="flex gap-4 items-center">
+                        {m.foto && <img src={m.foto} alt="" loading="lazy" className="size-16 rounded-2xl object-cover shrink-0" />}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold">{m.titulo}</p>
+                          {m.descricao && <p className="text-xs text-inksoft">{m.descricao}</p>}
+                          <p className="mt-1 flex flex-wrap items-center gap-2">
+                            <Nota media={notasPratos[m.id]?.media || 0} total={notasPratos[m.id]?.total || 0} className="text-xs" />
+                            {usuario?.papel === "cliente" && (
+                              <button type="button" onClick={() => setPratoAvaliando(pratoAvaliando === m.id ? null : m.id)} className="text-[11px] font-semibold text-terra underline">
+                                {pratoAvaliando === m.id ? "Fechar" : "Avaliar prato"}
+                              </button>
+                            )}
+                          </p>
+                        </div>
+                        {m.preco != null && <p className="font-display font-semibold text-terra whitespace-nowrap">{moeda(m.preco)}</p>}
                       </div>
-                      {m.preco != null && <p className="font-display font-semibold text-terra whitespace-nowrap">{moeda(m.preco)}</p>}
+                      {pratoAvaliando === m.id && (
+                        <FormAvaliacao
+                          compacto
+                          alvo="prato"
+                          alvoId={m.id}
+                          restauranteId={r.id}
+                          tituloPrato={m.titulo}
+                          minha={(avaliacoes || []).find((a) => a.id === idAvaliacao(m.id, usuario.uid))}
+                          aoMudar={recarregarAvaliacoes}
+                        />
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -202,12 +252,22 @@ export default function Restaurante() {
                     <p className="font-semibold">{c.desconto}</p>
                     <p className="text-xs text-inksoft">{c.condicoes}</p>
                     {c.validadeFim && <p className="mt-2 text-xs font-semibold">Válido até {dataCurta(c.validadeFim)}</p>}
-                    <BotaoSalvar item={{ tipo: "cupom", id: c.id, titulo: `Cupom ${c.codigo}`, descricao: c.condicoes, foto: r.fotos[0], codigo: c.codigo, desconto: c.desconto, condicoes: c.condicoes, validadeFim: c.validadeFim, restauranteId: r.id, restauranteNome: r.nome }} salvos={salvos} aoSalvar={aoSalvar} />
+                    {c.limiteTotal && (
+                      <p className="text-xs text-inksoft">
+                        {c.esgotado ? "Todos os cupons foram resgatados" : `Restam ${c.limiteTotal - c.resgatados} de ${c.limiteTotal}`}
+                      </p>
+                    )}
+                    <BotaoResgatar cupom={c} restauranteNome={r.nome} resgate={resgates.find((x) => x.cupomId === c.id)} aoResgatar={(novo) => setResgates((l) => [...l, novo])} />
                   </li>
                 ))}
               </ul>
             </Bloco>
           )}
+
+          {/* Avaliações de clientes */}
+          <Bloco id="avaliacoes" titulo="Avaliações">
+            {avaliacoes ? <Avaliacoes restaurante={r} avaliacoes={avaliacoes} aoMudar={recarregarAvaliacoes} /> : <Carregando texto="Carregando avaliações..." />}
+          </Bloco>
 
           {/* Eventos */}
           {eventos.length > 0 && (

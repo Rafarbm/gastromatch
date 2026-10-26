@@ -4,20 +4,20 @@ import { montarDadosResumo, obterResumo } from "../lib/resumo";
 
 // Bloco "Resumo da experiência" da página do restaurante. Sempre informa a
 // origem do texto (IA ou automático) e que ele vem das informações cadastradas.
-export default function ResumoExperiencia({ restaurante, conteudo }) {
+export default function ResumoExperiencia({ restaurante, conteudo, avaliacoes = [] }) {
   const [resumo, setResumo] = useState(null);
 
   useEffect(() => {
     let ativo = true;
     setResumo(null);
-    obterResumo(montarDadosResumo(restaurante, conteudo)).then((r) => ativo && setResumo(r));
+    obterResumo(montarDadosResumo(restaurante, conteudo, avaliacoes)).then((r) => ativo && setResumo(r));
     return () => {
       ativo = false;
     };
     // Depende das listas (estáveis), não do objeto "conteudo", que é recriado a cada
     // renderização e faria o resumo ser pedido de novo sem necessidade.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restaurante, conteudo.menus, conteudo.promocoes, conteudo.eventos]);
+  }, [restaurante, conteudo.menus, conteudo.promocoes, conteudo.eventos, avaliacoes]);
 
   return (
     <section aria-labelledby="resumo-titulo" aria-busy={!resumo} className="rounded-[28px] bg-terra/10 p-6 sm:p-7 ring-1 ring-terra/25">
@@ -46,7 +46,9 @@ export default function ResumoExperiencia({ restaurante, conteudo }) {
             </ul>
           )}
           <p className="mt-4 text-[11px] text-inksoft">
-            Baseado nas informações cadastradas pelo restaurante. Ainda não há avaliações de clientes; quando houver, elas farão parte do resumo.
+            {avaliacoes.length
+              ? `Baseado nas informações do restaurante e em ${avaliacoes.length} ${avaliacoes.length === 1 ? "avaliação" : "avaliações"} de clientes.`
+              : "Baseado nas informações cadastradas pelo restaurante. Ainda não há avaliações de clientes; quando houver, elas farão parte do resumo."}
           </p>
         </>
       )}

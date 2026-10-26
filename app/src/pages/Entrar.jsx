@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { nomeAmbiente } from "../lib/firebase";
 import { urlLegado } from "../lib/legado";
@@ -42,7 +42,7 @@ export default function Entrar() {
   // Painéis ainda são do sistema antigo: navegação completa (fora do React Router).
   function irParaInicio(papel) {
     if (voltar) return navegar(voltar, { replace: true });
-    if (papel === "restaurante") return window.location.assign(urlLegado("painel-restaurante.html"));
+    if (papel === "restaurante") return navegar("/restaurante", { replace: true });
     if (papel === "admin") return window.location.assign(urlLegado("suporte.html"));
     navegar("/minha-conta", { replace: true });
   }
@@ -87,6 +87,13 @@ export default function Entrar() {
             {enviando ? "Entrando..." : "Entrar"}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-inksoft">
+          Ainda não tem conta?{" "}
+          <Link to="/cadastro" className="font-semibold text-terra hover:underline">Cadastre-se</Link>
+          {" · "}
+          <Link to="/cadastro?tipo=restaurante" className="font-semibold text-terra hover:underline">Sou restaurante</Link>
+        </p>
 
         {MOSTRAR_CONTAS_DEMO && nomeAmbiente === "local" && (
           <div className="mt-6 rounded-2xl bg-butter/30 p-4 text-sm">

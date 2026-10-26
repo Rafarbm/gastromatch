@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { salvarItem } from "../services/salvos";
 
+// Cupons não passam por aqui: viram "ingresso" com código único (BotaoResgatar).
 const ROTULOS = {
-  cupom: { acao: "Resgatar cupom", feito: "Cupom resgatado" },
   promocao: { acao: "Salvar promoção", feito: "Promoção salva" },
   evento: { acao: "Salvar evento", feito: "Evento salvo" },
 };
 
-const CAMPO_ID = { cupom: "cupomId", promocao: "promocaoId", evento: "eventoId" };
+const CAMPO_ID = { promocao: "promocaoId", evento: "eventoId" };
 
 // salvos: itens já salvos pelo cliente; aoSalvar: recebe o novo item para atualizar a lista.
 export default function BotaoSalvar({ item, salvos, aoSalvar }) {

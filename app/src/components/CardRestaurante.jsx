@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Icone from "./Icone";
 import { rotuloPreco } from "../lib/catalogo";
+import { Nota } from "./Estrelas";
 
 export default function CardRestaurante({ restaurante: r, className = "", children }) {
   return (
@@ -17,11 +18,14 @@ export default function CardRestaurante({ restaurante: r, className = "", childr
         )}
       </div>
       <div className="mt-3 px-1 pb-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-terra">{r.cozinha}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-terra">{r.cozinha}</p>
+          <Nota media={r.notaMedia} total={r.totalAvaliacoes} className="text-xs" />
+        </div>
         <h3 className="mt-1 font-display font-semibold text-xl leading-tight group-hover:text-terra transition-colors">{r.nome}</h3>
         <p className="mt-1 flex items-center gap-1 text-sm text-inksoft">
           <Icone nome="local" className="size-4 shrink-0" />
-          {[r.bairro, r.cidade].filter(Boolean).join(", ")}
+          {[r.bairro, r.cidade, r.estado].filter(Boolean).join(", ")}
           {r.distanciaKm != null && <span className="ml-1">· {r.distanciaKm.toFixed(1)} km</span>}
         </p>
         {r.experiencias.length > 0 && (

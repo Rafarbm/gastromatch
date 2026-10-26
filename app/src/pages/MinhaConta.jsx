@@ -3,6 +3,8 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Carregando, Erro, Vazio } from "../components/Estados";
 import { listarSalvos, removerSalvo } from "../services/salvos";
+import { listarMeusResgates } from "../services/resgates";
+import { formatarCodigo } from "./Ingresso";
 import { cupomValido } from "../services/dados";
 import { dataCurta, periodo } from "../lib/formato";
 import { urlLegado } from "../lib/legado";
@@ -39,14 +41,21 @@ function PainelAtalho({ titulo, texto, pagina }) {
 export default function MinhaConta() {
   const { usuario, carregando } = useAuth();
   const [salvos, setSalvos] = useState(null);
+  const [resgates, setResgates] = useState([]);
   const [erro, setErro] = useState(false);
 
   useEffect(() => {
     if (usuario?.papel !== "cliente") return;
-    listarSalvos(usuario.uid).then(setSalvos).catch((e) => {
-      console.error(e);
-      setErro(true);
-    });
+    Promise.all([listarSalvos(usuario.uid), listarMeusResgates(usuario.uid)])
+      .then(([s, r]) => {
+        setSalvos(s);
+        // Ativos primeiro, depois os mais recentes.
+        setResgates(r.sort((a, b) => (a.status === "ativo" ? -1 : 1) - (b.status === "ativo" ? -1 : 1) || (b.criadoEm?.seconds || 0) - (a.criadoEm?.seconds || 0)));
+      })
+      .catch((e) => {
+        console.error(e);
+        setErro(true);
+      });
   }, [usuario]);
 
   if (carregando) return <div className="mx-auto max-w-4xl px-4 sm:px-8"><Carregando /></div>;
@@ -68,7 +77,14 @@ export default function MinhaConta() {
       <h1 className="mt-1 font-display font-semibold text-4xl">Olá, {usuario.nome.split(" ")[0]}!</h1>
 
       {usuario.papel === "restaurante" && (
-        <PainelAtalho titulo="Painel do restaurante" texto="Gerencie dados, cardápio, cupons, promoções e eventos, e veja quem salvou suas ofertas." pagina="painel-restaurante.html" />
+        <>
+          <div className="mt-8 rounded-[28px] bg-terra text-cream p-7">
+            <h2 className="font-display font-semibold text-2xl">Área do restaurante</h2>
+            <p className="mt-1 text-sm text-cream/85">Validar cupons pelo QR Code, ver resgates e importar cardápio por planilha.</p>
+            <Link to="/restaurante" className="mt-5 inline-flex rounded-full bg-cream text-ink px-5 py-3 text-sm font-semibold">Abrir área</Link>
+          </div>
+          <PainelAtalho titulo="Painel do restaurante" texto="Gerencie dados, cardápio, cupons, promoções e eventos, e veja quem salvou suas ofertas." pagina="painel-restaurante.html" />
+        </>
       )}
       {usuario.papel === "admin" && (
         <PainelAtalho titulo="Painel de suporte" texto="Moderação, eventos da plataforma e mensagens de suporte." pagina="suporte.html" />
@@ -82,7 +98,31 @@ export default function MinhaConta() {
           {erro && <div className="mt-6"><Erro /></div>}
           {!salvos && !erro && <Carregando />}
 
-          {salvos && salvos.length === 0 && (
+          {resgates.length > 0 && (
+            <Secao titulo="Meus cupons">
+              <ul className="grid sm:grid-cols-2 gap-4">
+                {resgates.map((r) => {
+                  const usado = r.status === "usado";
+                  const vencido = !usado && !cupomValido({ validadeInicio: "", validadeFim: r.validadeFim });
+                  return (
+                    <li key={r.id}>
+                      <Link to={`/ingresso/${r.id}`} className={`block rounded-[24px] border-2 border-dashed p-5 hover:border-terra ${usado || vencido ? "border-ink/15 bg-cream opacity-70" : "border-terra/50 bg-paper"}`}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-terra">{r.restauranteNome}</p>
+                        <p className="mt-1 font-semibold">{r.desconto}</p>
+                        <p className="mt-3 text-[11px] font-semibold uppercase text-inksoft">Seu código</p>
+                        <p className="font-mono font-bold text-2xl tracking-wider">{formatarCodigo(r.codigo)}</p>
+                        <p className={`mt-3 text-xs font-semibold ${vencido ? "text-red-700" : ""}`}>
+                          {usado ? "Já utilizado" : vencido ? "Vencido" : `Válido até ${dataCurta(r.validadeFim)} · Toque para ver o QR Code`}
+                        </p>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Secao>
+          )}
+
+          {salvos && salvos.length === 0 && resgates.length === 0 && (
             <div className="mt-8">
               <Vazio titulo="Você ainda não salvou nada" texto="Abra um restaurante e resgate um cupom ou salve uma promoção.">
                 <Link to="/restaurantes" className="rounded-full bg-terra text-cream px-5 py-2.5 text-sm font-semibold">Ver restaurantes</Link>
@@ -91,7 +131,7 @@ export default function MinhaConta() {
           )}
 
           {cupons.length > 0 && (
-            <Secao titulo="Meus cupons">
+            <Secao titulo="Cupons salvos (versão anterior)">
               <ul className="grid sm:grid-cols-2 gap-4">
                 {cupons.map((c) => {
                   const valido = cupomValido({ validadeInicio: "", validadeFim: c.validadeFim });

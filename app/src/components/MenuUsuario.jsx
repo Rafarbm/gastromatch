@@ -58,6 +58,12 @@ export default function MenuUsuario() {
           <Link role="menuitem" to="/minha-conta" onClick={() => setAberto(false)} className={item}>
             {usuario.papel === "cliente" ? "Meus cupons e salvos" : "Minha conta"}
           </Link>
+          {usuario.papel === "restaurante" && (
+            <>
+              <Link role="menuitem" to="/restaurante" onClick={() => setAberto(false)} className={item}>Área do restaurante</Link>
+              <Link role="menuitem" to="/validar" onClick={() => setAberto(false)} className={item}>Validar cupom</Link>
+            </>
+          )}
           {painel && (
             <a role="menuitem" href={urlLegado(painel.pagina)} className={item}>
               {painel.rotulo}

@@ -22,6 +22,7 @@ function normalizarRestaurante(id, d) {
     experiencias: Array.isArray(d.vibes) ? d.vibes : [],
     ocasioes: Array.isArray(d.ocasioes) ? d.ocasioes : [],
     faixaPreco: Number(d.faixaPreco) || null,
+    estado: String(d.estado || "").toUpperCase(),
     cidade: d.cidade || "",
     bairro: d.bairro || "",
     endereco: d.endereco || "",
@@ -36,6 +37,9 @@ function normalizarRestaurante(id, d) {
       { dias: d.diasFim, inicio: d.inicioFds, fim: d.fimFds },
     ].filter((h) => h.dias || h.inicio || h.fim),
     ativo: d.status !== "banido" && d.status !== "excluido",
+    // Preenchidos a partir da coleção "avaliacoes" (ver anexarNotas).
+    notaMedia: null,
+    totalAvaliacoes: 0,
   };
 }
 
@@ -81,6 +85,9 @@ function normalizarCupom(id, d) {
     validadeInicio: d.validadeInicio || "",
     validadeFim: d.validadeFim || "",
     restauranteId: d.restauranteId || "",
+    limiteTotal: Number(d.limiteTotal) || null,
+    resgatados: Number(d.resgatados) || 0,
+    esgotado: Boolean(d.limiteTotal) && (Number(d.resgatados) || 0) >= Number(d.limiteTotal),
   };
 }
 
@@ -107,13 +114,39 @@ export function cupomValido(c, hoje = hojeISO()) {
 
 // ---------- consultas ----------
 
-// Hoje os restaurantes vivem em "usuarios" (legado). Ver alerta de PII na auditoria.
+// Média e total de avaliações de cada restaurante. Em produção, o ideal é manter esses
+// números agregados no próprio restaurante (atualizados no servidor); aqui são calculados.
+export function calcularNotas(avaliacoes) {
+  const porAlvo = {};
+  for (const a of avaliacoes) {
+    porAlvo[a.alvoId] ??= { soma: 0, total: 0 };
+    porAlvo[a.alvoId].soma += a.nota;
+    porAlvo[a.alvoId].total += 1;
+  }
+  return Object.fromEntries(Object.entries(porAlvo).map(([id, v]) => [id, { media: Math.round((v.soma / v.total) * 10) / 10, total: v.total }]));
+}
+
+function anexarNotas(restaurantes, notas) {
+  return restaurantes.map((r) => (notas[r.id] ? { ...r, notaMedia: notas[r.id].media, totalAvaliacoes: notas[r.id].total } : r));
+}
+
+// Restaurantes vivem em "usuarios" (só os campos públicos; CPF/CNPJ ficam na subcoleção privada).
 // A lista é guardada em memória durante a sessão para evitar consultas repetidas.
 let cacheRestaurantes = null;
 
+export function invalidarCacheRestaurantes() {
+  cacheRestaurantes = null;
+}
+
 export function listarRestaurantes() {
-  cacheRestaurantes ??= getDocs(query(collection(db, "usuarios"), where("tipo", "==", "restaurante")))
-    .then((snap) => snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo))
+  cacheRestaurantes ??= Promise.all([
+    getDocs(query(collection(db, "usuarios"), where("tipo", "==", "restaurante"))),
+    getDocs(query(collection(db, "avaliacoes"), where("alvo", "==", "restaurante"))),
+  ])
+    .then(([snap, snapAval]) => {
+      const notas = calcularNotas(snapAval.docs.map((d) => d.data()));
+      return anexarNotas(snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo), notas);
+    })
     .catch((erro) => {
       cacheRestaurantes = null;
       throw erro;
@@ -154,6 +187,13 @@ export async function obterConteudoRestaurante(id) {
     cupons: cupons.map((d) => normalizarCupom(d.id, d.data())).filter((c) => cupomValido(c)),
     eventos,
   };
+}
+
+export async function obterCupom(id) {
+  const snap = await getDoc(doc(db, "cupons", id));
+  if (!snap.exists()) return null;
+  const c = normalizarCupom(snap.id, snap.data());
+  return { ...c, vigente: cupomValido(c) };
 }
 
 export async function listarMenus() {

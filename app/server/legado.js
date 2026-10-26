@@ -22,9 +22,25 @@ const TIPOS = {
   ".ico": "image/x-icon",
 };
 
+// Páginas antigas que já têm versão nova: dentro do ambiente unificado, o link
+// antigo leva direto à tela nova (com as validações e regras atuais).
+// O parâmetro "id" (quando existe) é repassado para a rota nova.
+const MIGRADAS = {
+  "/index.html": () => "/",
+  "/login.html": () => "/entrar",
+  "/cadastro.html": (p) => `/cadastro${p.get("tipo") === "restaurante" ? "?tipo=restaurante" : ""}`,
+  "/central-de-ajuda.html": () => "/ajuda",
+  "/promocoes.html": () => "/promocoes",
+  "/eventos.html": () => "/eventos",
+  "/salvos.html": () => "/minha-conta",
+  "/pagina-restaurante.html": (p) => (p.get("id") ? `/restaurantes/${encodeURIComponent(p.get("id"))}` : "/restaurantes"),
+  "/cupom-detalhes.html": (p) => (p.get("id") ? `/cupons/${encodeURIComponent(p.get("id"))}` : "/promocoes"),
+};
+
 export function criarMiddlewareLegado() {
   return (req, res, next) => {
-    const caminho = decodeURIComponent((req.url || "").split("?")[0]);
+    const [semQuery, query = ""] = (req.url || "").split("?");
+    const caminho = decodeURIComponent(semQuery);
     if (caminho !== PREFIXO && !caminho.startsWith(`${PREFIXO}/`)) return next();
     if (caminho === PREFIXO) {
       res.writeHead(301, { Location: `${PREFIXO}/` });
@@ -33,6 +49,12 @@ export function criarMiddlewareLegado() {
 
     let relativo = caminho.slice(PREFIXO.length) || "/";
     if (relativo.endsWith("/")) relativo += "index.html";
+
+    const novaRota = MIGRADAS[relativo];
+    if (novaRota) {
+      res.writeHead(302, { Location: novaRota(new URLSearchParams(query)) });
+      return res.end();
+    }
 
     // Segurança: impede "../" de sair da pasta do sistema antigo.
     const arquivo = resolve(PASTA_LEGADO, `.${normalize(relativo)}`);

@@ -1,7 +1,8 @@
 import { addDoc, collection, deleteDoc, doc, getDocs, query, serverTimestamp, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
-// Itens salvos/resgatados pelo cliente (cupons, promoções e eventos).
+// Itens salvos pelo cliente (promoções e eventos). Cupons resgatados ficam em
+// "resgates" (services/resgates.js); salvos antigos de cupom continuam sendo listados.
 // Usa a mesma coleção "salvos" e os mesmos campos do sistema antigo, então o
 // painel do restaurante ("Guardado por clientes") já enxerga o que é salvo aqui.
 
@@ -17,7 +18,7 @@ export async function listarSalvos(uid) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data(), tipo: tipoDoSalvo(d.data()) }));
 }
 
-// item: { tipo: "cupom" | "promocao" | "evento", id, titulo, descricao, foto, restauranteId, restauranteNome, ...extras }
+// item: { tipo: "promocao" | "evento", id, titulo, descricao, foto, restauranteId, restauranteNome, ...extras }
 export async function salvarItem(usuario, item) {
   const base = {
     usuarioId: usuario.uid,
@@ -31,7 +32,6 @@ export async function salvarItem(usuario, item) {
     dataResgate: serverTimestamp(),
   };
   const especificos = {
-    cupom: { cupomId: item.id, codigo: item.codigo, desconto: item.desconto, condicoes: item.condicoes || "", validadeFim: item.validadeFim || "" },
     promocao: { promocaoId: item.id, valor: item.valor || "" },
     evento: { eventoId: item.id, inicio: item.inicio || "", fim: item.fim || "" },
   }[item.tipo];

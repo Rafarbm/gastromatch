@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import { listarMenus, listarPromocoes, listarRestaurantes } from "../services/dados";
 import { cidadesEBairros, filtrosParaURL } from "../lib/filtros";
 import { EXPERIENCIAS } from "../lib/catalogo";
-import { recomendar } from "../lib/recomendacao";
+import { recomendarComSituacao, SITUACAO } from "../lib/recomendacao";
 import { conversarComIA } from "../lib/ia";
 import { aplicarOpcao, extrairPorPalavras, montarCatalogo, PERGUNTAS, proximoSlot, slotsRespondidos } from "../lib/assistente";
 import { useLocalidade } from "./LocalidadeContext";
@@ -47,7 +47,7 @@ function linkCatalogo(pref) {
 }
 
 export function ChatProvider({ children }) {
-  const { busca, posicaoAtual } = useLocalidade();
+  const { posicaoAtual } = useLocalidade();
   const [aberto, setAberto] = useState(false);
   const [mensagens, setMensagens] = useState([msg("assistente", SAUDACAO)]);
   const [pref, setPref] = useState(PREF_VAZIA);
@@ -100,16 +100,27 @@ export function ChatProvider({ children }) {
       const assinatura = JSON.stringify(p);
       if (assinatura === assinaturaResultado.current) return null;
       assinaturaResultado.current = assinatura;
-      const resultado = recomendar(b.restaurantes, p, { posicao: posicaoAtual, limite: 3 });
-      // Texto honesto: separa o que atende tudo das alternativas parciais.
+      const { itens: resultado, situacao } = recomendarComSituacao(b.restaurantes, p, { posicao: posicaoAtual, limite: 3 });
+      // Texto honesto: diz quando foi preciso abrir mão da cidade ou da cozinha pedida.
+      const cozinha = p.cozinha.toLowerCase();
       const exatos = resultado.filter((a) => a.naoAtende.length === 0).length;
       const alternativas = resultado.length - exatos;
-      const texto = !resultado.length
-        ? "Não encontrei nenhum restaurante com essa combinação. Quer tentar outra cidade ou outro tipo de comida?"
-        : !exatos
-          ? "Não achei nada exatamente como você pediu, mas estas opções chegam bem perto:"
-          : `Encontrei ${exatos === 1 ? "1 restaurante que combina" : `${exatos} restaurantes que combinam`} com tudo o que você pediu${alternativas ? ` e separei mais ${alternativas} ${alternativas === 1 ? "alternativa" : "alternativas"}` : ""}:`;
-      return msg("assistente", texto, { resultados: resultado, link: linkCatalogo(p) });
+      let texto;
+      if (situacao === SITUACAO.vazio) {
+        texto = "Não encontrei nenhum restaurante com essa combinação. Quer tentar outra cidade ou outro tipo de comida?";
+      } else if (situacao === SITUACAO.cozinhaEmOutraCidade) {
+        texto = `Ainda não temos comida ${cozinha} em ${p.cidade}. Achei em outras cidades:`;
+      } else if (situacao === SITUACAO.semCozinha) {
+        texto = `Ainda não temos restaurante de comida ${cozinha}${p.cidade ? ` em ${p.cidade}` : ""}. Estas são as opções mais parecidas com o resto do que você pediu:`;
+      } else if (!exatos) {
+        texto = p.cozinha
+          ? `Separei os restaurantes de comida ${cozinha} que mais se aproximam do que você pediu:`
+          : "Não achei nada exatamente como você pediu, mas estas opções chegam bem perto:";
+      } else {
+        texto = `Encontrei ${exatos === 1 ? "1 restaurante que combina" : `${exatos} restaurantes que combinam`} com tudo o que você pediu${alternativas ? ` e separei mais ${alternativas} ${alternativas === 1 ? "alternativa" : "alternativas"}` : ""}:`;
+      }
+      const linkPref = situacao === SITUACAO.cozinhaEmOutraCidade ? { ...p, cidade: "", bairro: "" } : situacao === SITUACAO.semCozinha ? { ...p, cozinha: "" } : p;
+      return msg("assistente", texto, { resultados: resultado, link: linkCatalogo(linkPref) });
     },
     [posicaoAtual],
   );
@@ -213,11 +224,11 @@ export function ChatProvider({ children }) {
       const limpo = texto.trim();
       if (!limpo || pensando) return;
       setMensagens((m) => [...m, msg("usuario", limpo)]);
-      // Na primeira mensagem, usa a cidade já escolhida no seletor do site como ponto de partida.
-      const prefBase = pref.cidade || !busca.cidade ? pref : { ...pref, cidade: busca.cidade, bairro: busca.bairro };
-      processar(limpo, prefBase);
+      // A cidade do seletor do site NÃO é aplicada sem a pessoa dizer: ela aparece
+      // como botão "Na minha cidade" quando o assistente pergunta o local.
+      processar(limpo, pref);
     },
-    [pensando, pref, busca, processar],
+    [pensando, pref, processar],
   );
 
   // Botão rápido: o valor já é exato, então NÃO precisa da IA. Aplica direto e

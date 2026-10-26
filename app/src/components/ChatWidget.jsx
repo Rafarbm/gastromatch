@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import Icone from "./Icone";
 import { useChat } from "../contexts/ChatContext";
 import { opcoesRapidas } from "../lib/assistente";
+import { useLocalidade } from "../contexts/LocalidadeContext";
 
 const CHAVE_CONVITE = "gastromatch:convite-chat";
 const SUGESTOES_INICIAIS = ["Jantar romântico", "Sair com os amigos", "Almoço em família", "Qual o mais barato em Goiânia?"];
@@ -122,8 +123,9 @@ export default function ChatWidget() {
   const naPaginaRestaurante = /^\/restaurantes\/[^/]+$/.test(pathname);
   const posicaoBotao = naPaginaRestaurante ? "bottom-24 lg:bottom-6" : "bottom-5 sm:bottom-6";
 
+  const { busca } = useLocalidade();
   const ultima = mensagens[mensagens.length - 1];
-  const opcoes = !pensando && base && ultima?.papel === "assistente" && ultima.slot ? opcoesRapidas(ultima.slot, base.vocabulario) : [];
+  const opcoes = !pensando && base && ultima?.papel === "assistente" && ultima.slot ? opcoesRapidas(ultima.slot, base.vocabulario, busca.cidade) : [];
   const mostrarSugestoes = mensagens.length === 1 && !pensando;
 
   return (

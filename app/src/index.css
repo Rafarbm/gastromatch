@@ -25,3 +25,20 @@
     display: none;
   }
 }
+
+/* Impressão do ingresso do cupom: só o cartão, sem cabeçalho, menus ou chat. */
+@media print {
+  body:has(#ingresso) header,
+  body:has(#ingresso) footer,
+  body:has(#ingresso) .nao-imprimir,
+  body:has(#ingresso) [data-chat] {
+    display: none !important;
+  }
+  body:has(#ingresso) {
+    background: white;
+  }
+  #ingresso {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}
