@@ -3,7 +3,6 @@ import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import CampoSenha from "../components/CampoSenha";
 import { nomeAmbiente } from "../lib/firebase";
-import { urlLegado } from "../lib/legado";
 
 // Botões que preenchem as contas fictícias do seed. Desligado temporariamente a pedido;
 // para reativar, troque para true (mesmo ligado, só aparece no ambiente local).
@@ -79,7 +78,7 @@ export default function Entrar() {
           <label className="block text-sm">
             <span className="flex justify-between">
               <span className="font-semibold">Senha</span>
-              <a href={urlLegado("esqueceu-senha.html")} className="text-xs text-terra hover:underline">Esqueceu a senha?</a>
+              <Link to="/esqueci-senha" className="text-xs text-terra hover:underline">Esqueceu a senha?</Link>
             </span>
             <CampoSenha required autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} className="mt-1 w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra/40" />
           </label>

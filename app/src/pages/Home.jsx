@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import BarraBusca from "../components/BarraBusca";
 import DatasEspeciais from "../components/DatasEspeciais";
 import { bannerDaRegiao, ESTADOS } from "../lib/regioes";
@@ -41,6 +41,8 @@ export default function Home() {
   const { dados, carregando, erro } = useCarregar(carregarHome);
   const [filtroData, setFiltroData] = useState("todos");
   const navegar = useNavigate();
+  const [params] = useSearchParams();
+  const contaExcluida = params.get("conta") === "excluida";
   const local = { estado: busca.estado, cidade: busca.cidade, bairro: busca.bairro };
   const nomeLocal = busca.bairro || busca.cidade || ESTADOS[busca.estado] || "";
   const banner = bannerDaRegiao(busca.estado);
@@ -111,6 +113,11 @@ export default function Home() {
 
   return (
     <>
+      {contaExcluida && (
+        <p role="status" className="mx-auto mt-4 max-w-6xl px-4 sm:px-8">
+          <span className="block rounded-2xl bg-sage/20 px-4 py-3 text-sm font-semibold">Sua conta e seus dados pessoais foram excluídos. Obrigado por ter usado o GastroMatch.</span>
+        </p>
+      )}
       <SeletorLocalidade />
       {/* key: ao trocar de estado o carrossel recomeça no banner da nova região. */}
       <Hero key={busca.estado || "brasil"} slides={slides} />

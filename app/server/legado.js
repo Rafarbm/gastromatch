@@ -22,11 +22,16 @@ const TIPOS = {
   ".ico": "image/x-icon",
 };
 
-// Páginas antigas que já têm versão nova: dentro do ambiente unificado, o link
+// Todas as páginas antigas já têm versão nova (migração para React concluída): dentro do ambiente unificado, o link
 // antigo leva direto à tela nova (com as validações e regras atuais).
 // O parâmetro "id" (quando existe) é repassado para a rota nova.
 const MIGRADAS = {
   "/index.html": () => "/",
+  "/esqueceu-senha.html": () => "/esqueci-senha",
+  "/perfil-usuario.html": () => "/minha-conta/dados",
+  "/painel-restaurante.html": () => "/restaurante",
+  "/suporte.html": () => "/suporte",
+  "/termos.html": () => "/ajuda#termos",
   "/login.html": () => "/entrar",
   "/cadastro.html": (p) => `/cadastro${p.get("tipo") === "restaurante" ? "?tipo=restaurante" : ""}`,
   "/central-de-ajuda.html": () => "/ajuda",

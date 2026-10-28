@@ -20,6 +20,8 @@ import Ingresso from "./pages/Ingresso";
 import Validar from "./pages/Validar";
 import AreaRestaurante from "./pages/AreaRestaurante";
 import PainelSuporte from "./pages/PainelSuporte";
+import EsqueciSenha from "./pages/EsqueciSenha";
+import MeusDados from "./pages/MeusDados";
 import { EventoDetalhe, Prato, PromocaoDetalhe } from "./pages/Detalhes";
 
 export default function App() {
@@ -48,6 +50,8 @@ export default function App() {
             <Route path="entrar" element={<Entrar />} />
             <Route path="cadastro" element={<Cadastro />} />
             <Route path="minha-conta" element={<MinhaConta />} />
+            <Route path="minha-conta/dados" element={<MeusDados />} />
+            <Route path="esqueci-senha" element={<EsqueciSenha />} />
             <Route path="ajuda" element={<Ajuda />} />
             <Route path="*" element={<EmConstrucao titulo="Página não encontrada" />} />
           </Route>

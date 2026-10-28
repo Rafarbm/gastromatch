@@ -144,6 +144,33 @@ describe("painéis novos", () => {
   });
 });
 
+describe("conta do cliente e eventos da plataforma", () => {
+  it("cliente exclui a própria conta: CPF privado, índice do CPF e perfil", async () => {
+    await ambiente.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), "documentos", "hash-ana"), { uid: CLIENTE, tipo: "cpf" }));
+    const db = como(CLIENTE);
+    await assertSucceeds(deleteDoc(doc(db, "documentos", "hash-ana")));
+    await assertSucceeds(deleteDoc(doc(db, "usuarios", CLIENTE, "privado", "documento")));
+    await assertSucceeds(deleteDoc(doc(db, "usuarios", CLIENTE)));
+  });
+  it("ninguém apaga a conta ou o CPF de outra pessoa", async () => {
+    await ambiente.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), "documentos", "hash-ana"), { uid: CLIENTE, tipo: "cpf" }));
+    const db = como(OUTRO_CLIENTE);
+    await assertFails(deleteDoc(doc(db, "documentos", "hash-ana")));
+    await assertFails(deleteDoc(doc(db, "usuarios", CLIENTE)));
+  });
+  it("cliente edita nome e telefone; nome com HTML é recusado", async () => {
+    await assertSucceeds(updateDoc(doc(como(CLIENTE), "usuarios", CLIENTE), { nome: "Ana Paula", telefone: "(61) 99999-0000" }));
+    await assertFails(updateDoc(doc(como(CLIENTE), "usuarios", CLIENTE), { nome: "<b>Ana</b>" }));
+  });
+  it("só o admin cria evento da plataforma e configura o super evento", async () => {
+    const ev = { titulo: "Festival", tipoEvento: "geral_plataforma", inicio: "2026-11-01", fim: "2026-11-10" };
+    await assertSucceeds(setDoc(doc(como(ADMIN), "eventos", "geral1"), ev));
+    await assertFails(setDoc(doc(como(RESTAURANTE), "eventos", "geral2"), { ...ev, restauranteId: RESTAURANTE }));
+    await assertSucceeds(setDoc(doc(como(ADMIN), "configuracoes", "super_evento"), { titulo: "Super" }, { merge: true }));
+    await assertFails(setDoc(doc(como(RESTAURANTE), "configuracoes", "super_evento"), { titulo: "Meu" }, { merge: true }));
+  });
+});
+
 describe("cupom como ingresso (limite e uso único)", () => {
   it("cliente resgata com transação completa", async () => {
     await assertSucceeds(resgatar(como(CLIENTE), CLIENTE));

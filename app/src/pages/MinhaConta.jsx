@@ -8,7 +8,6 @@ import { listarMeusResgates } from "../services/resgates";
 import { formatarCodigo } from "./Ingresso";
 import { cupomValido } from "../services/dados";
 import { dataCurta, periodo } from "../lib/formato";
-import { urlLegado } from "../lib/legado";
 
 function Secao({ titulo, children }) {
   return (
@@ -89,7 +88,7 @@ export default function MinhaConta() {
       {usuario.papel === "cliente" && (
         <>
           <p className="mt-1 text-sm text-inksoft">
-            Seus cupons e ofertas salvos. <a href={urlLegado("perfil-usuario.html")} className="font-semibold text-terra hover:underline">Editar meus dados</a>
+            Seus cupons e ofertas salvos. <Link to="/minha-conta/dados" className="font-semibold text-terra hover:underline">Meus dados, senha e exclusão da conta</Link>
           </p>
           {erro && <div className="mt-6"><Erro /></div>}
           {!salvos && !erro && <Carregando />}

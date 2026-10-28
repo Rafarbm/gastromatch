@@ -28,7 +28,9 @@ node scripts/seed-emulator.mjs
 cd app && npm install && npm run dev
 ```
 
-App: `http://127.0.0.1:5173`. O sistema antigo (painéis) é servido pelo próprio app em `/legado/` (ex.: `/legado/painel-restaurante.html`), no mesmo endereço, então **um único login vale para os dois**. Painel do emulador: `http://127.0.0.1:4000`.
+App: `http://127.0.0.1:5173`. Painel do emulador: `http://127.0.0.1:4000`.
+
+O site é **100% React** (`app/src`). A pasta `TCC - Atualizado/` (sistema antigo em HTML) não é mais usada pelas telas: o endereço `/legado/...` só existe para redirecionar links antigos para as rotas novas (`app/server/legado.js`).
 
 Contas demo (senha `demo1234`): `cliente@demo.gastromatch`, `restaurante@demo.gastromatch`, `admin@sugama.com`, além de `cliente01`…`cliente40@demo.gastromatch` e uma conta por restaurante (`node scripts/seed-emulator.mjs --listar` mostra todas). O seed cria 188 restaurantes em 26 cidades de 12 estados (cobrindo todas as combinações cozinha × experiência e cozinha × faixa de preço), ~1.750 avaliações, cupons com limite e resgates. Os botões que preenchem contas em `/entrar` estão desligados (`MOSTRAR_CONTAS_DEMO` em `app/src/pages/Entrar.jsx`).
 
@@ -52,7 +54,9 @@ npm run build          # confere que o app compila
 | `/validar/:codigo` | Restaurante valida o QR Code (uso único) |
 | `/pratos/:id`, `/promocoes/:id`, `/eventos/:id` | Páginas individuais (prato com avaliações próprias) |
 | `/restaurante?aba=…` | Painel do restaurante: dados (cozinha, experiências, ocasiões, endereço, horários, fotos), cardápio, cupons, promoções, eventos, resgates |
-| `/suporte?aba=…` | Painel de suporte: usuários (busca, banir/restaurar, destaque), mensagens, moderação de avaliações |
+| `/suporte?aba=…` | Painel de suporte: usuários (busca, banir/restaurar, destaque), mensagens, moderação de avaliações, eventos da plataforma e super evento |
+| `/minha-conta/dados` | Cliente: editar nome/telefone, trocar senha e excluir a conta (LGPD) |
+| `/esqueci-senha` | Recuperação de senha (mesma resposta exista ou não a conta) |
 | `/ajuda` | Perguntas frequentes, Fale conosco (grava para o suporte) e resumo de privacidade |
 
 Segurança e dados: `firestore.rules` (com testes em `app/tests/regras.test.js`). CPF/CNPJ ficam em `usuarios/{uid}/privado` (só o dono lê); chaves únicas por ID de documento (`documentos/{hash}`, `avaliacoes/{alvo}_{uid}`, `resgates/{cupom}_{uid}`, `codigosResgate/{codigo}`); admin = documento em `admins/{uid}`.

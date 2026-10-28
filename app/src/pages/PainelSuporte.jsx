@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import BuscaLista, { filtrarPorTexto } from "../components/BuscaLista";
-import Icone from "../components/Icone";
 import { Carregando, Erro } from "../components/Estados";
 import { useAuth } from "../contexts/AuthContext";
 import { banir, definirDestaque, excluirAvaliacaoAdmin, excluirConta, excluirContato, listarContatos, listarTodasAvaliacoes, listarUsuarios, restaurar } from "../services/admin";
 import { erroTexto } from "../lib/validacao";
-import { urlLegado } from "../lib/legado";
+import EventosPlataforma from "./EventosPlataforma";
 
 const dataBR = (ts) => (ts?.seconds ? new Date(ts.seconds * 1000).toLocaleDateString("pt-BR") : "");
 const POR_PAGINA = 30;
@@ -219,6 +218,7 @@ const ABAS = [
   { id: "usuarios", rotulo: "Usuários e restaurantes" },
   { id: "mensagens", rotulo: "Mensagens" },
   { id: "avaliacoes", rotulo: "Avaliações" },
+  { id: "eventos", rotulo: "Eventos da plataforma" },
 ];
 
 export default function PainelSuporte() {
@@ -245,16 +245,12 @@ export default function PainelSuporte() {
               </button>
             </li>
           ))}
-          <li>
-            <a href={urlLegado("suporte.html")} className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">
-              Eventos da plataforma <Icone nome="direita" className="size-4" />
-            </a>
-          </li>
         </ul>
       </nav>
       {aba === "usuarios" && <Usuarios />}
       {aba === "mensagens" && <Mensagens />}
       {aba === "avaliacoes" && <ModeracaoAvaliacoes />}
+      {aba === "eventos" && <EventosPlataforma />}
     </div>
   );
 }

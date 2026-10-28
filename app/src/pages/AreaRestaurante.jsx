@@ -9,7 +9,6 @@ import { listarResgatesDoRestaurante } from "../services/resgates";
 import { baixarModelo, importarPratos, lerPlanilha, titulosDoCardapio } from "../services/cardapio";
 import { CATEGORIAS, COLUNAS, validarPlanilha } from "../lib/planilha";
 import { moeda } from "../lib/formato";
-import { urlLegado } from "../lib/legado";
 import { formatarCodigo } from "./Ingresso";
 
 function Cartao({ titulo, children, acao }) {
@@ -253,9 +252,6 @@ export default function AreaRestaurante() {
       {aba === "promocoes" && <Cartao titulo="Promoções"><AbaPromocoes /></Cartao>}
       {aba === "eventos" && <Cartao titulo="Eventos"><AbaEventos /></Cartao>}
 
-      <p className="text-center text-xs text-inksoft">
-        Precisa de algo que ainda não está aqui? <a href={urlLegado("painel-restaurante.html")} className="font-semibold text-terra underline">Abrir o painel antigo</a>
-      </p>
     </div>
   );
 }
