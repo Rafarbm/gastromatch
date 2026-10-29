@@ -3,7 +3,7 @@
 [build]
   base = "app"
   command = "npm run build"
-  publish = "dist"
+  publish = "app/dist"
   functions = "app/netlify/functions"
 
 [build.environment]
@@ -16,6 +16,166 @@
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+
+# Endereços do sistema antigo (/legado/...) -> telas novas (mesma tabela de app/server/legado.js).
+
+# As regras com ?id= vêm antes das sem parâmetro.
+
+[[redirects]]
+  from = "/legado/cadastro.html"
+  to = "/cadastro?tipo=restaurante"
+  status = 302
+  query = {tipo = "restaurante"}
+  force = true
+
+[[redirects]]
+  from = "/legado/pagina-restaurante.html"
+  to = "/restaurantes/:id"
+  status = 302
+  query = {id = ":id"}
+  force = true
+
+[[redirects]]
+  from = "/legado/cupom-detalhes.html"
+  to = "/cupons/:id"
+  status = 302
+  query = {id = ":id"}
+  force = true
+
+[[redirects]]
+  from = "/legado/menu-detalhes.html"
+  to = "/pratos/:id"
+  status = 302
+  query = {id = ":id"}
+  force = true
+
+[[redirects]]
+  from = "/legado/promocoes-detalhes.html"
+  to = "/promocoes/:id"
+  status = 302
+  query = {id = ":id"}
+  force = true
+
+[[redirects]]
+  from = "/legado/evento-detalhes.html"
+  to = "/eventos/:id"
+  status = 302
+  query = {id = ":id"}
+  force = true
+
+[[redirects]]
+  from = "/legado/pagina-restaurante.html"
+  to = "/restaurantes"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/cupom-detalhes.html"
+  to = "/promocoes"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/menu-detalhes.html"
+  to = "/restaurantes"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/promocoes-detalhes.html"
+  to = "/promocoes"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/evento-detalhes.html"
+  to = "/eventos"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/cadastro.html"
+  to = "/cadastro"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/index.html"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/esqueceu-senha.html"
+  to = "/esqueci-senha"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/perfil-usuario.html"
+  to = "/minha-conta/dados"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/painel-restaurante.html"
+  to = "/restaurante"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/suporte.html"
+  to = "/suporte"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/termos.html"
+  to = "/ajuda#termos"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/login.html"
+  to = "/entrar"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/central-de-ajuda.html"
+  to = "/ajuda"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/promocoes.html"
+  to = "/promocoes"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/eventos.html"
+  to = "/eventos"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/legado/salvos.html"
+  to = "/minha-conta"
+  status = 302
+  force = true
 
 # Rotas do React (/restaurantes, /minha-conta...) abrem direto pelo link.
 [[redirects]]
