@@ -30,3 +30,6 @@ Thumbs.db
 # Chaves de conta de serviço do Firebase (nunca versionar)
 chave-*.json
 *-firebase-adminsdk-*.json
+
+# Local Netlify folder
+.netlify
