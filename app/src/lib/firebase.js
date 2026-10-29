@@ -22,8 +22,19 @@ const AMBIENTES = {
       appId: "demo-app",
     },
   },
-  // Preencher quando o projeto de staging for criado.
-  staging: { hosts: [], usarEmulador: false, config: null },
+  // Projeto de demonstração (site publicado no Netlify, dados fictícios).
+  staging: {
+    hosts: [],
+    usarEmulador: false,
+    config: {
+      apiKey: "AIzaSyCKxxZF1tm9CvzhV6sL71c6a349RqaaMKY",
+      authDomain: "gastromatch-demo.firebaseapp.com",
+      projectId: "gastromatch-demo",
+      storageBucket: "gastromatch-demo.firebasestorage.app",
+      messagingSenderId: "868061173942",
+      appId: "1:868061173942:web:1a9b28221d5e61f2d16e17",
+    },
+  },
   producao: {
     usarEmulador: false,
     config: {
