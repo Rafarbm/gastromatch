@@ -4,13 +4,20 @@ GastroMatch — plataforma de descoberta de restaurantes por experiência, gastr
 
 ## Ambientes
 
-O arquivo `TCC - Atualizado/firebase-config.js` escolhe o Firebase pelo endereço em que o site foi aberto:
+O arquivo `app/src/lib/firebase.js` escolhe o Firebase pelo endereço em que o site foi aberto (ou pela variável de build `VITE_AMBIENTE`):
 
 | Endereço | Ambiente | Firebase |
 |---|---|---|
 | `localhost` / `127.0.0.1` | local | Emulator (projeto `demo-gastromatch`, dados fictícios) |
-| hosts listados em `staging` | staging | projeto de staging (ainda não criado) |
+| site de demonstração no Netlify (`VITE_AMBIENTE = "staging"` no `netlify.toml`) | staging | `gastromatch-demo` (plano gratuito, dados fictícios) |
 | qualquer outro | produção | `thegastromatch` |
+
+### Site de demonstração (Netlify + `gastromatch-demo`)
+
+- `netlify.toml`: build do app, `/api/*` → função `app/netlify/functions/api.mjs` (mesmas rotas de IA de `app/server`), rotas do React.
+- No Netlify, cadastrar a variável `GROQ_API_KEY` (nunca no repositório).
+- Regras do banco: `firebase deploy --only firestore:rules --project gastromatch-demo --account <conta dona do projeto>`.
+- Dados fictícios: `node scripts/seed-emulator.mjs --demo <chave de conta de serviço>.json` (acrescente `--recomecar` para apagar e recarregar). A chave fica fora do repositório.
 
 ## Como rodar localmente
 

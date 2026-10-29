@@ -1,8 +1,12 @@
 // Popula o Firebase Emulator com dados FICTÍCIOS de demonstração.
 // Uso: node scripts/seed-emulator.mjs   (com os emuladores já rodando)
 //
-// Segurança: o script só fala com 127.0.0.1 e com o projeto "demo-gastromatch".
-// Ele apaga TODO o conteúdo do emulador antes de popular.
+// Projeto de demonstração na nuvem (site publicado):
+//   node scripts/seed-emulator.mjs --demo <caminho da chave de conta de serviço> [--recomecar]
+//
+// Segurança: o script só aceita o emulador ("demo-gastromatch") e o projeto de
+// demonstração ("gastromatch-demo"); NUNCA o de produção. Ele apaga TODO o conteúdo do
+// emulador antes de popular; na nuvem, só apaga se receber --recomecar.
 //
 // Todos os restaurantes, pessoas, CPFs/CNPJs e telefones são inventados (os CPFs/CNPJs
 // têm dígitos verificadores válidos, mas são gerados aleatoriamente). As fotos ficam em
@@ -11,17 +15,36 @@
 // Os dados são gerados com um sorteio de semente fixa: rodar de novo produz o mesmo resultado.
 
 import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 
-const PROJETO = "demo-gastromatch";
+const iDemo = process.argv.indexOf("--demo");
+const NA_NUVEM = iDemo !== -1;
+const PROJETO = NA_NUVEM ? "gastromatch-demo" : "demo-gastromatch";
 const AUTH = "http://127.0.0.1:9099";
-const FIRESTORE = "http://127.0.0.1:8080";
+const FIRESTORE = NA_NUVEM ? "https://firestore.googleapis.com" : "http://127.0.0.1:8080";
 const RAIZ = `projects/${PROJETO}/databases/(default)/documents`;
 const SENHA_DEMO = "demo1234";
 const TODOS_DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
-if (!PROJETO.startsWith("demo-")) {
-  throw new Error("Abortado: o seed só pode rodar em projetos demo-*.");
+if (!["demo-gastromatch", "gastromatch-demo"].includes(PROJETO)) {
+  throw new Error("Abortado: o seed só roda no emulador ou no projeto de demonstração.");
 }
+
+// Na nuvem, o acesso administrativo vem da chave de conta de serviço (firebase-admin,
+// instalado em app/). O conteúdo da chave nunca é exibido; só conferimos de qual projeto ela é.
+const adminRequire = () => createRequire(new URL("../app/package.json", import.meta.url));
+let adminApp;
+if (NA_NUVEM) {
+  const chave = process.argv[iDemo + 1];
+  if (!chave || !existsSync(chave)) throw new Error("Informe o caminho da chave: --demo C:\\caminho\\chave-demo.json");
+  if (JSON.parse(readFileSync(chave, "utf8")).project_id !== PROJETO) {
+    throw new Error(`Abortado: a chave não é do projeto ${PROJETO}.`);
+  }
+  const { initializeApp, cert } = adminRequire()("firebase-admin/app");
+  adminApp = initializeApp({ credential: cert(chave), projectId: PROJETO });
+}
+const tokenAcesso = async () => (NA_NUVEM ? `Bearer ${(await adminApp.options.credential.getAccessToken()).access_token}` : "Bearer owner");
 
 // ---------- utilitários ----------
 
@@ -111,7 +134,7 @@ async function enviarFila() {
     const lote = fila.splice(0, 400);
     await requisitar(`${FIRESTORE}/v1/${RAIZ}:commit`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
+      headers: { "Content-Type": "application/json", Authorization: await tokenAcesso() },
       body: JSON.stringify({ writes: lote }),
     });
     total += lote.length;
@@ -120,6 +143,10 @@ async function enviarFila() {
 }
 
 async function criarConta(email) {
+  if (NA_NUVEM) {
+    const { getAuth } = adminRequire()("firebase-admin/auth");
+    return (await getAuth(adminApp).createUser({ email, password: SENHA_DEMO })).uid;
+  }
   const r = await requisitar(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-api-key`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -379,16 +406,19 @@ function sortearNota(qualidade) {
 // ---------- execução ----------
 
 async function main() {
-  try {
-    await fetch(FIRESTORE);
-    await fetch(AUTH);
-  } catch {
-    throw new Error("Emuladores não encontrados. Rode antes: firebase emulators:start");
+  if (NA_NUVEM) {
+    await limparNuvem();
+  } else {
+    try {
+      await fetch(FIRESTORE);
+      await fetch(AUTH);
+    } catch {
+      throw new Error("Emuladores não encontrados. Rode antes: firebase emulators:start --only auth,firestore");
+    }
+    console.log("Limpando emulador...");
+    await requisitar(`${FIRESTORE}/emulator/v1/projects/${PROJETO}/databases/(default)/documents`, { method: "DELETE" });
+    await requisitar(`${AUTH}/emulator/v1/projects/${PROJETO}/accounts`, { method: "DELETE" });
   }
-
-  console.log("Limpando emulador...");
-  await requisitar(`${FIRESTORE}/emulator/v1/projects/${PROJETO}/databases/(default)/documents`, { method: "DELETE" });
-  await requisitar(`${AUTH}/emulator/v1/projects/${PROJETO}/accounts`, { method: "DELETE" });
 
   const agora = new Date();
   const gerados = gerarRestaurantes();
@@ -632,6 +662,25 @@ async function main() {
   console.log("  admin@sugama.com              (admin)");
   if (process.argv.includes("--listar")) {
     for (const r of restaurantes) console.log(`  ${r.email.padEnd(48)} ${r.nome} (${r.cozinha}, ${r.cidade}/${r.uf})`);
+  }
+}
+
+// Projeto de demonstração: se já houver dados, só apaga com --recomecar.
+async function limparNuvem() {
+  const { getAuth } = adminRequire()("firebase-admin/auth");
+  const { getFirestore } = adminRequire()("firebase-admin/firestore");
+  const auth = getAuth(adminApp);
+  const db = getFirestore(adminApp);
+  const colecoes = await db.listCollections();
+  const contas = (await auth.listUsers(1)).users.length;
+  if (!colecoes.length && !contas) return console.log(`Projeto ${PROJETO} vazio.`);
+  if (!process.argv.includes("--recomecar")) {
+    throw new Error(`O projeto ${PROJETO} já tem dados. Para apagar tudo e carregar de novo, acrescente --recomecar.`);
+  }
+  console.log(`Apagando dados e contas do projeto ${PROJETO}...`);
+  for (const c of colecoes) await db.recursiveDelete(c);
+  for (let pagina = await auth.listUsers(1000); pagina.users.length; pagina = await auth.listUsers(1000)) {
+    await auth.deleteUsers(pagina.users.map((u) => u.uid));
   }
 }
 
