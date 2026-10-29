@@ -26,3 +26,7 @@ app/server/.cache/
 .DS_Store
 Thumbs.db
 *.log
+
+# Chaves de conta de serviço do Firebase (nunca versionar)
+chave-*.json
+*-firebase-adminsdk-*.json
