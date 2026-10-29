@@ -16,24 +16,27 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { iaPausada, lerCorpo, MODELO_PADRAO, registrarFalhaGroq, responder, URL_GROQ } from "./ia.js";
 
-const ARQUIVO_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache", "resumos.json");
+// Na nuvem (Cloud Functions) a pasta do código é só leitura: env.CACHE_DIR aponta para a pasta temporária.
+const PASTA_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache");
+const arquivoCache = (env) => join(env.CACHE_DIR || PASTA_CACHE, "resumos.json");
+// Na nuvem (Netlify) a função tem ~10 s no total: env.IA_TIMEOUT_MS encurta a espera.
 const TIMEOUT_MS = 20000;
 // Mudou o prompt? Aumente a versão: os resumos em cache são gerados de novo.
 const VERSAO_PROMPT = 3;
 // Pedidos simultâneos do mesmo resumo compartilham uma única chamada à IA.
 const emAndamento = new Map();
 
-function lerCache() {
+function lerCache(env) {
   try {
-    return JSON.parse(readFileSync(ARQUIVO_CACHE, "utf8"));
+    return JSON.parse(readFileSync(arquivoCache(env), "utf8"));
   } catch {
     return {};
   }
 }
 
-function salvarCache(cache) {
-  mkdirSync(dirname(ARQUIVO_CACHE), { recursive: true });
-  writeFileSync(ARQUIVO_CACHE, JSON.stringify(cache, null, 2));
+function salvarCache(env, cache) {
+  mkdirSync(dirname(arquivoCache(env)), { recursive: true });
+  writeFileSync(arquivoCache(env), JSON.stringify(cache, null, 2));
 }
 
 const PROMPT = `Você escreve um resumo curto da experiência de um restaurante para o site GastroMatch.
@@ -77,7 +80,7 @@ export function criarMiddlewareResumo(env) {
 
     // A chave do cache inclui um "hash" dos dados: se o restaurante mudar algo, gera de novo.
     const assinatura = createHash("sha1").update(`v${VERSAO_PROMPT}:${JSON.stringify(restaurante)}`).digest("hex");
-    const cache = lerCache();
+    const cache = lerCache(env);
     const salvo = cache[restaurante.id];
     if (salvo?.assinatura === assinatura) return responder(res, 200, { ...salvo.conteudo, fonte: "cache" });
 
@@ -101,9 +104,9 @@ async function gerar(env, restaurante, assinatura) {
     const r = await tentar(env, restaurante, precos, instrucaoExtra);
     if (r.conteudo) {
       // Relê o arquivo na hora de salvar para não apagar resumos gravados em paralelo.
-      const cache = lerCache();
+      const cache = lerCache(env);
       cache[restaurante.id] = { assinatura, conteudo: r.conteudo, geradoEm: new Date().toISOString() };
-      salvarCache(cache);
+      salvarCache(env, cache);
       return { status: 200, corpo: { ...r.conteudo, fonte: "ia" } };
     }
     if (!r.reprovado) return r.falha; // erro de rede/limite: não adianta repetir agora
@@ -116,7 +119,7 @@ async function gerar(env, restaurante, assinatura) {
 async function tentar(env, restaurante, precos, instrucaoExtra) {
   const modelo = env.GROQ_MODEL || MODELO_PADRAO;
   const controle = new AbortController();
-  const timer = setTimeout(() => controle.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controle.abort(), Number(env.IA_TIMEOUT_MS) || TIMEOUT_MS);
   try {
     const resp = await fetch(URL_GROQ, {
       method: "POST",

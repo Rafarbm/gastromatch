@@ -19,7 +19,7 @@ Pré-requisitos: Node 18+, Firebase CLI, **Java 21+** (emuladores), Python 3.
 ```bash
 # Terminal 1 — emuladores (Auth :9099, Firestore :8080, painel :4000)
 # --import/--export-on-exit guardam os dados entre execuções (pasta emulator-data/, fora do Git)
-firebase emulators:start --project demo-gastromatch --import=./emulator-data --export-on-exit
+firebase emulators:start --only auth,firestore --project demo-gastromatch --import=./emulator-data --export-on-exit
 
 # Só na primeira vez (ou para recomeçar do zero) — apaga e recria tudo no emulador
 node scripts/seed-emulator.mjs

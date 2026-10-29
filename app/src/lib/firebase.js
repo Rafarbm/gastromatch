@@ -43,11 +43,16 @@ const AMBIENTES = {
 const CACHE_OFFLINE = false;
 
 const host = window.location.hostname;
-export const nomeAmbiente = AMBIENTES.local.hosts.includes(host)
-  ? "local"
-  : AMBIENTES.staging.hosts.includes(host)
-    ? "staging"
-    : "producao";
+// O build pode fixar o ambiente (netlify.toml: VITE_AMBIENTE = "staging"), para o site de
+// demonstração nunca cair no projeto de produção, qualquer que seja o endereço.
+const fixado = import.meta.env.VITE_AMBIENTE;
+export const nomeAmbiente = AMBIENTES[fixado]
+  ? fixado
+  : AMBIENTES.local.hosts.includes(host)
+    ? "local"
+    : AMBIENTES.staging.hosts.includes(host)
+      ? "staging"
+      : "producao";
 const ambiente = AMBIENTES[nomeAmbiente];
 
 if (!ambiente.config) {

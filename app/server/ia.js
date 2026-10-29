@@ -14,6 +14,7 @@ export const MODELO_PADRAO = "openai/gpt-oss-120b";
 const MAX_MENSAGENS = 10;
 const MAX_CARACTERES = 500;
 const MAX_CATALOGO = 12000;
+// Na nuvem (Netlify) a função tem ~10 s no total: env.IA_TIMEOUT_MS encurta a espera.
 const TIMEOUT_MS = 20000;
 
 function promptSistema(vocabulario, catalogo, preferencias) {
@@ -86,6 +87,8 @@ export function registrarFalhaGroq(status, retryAfter) {
 }
 
 export async function lerCorpo(req) {
+  // No Cloud Functions o corpo JSON já chega lido (req.body); no Vite, lemos o fluxo.
+  if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) return req.body;
   const partes = [];
   for await (const p of req) partes.push(p);
   return JSON.parse(Buffer.concat(partes).toString("utf8") || "{}");
@@ -124,7 +127,7 @@ export function criarMiddlewareIA(env) {
 
     const modelo = env.GROQ_MODEL || MODELO_PADRAO;
     const controle = new AbortController();
-    const timer = setTimeout(() => controle.abort(), TIMEOUT_MS);
+    const timer = setTimeout(() => controle.abort(), Number(env.IA_TIMEOUT_MS) || TIMEOUT_MS);
     const chamarGroq = (extras = []) =>
       fetch(URL_GROQ, {
         method: "POST",

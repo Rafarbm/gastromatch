@@ -13,7 +13,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { iaPausada, lerCorpo, MODELO_PADRAO, registrarFalhaGroq, responder, URL_GROQ } from "./ia.js";
 
-const ARQUIVO_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache", "datas.json");
+// Na nuvem (Cloud Functions) a pasta do código é só leitura: env.CACHE_DIR aponta para a pasta temporária.
+const PASTA_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache");
+const arquivoCache = (env) => join(env.CACHE_DIR || PASTA_CACHE, "datas.json");
+// Na nuvem (Netlify) a função tem ~10 s no total: env.IA_TIMEOUT_MS encurta a espera.
 const TIMEOUT_MS = 20000;
 const VERSAO_PROMPT = 1;
 const emAndamento = new Map();
@@ -29,19 +32,19 @@ Regras:
 
 Responda APENAS com JSON: {"textos": {"<id da data>": "<frase>"}}`;
 
-function lerCache() {
+function lerCache(env) {
   try {
-    return JSON.parse(readFileSync(ARQUIVO_CACHE, "utf8"));
+    return JSON.parse(readFileSync(arquivoCache(env), "utf8"));
   } catch {
     return {};
   }
 }
 
-function salvarNoCache(chave, textos) {
-  const cache = lerCache();
+function salvarNoCache(env, chave, textos) {
+  const cache = lerCache(env);
   cache[chave] = { textos, geradoEm: new Date().toISOString() };
-  mkdirSync(dirname(ARQUIVO_CACHE), { recursive: true });
-  writeFileSync(ARQUIVO_CACHE, JSON.stringify(cache, null, 2));
+  mkdirSync(dirname(arquivoCache(env)), { recursive: true });
+  writeFileSync(arquivoCache(env), JSON.stringify(cache, null, 2));
 }
 
 // Aceita o texto só se ele não citar preço, não tiver HTML e só mencionar restaurantes da lista.
@@ -69,7 +72,7 @@ export function criarMiddlewareDatas(env) {
     if (!datas.length) return responder(res, 400, { erro: "Nenhuma data enviada." });
 
     const chave = createHash("sha1").update(`v${VERSAO_PROMPT}:${JSON.stringify(datas)}`).digest("hex");
-    const salvo = lerCache()[chave];
+    const salvo = lerCache(env)[chave];
     if (salvo) return responder(res, 200, { textos: salvo.textos, fonte: "cache" });
     if (!env.GROQ_API_KEY || iaPausada()) return responder(res, 503, { erro: "IA indisponível." });
 
@@ -82,7 +85,7 @@ export function criarMiddlewareDatas(env) {
 async function gerar(env, datas, chave) {
   const modelo = env.GROQ_MODEL || MODELO_PADRAO;
   const controle = new AbortController();
-  const timer = setTimeout(() => controle.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controle.abort(), Number(env.IA_TIMEOUT_MS) || TIMEOUT_MS);
   try {
     const resp = await fetch(URL_GROQ, {
       method: "POST",
@@ -120,7 +123,7 @@ async function gerar(env, datas, chave) {
       if (textoAprovado(bruto[d.id], permitidos, todosNomes)) textos[d.id] = bruto[d.id].trim();
     }
     // Só guarda em cache se todas as datas tiverem texto aprovado.
-    if (Object.keys(textos).length === datas.length) salvarNoCache(chave, textos);
+    if (Object.keys(textos).length === datas.length) salvarNoCache(env, chave, textos);
     return { status: 200, corpo: { textos, fonte: "ia" } };
   } catch (erro) {
     console.error("[datas]", erro.name === "AbortError" ? "timeout" : erro.message);
