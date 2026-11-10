@@ -112,11 +112,15 @@ with sync_playwright() as p:
         c.wait_for_selector("button[aria-pressed='false']:has-text('Favoritar')", timeout=15000)
     c.locator("button:has-text('Favoritar')").click()
     c.wait_for_selector("button[aria-pressed='true']:has-text('Favorito')", timeout=15000)
+    # O coração muda na hora; a gravação no banco leva um instante. Recarregar antes
+    # disso interromperia o envio (é o que este passo quer conferir: que ficou gravado).
+    c.wait_for_timeout(4000)
     c.reload()
     c.wait_for_selector("button[aria-pressed='true']:has-text('Favorito')", timeout=60000)
     passo("favoritar grava no banco publicado (continua após recarregar)", True)
     c.locator("button:has-text('Favorito')").click()
     c.wait_for_selector("button[aria-pressed='false']:has-text('Favoritar')", timeout=15000)
+    c.wait_for_timeout(4000)  # deixa a remoção do favorito chegar ao banco (limpeza)
 
     respostas_ia = []
     c.on("response", lambda r: respostas_ia.append(r.status) if r.url.endswith("/api/ia") else None)
