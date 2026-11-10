@@ -13,10 +13,13 @@ export function moeda(valor) {
   return valor == null ? "" : valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+// Data de hoje (ou deslocada em dias) no formato AAAA-MM-DD, pelo relógio do aparelho.
+// Não usa toISOString(): ele converte para UTC e, no Brasil, viraria "amanhã" depois das 21h.
 export function isoHoje(deslocamentoDias = 0) {
   const d = new Date();
   d.setDate(d.getDate() + deslocamentoDias);
-  return d.toISOString().split("T")[0];
+  const dois = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${dois(d.getMonth() + 1)}-${dois(d.getDate())}`;
 }
 
 // O evento ocorre em algum dia do intervalo [de, ate]?

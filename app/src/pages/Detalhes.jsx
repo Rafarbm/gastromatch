@@ -10,7 +10,7 @@ import { useCarregar } from "../hooks/useCarregar";
 import { calcularNotas, listarRestaurantes, obterConteudoRestaurante, obterEvento, obterMenu, obterPromocao, obterRestaurante } from "../services/dados";
 import { listarAvaliacoesDoRestaurante } from "../services/avaliacoes";
 import { listarSalvos } from "../services/salvos";
-import { moeda, periodo } from "../lib/formato";
+import { dataCurta, moeda, periodo } from "../lib/formato";
 
 // Páginas individuais de prato, promoção e evento (substituem menu-detalhes.html,
 // promocoes-detalhes.html e evento-detalhes.html do sistema antigo).
@@ -145,6 +145,12 @@ export function PromocaoDetalhe() {
   if (erro) return <div className="mx-auto max-w-5xl px-4 pt-8"><Erro /></div>;
   if (!dados || !dados.r) return naoEncontrado("Promoção não encontrada ou encerrada", "/promocoes", "Ver promoções");
   const { p, r } = dados;
+  // Só a promoção ativa pode ser salva; as outras mostram por que não estão no ar.
+  const aviso = {
+    agendada: `Esta promoção ainda não começou. Ela entra no ar em ${dataCurta(p.inicio)}.`,
+    expirada: "Esta promoção terminou.",
+    encerrada: "Esta promoção foi encerrada pelo restaurante.",
+  }[p.status];
   return (
     <Moldura
       voltar={{ para: "/promocoes", rotulo: "Promoções" }}
@@ -159,7 +165,12 @@ export function PromocaoDetalhe() {
             {p.prato && <p><strong>Prato:</strong> {p.prato}</p>}
             <p><strong>Dias:</strong> {p.diasValidos.length ? p.diasValidos.join(", ") : "Todos os dias"}</p>
             {p.horaInicio && <p><strong>Horário:</strong> {p.horaInicio}{p.horaFim && ` às ${p.horaFim}`}</p>}
-            <BotaoSalvar item={{ tipo: "promocao", id: p.id, titulo: p.titulo, descricao: p.descricao, foto: p.foto, valor: p.valor, restauranteId: r.id, restauranteNome: r.nome }} salvos={salvos} aoSalvar={aoSalvar} />
+            {p.inicio && <p><strong>Válida:</strong> {periodo(p.inicio, p.fim)}</p>}
+            {aviso ? (
+              <p role="status" className="rounded-xl bg-butter/40 px-3 py-2 font-semibold">{aviso}</p>
+            ) : (
+              <BotaoSalvar item={{ tipo: "promocao", id: p.id, titulo: p.titulo, descricao: p.descricao, foto: p.foto, valor: p.valor, restauranteId: r.id, restauranteNome: r.nome }} salvos={salvos} aoSalvar={aoSalvar} />
+            )}
           </div>
           <CartaoRestaurante r={r} />
         </>

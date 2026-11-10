@@ -1,5 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { isoHoje } from "../lib/formato";
+import { statusPromocao } from "../lib/promocoes";
 
 // Único ponto de acesso ao Firestore no app novo. As páginas nunca chamam o
 // Firestore diretamente: se a estrutura do banco mudar (ex.: separar uma
@@ -8,7 +10,7 @@ import { db } from "../lib/firebase";
 const FOTO_PADRAO = "/img/interior-2.jpg";
 
 function hojeISO() {
-  return new Date().toISOString().split("T")[0];
+  return isoHoje();
 }
 
 // ---------- normalizadores (o legado grava o mesmo dado com nomes diferentes) ----------
@@ -73,6 +75,11 @@ function normalizarPromocao(id, d) {
     diasValidos: d.diasValidos || [],
     horaInicio: d.horaInicio || "",
     horaFim: d.horaFim || "",
+    // Vigência: o status é calculado pelas datas (ver lib/promocoes.js), não gravado.
+    inicio: d.inicio || "",
+    fim: d.fim || "",
+    encerrada: Boolean(d.encerradaEm),
+    status: statusPromocao(d),
   };
 }
 
@@ -85,6 +92,8 @@ function normalizarCupom(id, d) {
     validadeInicio: d.validadeInicio || "",
     validadeFim: d.validadeFim || "",
     restauranteId: d.restauranteId || "",
+    // Vínculo opcional com uma promoção: o cupom só vale enquanto ela estiver ativa.
+    promocaoId: d.promocaoId || "",
     limiteTotal: Number(d.limiteTotal) || null,
     resgatados: Number(d.resgatados) || 0,
     esgotado: Boolean(d.limiteTotal) && (Number(d.resgatados) || 0) >= Number(d.limiteTotal),
@@ -181,10 +190,18 @@ export async function obterConteudoRestaurante(id) {
     ...todosEventos.docs.map((d) => normalizarEvento(d.id, d.data())).filter((e) => e.participantes.includes(id)),
   ].filter((e) => eventoVigente(e));
 
+  // Só promoções ATIVAS aparecem ao público (agendadas, expiradas e encerradas ficam de fora).
+  const promocoesAtivas = promocoes.map((d) => normalizarPromocao(d.id, d.data())).filter((p) => p.status === "ativa");
+  const ativaPorId = Object.fromEntries(promocoesAtivas.map((p) => [p.id, p]));
+
   return {
     menus: menus.map((d) => normalizarMenu(d.id, d.data())),
-    promocoes: promocoes.map((d) => normalizarPromocao(d.id, d.data())),
-    cupons: cupons.map((d) => normalizarCupom(d.id, d.data())).filter((c) => cupomValido(c)),
+    promocoes: promocoesAtivas,
+    // Cupom vinculado a uma promoção só aparece enquanto ela estiver ativa.
+    cupons: cupons
+      .map((d) => normalizarCupom(d.id, d.data()))
+      .filter((c) => cupomValido(c) && (!c.promocaoId || ativaPorId[c.promocaoId]))
+      .map((c) => (c.promocaoId ? { ...c, promocaoTitulo: ativaPorId[c.promocaoId].titulo } : c)),
     eventos,
   };
 }
@@ -193,7 +210,15 @@ export async function obterCupom(id) {
   const snap = await getDoc(doc(db, "cupons", id));
   if (!snap.exists()) return null;
   const c = normalizarCupom(snap.id, snap.data());
-  return { ...c, vigente: cupomValido(c) };
+  // Cupom vinculado: depende de a promoção existir e estar ativa.
+  const promocao = c.promocaoId ? await obterPromocao(c.promocaoId) : null;
+  const promocaoOk = !c.promocaoId || promocao?.status === "ativa";
+  return {
+    ...c,
+    vigente: cupomValido(c) && promocaoOk,
+    promocaoIndisponivel: !promocaoOk,
+    promocaoTitulo: promocaoOk && promocao ? promocao.titulo : "",
+  };
 }
 
 export async function obterMenu(id) {
@@ -216,9 +241,10 @@ export async function listarMenus() {
   return snap.docs.map((d) => ({ ...normalizarMenu(d.id, d.data()), restauranteId: d.data().restauranteId || "" }));
 }
 
+// Lista pública: só as promoções ativas hoje.
 export async function listarPromocoes() {
   const snap = await getDocs(collection(db, "promocoes"));
-  return snap.docs.map((d) => normalizarPromocao(d.id, d.data()));
+  return snap.docs.map((d) => normalizarPromocao(d.id, d.data())).filter((p) => p.status === "ativa");
 }
 
 export async function obterSuperEvento() {

@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
-import { deleteDoc, doc, getDoc, getDocs, runTransaction, setDoc, updateDoc, collection, query, where, writeBatch } from "firebase/firestore";
+import { deleteDoc, deleteField, doc, getDoc, getDocs, runTransaction, serverTimestamp, setDoc, updateDoc, collection, query, where, writeBatch } from "firebase/firestore";
 
 let ambiente;
 
@@ -43,6 +43,7 @@ beforeEach(async () => {
     await setDoc(doc(db, "usuarios", CLIENTE, "privado", "documento"), { cpf: "52998224725" });
     await setDoc(doc(db, "menus", "prato1"), { restauranteId: RESTAURANTE, titulo: "Picanha", categoria: "Prato Principal", preco: 100 });
     await setDoc(doc(db, "cupons", "cupom1"), { restauranteId: RESTAURANTE, codigo: "BRASA15", limiteTotal: 2, resgatados: 0 });
+    await setDoc(doc(db, "codigosCupom", `${RESTAURANTE}_BRASA15`), { cupomId: "cupom1" });
   });
 });
 
@@ -135,8 +136,8 @@ describe("painéis novos", () => {
     await assertFails(updateDoc(doc(como(CLIENTE), "usuarios", RESTAURANTE), { destaque: true }));
   });
   it("restaurante edita o próprio cupom sem mexer no contador", async () => {
-    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { codigo: "BRASA20", limiteTotal: 10 }));
-    await assertFails(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { resgatados: 0, codigo: "BRASA20" }).then(() => updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { resgatados: 5 })));
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { limiteTotal: 10, condicoes: "Só no jantar" }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { resgatados: 5 }));
   });
   it("admin lista todos os usuários (painel de suporte); cliente não", async () => {
     await assertSucceeds(getDocs(collection(como(ADMIN), "usuarios")));
@@ -208,6 +209,193 @@ describe("cupom como ingresso (limite e uso único)", () => {
     await resgatar(como(CLIENTE), CLIENTE);
     await assertSucceeds(getDocs(query(collection(como(CLIENTE), "resgates"), where("usuarioId", "==", CLIENTE))));
     await assertFails(getDoc(doc(como(OUTRO_CLIENTE), "resgates", `cupom1_${CLIENTE}`)));
+  });
+});
+
+// Datas longe de hoje, para o teste não depender do fuso horário nem da hora em que roda.
+const dia = (deslocamento) => {
+  const d = new Date(Date.now() + deslocamento * 86400000);
+  return d.toISOString().split("T")[0];
+};
+const promocao = (extra = {}) => ({ restauranteId: RESTAURANTE, titulo: "Jantar a dois", descricao: "Picanha e vinho", inicio: dia(-5), fim: dia(5), ...extra });
+const semRegras = (fn) => ambiente.withSecurityRulesDisabled((ctx) => fn(ctx.firestore()));
+
+describe("promoções: vigência, agendamento, encerrar e excluir", () => {
+  it("restaurante cria promoção com início e fim (imediata ou agendada)", async () => {
+    const db = como(RESTAURANTE);
+    await assertSucceeds(setDoc(doc(db, "promocoes", "p-ativa"), promocao()));
+    await assertSucceeds(setDoc(doc(db, "promocoes", "p-agendada"), promocao({ inicio: dia(10), fim: dia(20) })));
+  });
+  it("criação sem datas, com data em formato errado ou com fim antes do início é recusada", async () => {
+    const db = como(RESTAURANTE);
+    await assertFails(setDoc(doc(db, "promocoes", "p1"), { restauranteId: RESTAURANTE, titulo: "Sem datas" }));
+    await assertFails(setDoc(doc(db, "promocoes", "p2"), promocao({ inicio: "10/11/2026" })));
+    await assertFails(setDoc(doc(db, "promocoes", "p3"), promocao({ inicio: dia(5), fim: dia(1) })));
+  });
+  it("dono encerra (guarda o registro) e reativa; a edição também não aceita fim antes do início", async () => {
+    await semRegras((db) => setDoc(doc(db, "promocoes", "p1"), promocao()));
+    const db = como(RESTAURANTE);
+    await assertSucceeds(updateDoc(doc(db, "promocoes", "p1"), { encerradaEm: serverTimestamp() }));
+    const encerrada = await getDoc(doc(anonimo(), "promocoes", "p1"));
+    if (!encerrada.exists() || !encerrada.data().encerradaEm) throw new Error("a promoção encerrada deveria continuar no banco");
+    await assertSucceeds(updateDoc(doc(db, "promocoes", "p1"), { encerradaEm: deleteField() }));
+    await assertFails(updateDoc(doc(db, "promocoes", "p1"), { fim: dia(-10) }));
+    await assertFails(updateDoc(doc(db, "promocoes", "p1"), { encerradaEm: "ontem" }));
+  });
+  it("outro restaurante e cliente não criam, não encerram e não excluem a promoção alheia", async () => {
+    await semRegras((db) => setDoc(doc(db, "promocoes", "p1"), promocao()));
+    await assertFails(setDoc(doc(como(OUTRO_RESTAURANTE), "promocoes", "p9"), promocao()));
+    await assertFails(updateDoc(doc(como(OUTRO_RESTAURANTE), "promocoes", "p1"), { encerradaEm: serverTimestamp() }));
+    await assertFails(updateDoc(doc(como(CLIENTE), "promocoes", "p1"), { encerradaEm: serverTimestamp() }));
+    await assertFails(deleteDoc(doc(como(OUTRO_RESTAURANTE), "promocoes", "p1")));
+    await assertSucceeds(deleteDoc(doc(como(RESTAURANTE), "promocoes", "p1")));
+  });
+  it("promoção antiga, sem datas, ainda pode ser encerrada pelo dono", async () => {
+    await semRegras((db) => setDoc(doc(db, "promocoes", "antiga"), { restauranteId: RESTAURANTE, titulo: "Antiga" }));
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "promocoes", "antiga"), { encerradaEm: serverTimestamp() }));
+  });
+});
+
+describe("cupons: código único por restaurante e vínculo com promoção", () => {
+  const cupom = (extra = {}) => ({ restauranteId: RESTAURANTE, codigo: "NOVO10", desconto: "10%", resgatados: 0, ...extra });
+  // Como o app faz: cupom e índice do código gravados juntos.
+  const criar = (db, id, dados, uid = RESTAURANTE) => {
+    const lote = writeBatch(db);
+    lote.set(doc(db, "cupons", id), dados);
+    lote.set(doc(db, "codigosCupom", `${uid}_${dados.codigo}`), { cupomId: id });
+    return lote.commit();
+  };
+
+  it("restaurante cria cupom junto com o índice do código", async () => {
+    await assertSucceeds(criar(como(RESTAURANTE), "c2", cupom()));
+  });
+  it("cupom sem o índice do código é recusado", async () => {
+    await assertFails(setDoc(doc(como(RESTAURANTE), "cupons", "c2"), cupom()));
+  });
+  it("o mesmo restaurante não repete um código (BRASA15 já existe)", async () => {
+    await assertFails(criar(como(RESTAURANTE), "c2", cupom({ codigo: "BRASA15" })));
+  });
+  it("outro restaurante pode usar o mesmo código", async () => {
+    await assertSucceeds(criar(como(OUTRO_RESTAURANTE), "c3", cupom({ restauranteId: OUTRO_RESTAURANTE, codigo: "BRASA15" }), OUTRO_RESTAURANTE));
+  });
+  it("código com espaço, minúsculas ou curto demais é recusado", async () => {
+    await assertFails(criar(como(RESTAURANTE), "c2", cupom({ codigo: "meu cupom" })));
+    await assertFails(criar(como(RESTAURANTE), "c2", cupom({ codigo: "AB" })));
+  });
+  it("trocar o código libera o antigo e ocupa o novo, tudo junto", async () => {
+    const db = como(RESTAURANTE);
+    const lote = writeBatch(db);
+    lote.update(doc(db, "cupons", "cupom1"), { codigo: "BRASA20" });
+    lote.set(doc(db, "codigosCupom", `${RESTAURANTE}_BRASA20`), { cupomId: "cupom1" });
+    lote.delete(doc(db, "codigosCupom", `${RESTAURANTE}_BRASA15`));
+    await assertSucceeds(lote.commit());
+    // Trocar o código sem atualizar o índice é recusado.
+    await assertFails(updateDoc(doc(db, "cupons", "cupom1"), { codigo: "BRASA30" }));
+  });
+  it("não dá para apagar o índice de um cupom que continua usando o código", async () => {
+    await assertFails(deleteDoc(doc(como(RESTAURANTE), "codigosCupom", `${RESTAURANTE}_BRASA15`)));
+    await assertFails(deleteDoc(doc(como(OUTRO_RESTAURANTE), "codigosCupom", `${RESTAURANTE}_BRASA15`)));
+  });
+  it("excluir o cupom libera o código", async () => {
+    const db = como(RESTAURANTE);
+    const lote = writeBatch(db);
+    lote.delete(doc(db, "cupons", "cupom1"));
+    lote.delete(doc(db, "codigosCupom", `${RESTAURANTE}_BRASA15`));
+    await assertSucceeds(lote.commit());
+    await assertSucceeds(criar(db, "c2", cupom({ codigo: "BRASA15" })));
+  });
+  it("cupom só pode ser vinculado a uma promoção do próprio restaurante", async () => {
+    await semRegras(async (db) => {
+      await setDoc(doc(db, "promocoes", "minha"), promocao());
+      await setDoc(doc(db, "promocoes", "alheia"), promocao({ restauranteId: OUTRO_RESTAURANTE }));
+    });
+    const db = como(RESTAURANTE);
+    await assertSucceeds(criar(db, "c2", cupom({ promocaoId: "minha" })));
+    await assertFails(criar(db, "c4", cupom({ codigo: "OUTRO10", promocaoId: "alheia" })));
+    await assertFails(criar(db, "c5", cupom({ codigo: "OUTRO20", promocaoId: "nao-existe" })));
+    await assertSucceeds(updateDoc(doc(db, "cupons", "c2"), { promocaoId: deleteField() }));
+  });
+});
+
+describe("resgate de cupom vinculado a promoção", () => {
+  const vincular = (dadosPromocao) =>
+    semRegras(async (db) => {
+      await setDoc(doc(db, "promocoes", "p1"), dadosPromocao);
+      await updateDoc(doc(db, "cupons", "cupom1"), { promocaoId: "p1" });
+    });
+
+  it("promoção ativa: o cliente resgata", async () => {
+    await vincular(promocao());
+    await assertSucceeds(resgatar(como(CLIENTE), CLIENTE));
+  });
+  it("promoção agendada (ainda não começou): resgate recusado", async () => {
+    await vincular(promocao({ inicio: dia(5), fim: dia(10) }));
+    await assertFails(resgatar(como(CLIENTE), CLIENTE));
+  });
+  it("promoção expirada: resgate recusado", async () => {
+    await vincular(promocao({ inicio: dia(-10), fim: dia(-5) }));
+    await assertFails(resgatar(como(CLIENTE), CLIENTE));
+  });
+  it("promoção encerrada: resgate recusado; reativada: resgate volta a funcionar", async () => {
+    await vincular(promocao({ encerradaEm: new Date() }));
+    await assertFails(resgatar(como(CLIENTE), CLIENTE));
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "promocoes", "p1"), { encerradaEm: deleteField() }));
+    await assertSucceeds(resgatar(como(CLIENTE), CLIENTE));
+  });
+  it("promoção excluída: resgate recusado", async () => {
+    await vincular(promocao());
+    await semRegras((db) => deleteDoc(doc(db, "promocoes", "p1")));
+    await assertFails(resgatar(como(CLIENTE), CLIENTE));
+  });
+});
+
+describe("favoritos", () => {
+  const fav = (uid, rest = RESTAURANTE) => ({ usuarioId: uid, restauranteId: rest });
+  const semear = (id, dados) => ambiente.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), "favoritos", id), dados));
+
+  it("cliente favorita um restaurante e lista os próprios favoritos", async () => {
+    const db = como(CLIENTE);
+    await assertSucceeds(setDoc(doc(db, "favoritos", `${CLIENTE}_${RESTAURANTE}`), fav(CLIENTE)));
+    await assertSucceeds(getDocs(query(collection(db, "favoritos"), where("usuarioId", "==", CLIENTE))));
+  });
+  it("favoritar de novo o mesmo restaurante não cria duplicata (mesmo documento)", async () => {
+    const db = como(CLIENTE);
+    await assertSucceeds(setDoc(doc(db, "favoritos", `${CLIENTE}_${RESTAURANTE}`), fav(CLIENTE)));
+    await assertSucceeds(setDoc(doc(db, "favoritos", `${CLIENTE}_${RESTAURANTE}`), fav(CLIENTE)));
+    const snap = await getDocs(query(collection(db, "favoritos"), where("usuarioId", "==", CLIENTE)));
+    if (snap.size !== 1) throw new Error(`esperava 1 favorito, achei ${snap.size}`);
+  });
+  it("ID fora do padrão ou em nome de outra pessoa é recusado", async () => {
+    const db = como(CLIENTE);
+    await assertFails(setDoc(doc(db, "favoritos", "qualquer-id"), fav(CLIENTE)));
+    await assertFails(setDoc(doc(db, "favoritos", `${OUTRO_CLIENTE}_${RESTAURANTE}`), fav(OUTRO_CLIENTE)));
+    await assertFails(setDoc(doc(db, "favoritos", `${CLIENTE}_${RESTAURANTE}`), fav(CLIENTE, OUTRO_RESTAURANTE)));
+  });
+  it("só dá para favoritar restaurante que existe (não cliente nem id inventado)", async () => {
+    const db = como(CLIENTE);
+    await assertFails(setDoc(doc(db, "favoritos", `${CLIENTE}_${OUTRO_CLIENTE}`), fav(CLIENTE, OUTRO_CLIENTE)));
+    await assertFails(setDoc(doc(db, "favoritos", `${CLIENTE}_nao-existe`), fav(CLIENTE, "nao-existe")));
+  });
+  it("favorito não aceita e-mail nem nome do cliente", async () => {
+    await assertFails(setDoc(doc(como(CLIENTE), "favoritos", `${CLIENTE}_${RESTAURANTE}`), { ...fav(CLIENTE), usuarioEmail: "ana@teste.com" }));
+  });
+  it("visitante, restaurante e admin não favoritam", async () => {
+    await assertFails(setDoc(doc(anonimo(), "favoritos", `x_${RESTAURANTE}`), fav("x")));
+    await assertFails(setDoc(doc(como(OUTRO_RESTAURANTE), "favoritos", `${OUTRO_RESTAURANTE}_${RESTAURANTE}`), fav(OUTRO_RESTAURANTE)));
+    await assertFails(setDoc(doc(como(ADMIN), "favoritos", `${ADMIN}_${RESTAURANTE}`), fav(ADMIN)));
+  });
+  it("o restaurante favoritado, outro cliente e o admin não leem o favorito", async () => {
+    await semear(`${CLIENTE}_${RESTAURANTE}`, fav(CLIENTE));
+    await assertFails(getDoc(doc(como(RESTAURANTE), "favoritos", `${CLIENTE}_${RESTAURANTE}`)));
+    await assertFails(getDocs(query(collection(como(RESTAURANTE), "favoritos"), where("restauranteId", "==", RESTAURANTE))));
+    await assertFails(getDoc(doc(como(OUTRO_CLIENTE), "favoritos", `${CLIENTE}_${RESTAURANTE}`)));
+    await assertFails(getDoc(doc(como(ADMIN), "favoritos", `${CLIENTE}_${RESTAURANTE}`)));
+  });
+  it("só o dono remove o próprio favorito", async () => {
+    await semear(`${CLIENTE}_${RESTAURANTE}`, fav(CLIENTE));
+    await assertFails(deleteDoc(doc(como(OUTRO_CLIENTE), "favoritos", `${CLIENTE}_${RESTAURANTE}`)));
+    await assertFails(deleteDoc(doc(como(RESTAURANTE), "favoritos", `${CLIENTE}_${RESTAURANTE}`)));
+    await assertSucceeds(deleteDoc(doc(como(CLIENTE), "favoritos", `${CLIENTE}_${RESTAURANTE}`)));
   });
 });
 

@@ -50,6 +50,9 @@ export default function CupomDetalhe() {
         <p className="mt-2 font-display font-semibold text-3xl">{c.desconto}</p>
         <p className="mt-1 font-mono font-bold tracking-wider text-terra">{c.codigo}</p>
         {c.condicoes && <p className="mt-3 text-sm text-inksoft">{c.condicoes}</p>}
+        {c.promocaoTitulo && (
+          <p className="mt-2 text-sm">Cupom da promoção <Link to={`/promocoes/${c.promocaoId}`} className="font-semibold text-terra hover:underline">{c.promocaoTitulo}</Link></p>
+        )}
         <dl className="mt-4 space-y-1 text-sm">
           {c.validadeFim && <div className="flex justify-between"><dt className="text-inksoft">Válido até</dt><dd className="font-semibold">{dataCurta(c.validadeFim)}</dd></div>}
           {c.limiteTotal && <div className="flex justify-between"><dt className="text-inksoft">Disponíveis</dt><dd className="font-semibold">{Math.max(0, c.limiteTotal - c.resgatados)} de {c.limiteTotal}</dd></div>}
@@ -57,7 +60,9 @@ export default function CupomDetalhe() {
         {c.vigente ? (
           <BotaoResgatar cupom={c} restauranteNome={r.nome} resgate={resgate} aoResgatar={setResgate} />
         ) : (
-          <p className="mt-3 text-sm font-semibold text-red-700">Cupom fora do período de validade.</p>
+          <p className="mt-3 text-sm font-semibold text-red-700">
+            {c.promocaoIndisponivel ? "Este cupom depende de uma promoção que não está ativa no momento." : "Cupom fora do período de validade."}
+          </p>
         )}
       </article>
     </div>

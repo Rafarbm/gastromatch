@@ -6,7 +6,9 @@
 //  - cada usuário só altera os próprios dados; admin tem poderes limitados;
 //  - CPF/CNPJ ficam em subcoleção privada (só o dono lê; nem o suporte);
 //  - "chaves primárias" por ID de documento: 1 CPF/CNPJ por conta,
-//    1 avaliação por cliente/alvo, 1 resgate por cliente/cupom, código único;
+//    1 avaliação por cliente/alvo, 1 resgate por cliente/cupom, 1 favorito por
+//    cliente/restaurante, código único de ingresso, código de cupom único por restaurante;
+//  - promoções têm vigência por datas; cupom vinculado só vale com a promoção ativa;
 //  - textos não aceitam < > " ` (bloqueia injeção de HTML nas páginas antigas).
 //
 //  Testes automatizados: app/tests/regras.test.js (npm run test:regras).
@@ -33,6 +35,15 @@ service cloud.firestore {
     function textoOpc(d, campo, max) { return !(campo in d) || d[campo] == null || texto(d[campo], max); }
     function numeroOpc(d, campo, min, max) { return !(campo in d) || d[campo] == null || (d[campo] is number && d[campo] >= min && d[campo] <= max); }
     function listaOpc(d, campo, max) { return !(campo in d) || (d[campo] is list && d[campo].size() <= max); }
+    // Datas no formato AAAA-MM-DD (comparar o texto equivale a comparar as datas).
+    function dataISO(v) { return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function dataOpc(d, campo) { return !(campo in d) || d[campo] == null || d[campo] == '' || dataISO(d[campo]); }
+    function dois(n) { return n < 10 ? '0' + string(n) : string(n); }
+    // Data de hoje no horário de Brasília (UTC-3), no formato AAAA-MM-DD.
+    function hoje() {
+      let t = request.time - duration.value(3, 'h');
+      return string(t.year()) + '-' + dois(t.month()) + '-' + dois(t.day());
+    }
     function inalterados(campos) { return !request.resource.data.diff(resource.data).affectedKeys().hasAny(campos); }
     function soAlterou(campos) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos); }
 
@@ -120,30 +131,63 @@ service cloud.firestore {
       allow delete: if donoAtual() || admin();
     }
 
+    // Promoção: vigência por datas (inicio/fim) e encerramento manual (encerradaEm).
+    // O status (agendada, ativa, expirada, encerrada) NÃO é gravado: é calculado pelas datas.
+    function promocaoAtiva(p) {
+      return p.get('encerradaEm', null) == null
+        && (p.get('inicio', '') == '' || p.inicio <= hoje())
+        && (p.get('fim', '') == '' || p.fim >= hoje());
+    }
+    function vigenciaValida(d, criando) {
+      return dataOpc(d, 'inicio') && dataOpc(d, 'fim')
+        // Na criação as duas datas são obrigatórias.
+        && (!criando || (dataISO(d.get('inicio', '')) && dataISO(d.get('fim', ''))))
+        // A data final não pode ser anterior à inicial.
+        && (!(dataISO(d.get('inicio', '')) && dataISO(d.get('fim', ''))) || d.fim >= d.inicio)
+        && (d.get('encerradaEm', null) == null || d.encerradaEm is timestamp);
+    }
+
     match /promocoes/{id} {
       allow read: if true;
       allow create, update: if donoDoNovo()
         && (resource == null || resource.data.restauranteId == meuUid())
-        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'cozinha', 'evento', 'titulo', 'descricao', 'prato', 'valorPromocional', 'diasValidos', 'horaInicio', 'horaFim', 'criadoEm', 'foto', 'imagem'])
+        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'cozinha', 'evento', 'titulo', 'descricao', 'prato', 'valorPromocional', 'diasValidos', 'horaInicio', 'horaFim', 'criadoEm', 'foto', 'imagem', 'inicio', 'fim', 'encerradaEm'])
         && texto(request.resource.data.titulo, 120) && textoOpc(request.resource.data, 'descricao', 1000)
         && textoOpc(request.resource.data, 'prato', 120) && textoOpc(request.resource.data, 'valorPromocional', 60)
-        && textoOpc(request.resource.data, 'evento', 120);
+        && textoOpc(request.resource.data, 'evento', 120)
+        && vigenciaValida(request.resource.data, resource == null);
       allow delete: if donoAtual() || admin();
+    }
+
+    // Código do cupom: maiúsculas, números, hífen e sublinhado (vira parte da chave do índice).
+    function codigoCupomValido(c) { return c is string && c.matches('^[A-Z0-9_-]{3,30}$'); }
+    // Código único por restaurante: depois da gravação, o índice do código aponta para ESTE cupom.
+    function codigoCupomUnico(id, d) {
+      return getAfter(doc('codigosCupom', d.restauranteId + '_' + d.codigo)).data.cupomId == id;
+    }
+    // Vínculo opcional com uma promoção: ela precisa existir e ser do mesmo restaurante.
+    function vinculoPromocaoValido(d) {
+      return !('promocaoId' in d)
+        || (d.promocaoId is string && get(doc('promocoes', d.promocaoId)).data.restauranteId == meuUid());
     }
 
     match /cupons/{id} {
       allow read: if true;
       // Restaurante cria/edita os próprios cupons, mas não mexe no contador de resgates.
       allow create: if donoDoNovo()
-        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'codigo', 'desconto', 'validadeInicio', 'validadeFim', 'horaInicio', 'horaFim', 'diasValidos', 'condicoes', 'prato', 'criadoEm', 'limiteTotal', 'resgatados'])
-        && texto(request.resource.data.codigo, 30) && textoOpc(request.resource.data, 'desconto', 60)
+        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'codigo', 'desconto', 'validadeInicio', 'validadeFim', 'horaInicio', 'horaFim', 'diasValidos', 'condicoes', 'prato', 'criadoEm', 'limiteTotal', 'resgatados', 'promocaoId'])
+        && codigoCupomValido(request.resource.data.codigo) && textoOpc(request.resource.data, 'desconto', 60)
         && textoOpc(request.resource.data, 'condicoes', 500)
         && numeroOpc(request.resource.data, 'limiteTotal', 1, 100000)
-        && request.resource.data.get('resgatados', 0) == 0;
+        && request.resource.data.get('resgatados', 0) == 0
+        && codigoCupomUnico(id, request.resource.data)
+        && vinculoPromocaoValido(request.resource.data);
       allow update: if donoAtual() && request.resource.data.restauranteId == meuUid()
         && request.resource.data.get('resgatados', 0) == resource.data.get('resgatados', 0)
-        && texto(request.resource.data.codigo, 30) && textoOpc(request.resource.data, 'condicoes', 500)
-        && numeroOpc(request.resource.data, 'limiteTotal', 1, 100000);
+        && codigoCupomValido(request.resource.data.codigo) && textoOpc(request.resource.data, 'condicoes', 500)
+        && numeroOpc(request.resource.data, 'limiteTotal', 1, 100000)
+        && codigoCupomUnico(id, request.resource.data)
+        && vinculoPromocaoValido(request.resource.data);
       // Cliente resgatando: só soma 1 ao contador, respeita o limite e precisa criar o
       // resgate dele na mesma transação (o resgate ainda não podia existir antes).
       allow update: if cliente()
@@ -153,6 +197,21 @@ service cloud.firestore {
         && !exists(doc('resgates', id + '_' + meuUid()))
         && existsAfter(doc('resgates', id + '_' + meuUid()));
       allow delete: if donoAtual() || admin();
+    }
+
+    // Índice do código do cupom (chave única por restaurante): ID "uid_CODIGO".
+    // Não existe "update": um código que já tem dono não pode ser tomado por outro cupom.
+    match /codigosCupom/{chave} {
+      allow get: if true;
+      allow create: if restaurante()
+        && request.resource.data.keys().hasOnly(['cupomId'])
+        && getAfter(doc('cupons', request.resource.data.cupomId)).data.restauranteId == meuUid()
+        && chave == meuUid() + '_' + getAfter(doc('cupons', request.resource.data.cupomId)).data.codigo;
+      // Só libera o código se, depois da gravação, o cupom não existir mais ou tiver outro código.
+      allow delete: if admin() || (restaurante() && chave.split('_')[0] == meuUid()
+        && (resource == null
+            || !existsAfter(doc('cupons', resource.data.cupomId))
+            || meuUid() + '_' + getAfter(doc('cupons', resource.data.cupomId)).data.codigo != chave));
     }
 
     // Participar de evento da plataforma: o restaurante só pode se acrescentar na lista.
@@ -191,6 +250,19 @@ service cloud.firestore {
       allow delete: if logado() && (resource.data.usuarioId == meuUid() || admin());
     }
 
+    // Favoritos: ID uid_restauranteId garante um favorito por cliente para cada restaurante.
+    // Sem e-mail nem nome do cliente, e só o próprio cliente lê: o restaurante não sabe quem o favoritou.
+    match /favoritos/{id} {
+      allow read: if logado() && resource.data.usuarioId == meuUid();
+      allow create, update: if cliente()
+        && request.resource.data.keys().hasOnly(['usuarioId', 'restauranteId', 'criadoEm'])
+        && request.resource.data.usuarioId == meuUid()
+        && request.resource.data.restauranteId is string
+        && id == meuUid() + '_' + request.resource.data.restauranteId
+        && get(doc('usuarios', request.resource.data.restauranteId)).data.tipo == 'restaurante';
+      allow delete: if logado() && resource.data.usuarioId == meuUid();
+    }
+
     // Resgate de cupom = "ingresso": ID cupomId_uid (1 por cliente), código único.
     match /resgates/{id} {
       // resource == null: a transação do resgate consulta "já resgatei?" antes de o documento existir.
@@ -202,6 +274,9 @@ service cloud.firestore {
         && request.resource.data.status == 'ativo'
         && request.resource.data.codigo.matches('^[A-Z0-9]{10}$')
         && request.resource.data.restauranteId == get(doc('cupons', request.resource.data.cupomId)).data.restauranteId
+        // Cupom vinculado a uma promoção: só pode ser resgatado enquanto ela existir e estiver ativa.
+        && (!('promocaoId' in get(doc('cupons', request.resource.data.cupomId)).data)
+            || promocaoAtiva(get(doc('promocoes', get(doc('cupons', request.resource.data.cupomId)).data.promocaoId)).data))
         && textoOpc(request.resource.data, 'usuarioNome', 60)
         && existsAfter(doc('codigosResgate', request.resource.data.codigo))
         && getAfter(doc('cupons', request.resource.data.cupomId)).data.resgatados

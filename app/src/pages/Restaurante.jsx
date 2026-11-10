@@ -4,6 +4,7 @@ import Galeria from "../components/Galeria";
 import ResumoExperiencia from "../components/ResumoExperiencia";
 import BotaoSalvar from "../components/BotaoSalvar";
 import BotaoResgatar from "../components/BotaoResgatar";
+import BotaoFavorito from "../components/BotaoFavorito";
 import Avaliacoes from "../components/Avaliacoes";
 import { Nota } from "../components/Estrelas";
 import { listarAvaliacoesDoRestaurante } from "../services/avaliacoes";
@@ -152,9 +153,12 @@ export default function Restaurante() {
           <header>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-terra">{r.cozinha}{faixa && ` · ${faixa.rotulo} (${faixa.descricao})`}</p>
             <h1 className="mt-1 font-display font-semibold text-4xl sm:text-5xl leading-tight">{r.nome}</h1>
-            <a href="#avaliacoes" className="mt-2 inline-block hover:underline">
-              <Nota media={notaRestaurante?.media || 0} total={notaRestaurante?.total || 0} />
-            </a>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <a href="#avaliacoes" className="inline-block hover:underline">
+                <Nota media={notaRestaurante?.media || 0} total={notaRestaurante?.total || 0} />
+              </a>
+              <BotaoFavorito restauranteId={r.id} nome={r.nome} comRotulo />
+            </div>
             <ul className="mt-3 space-y-1 text-sm text-inksoft">
               <li className="flex items-start gap-2"><Icone nome="local" className="size-4 mt-0.5 shrink-0" />{r.endereco || [r.bairro, r.cidade, r.estado].filter(Boolean).join(", ")}</li>
               {r.telefone && <li className="flex items-center gap-2"><Icone nome="telefone" className="size-4 shrink-0" />{r.telefone}</li>}
@@ -219,6 +223,7 @@ export default function Restaurante() {
                     <Link to={`/promocoes/${p.id}`} className="mt-2 block font-display font-semibold text-lg hover:text-terra">{p.titulo} →</Link>
                     <p className="text-sm text-inksoft">{p.descricao}</p>
                     {p.valor && <p className="mt-2 font-display font-semibold text-xl text-terra">{p.valor}</p>}
+                    {p.fim && <p className="text-xs font-semibold text-inksoft">Até {dataCurta(p.fim)}</p>}
                     <BotaoSalvar item={{ tipo: "promocao", id: p.id, titulo: p.titulo, descricao: p.descricao, foto: p.foto, valor: p.valor, restauranteId: r.id, restauranteNome: r.nome }} salvos={salvos} aoSalvar={aoSalvar} />
                   </li>
                 ))}
@@ -235,6 +240,9 @@ export default function Restaurante() {
                     <Link to={`/cupons/${c.id}`} className="font-mono font-bold text-lg tracking-wider text-terra hover:underline">{c.codigo}</Link>
                     <p className="font-semibold">{c.desconto}</p>
                     <p className="text-xs text-inksoft">{c.condicoes}</p>
+                    {c.promocaoTitulo && (
+                      <p className="mt-1 text-xs">Cupom da promoção <Link to={`/promocoes/${c.promocaoId}`} className="font-semibold text-terra hover:underline">{c.promocaoTitulo}</Link></p>
+                    )}
                     {c.validadeFim && <p className="mt-2 text-xs font-semibold">Válido até {dataCurta(c.validadeFim)}</p>}
                     {c.limiteTotal && (
                       <p className="text-xs text-inksoft">

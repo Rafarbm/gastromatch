@@ -89,7 +89,7 @@ export default function Ajuda() {
 
       <section id="termos" aria-labelledby="termos-titulo" className="scroll-mt-28 rounded-[28px] bg-paper p-6 sm:p-8 ring-1 ring-ink/5 shadow-clay text-sm text-inksoft space-y-3">
         <h2 id="termos-titulo" className="font-display font-semibold text-2xl text-ink">Termos de uso e privacidade (resumo)</h2>
-        <p><strong className="text-ink">Dados coletados:</strong> nome, e-mail, telefone e CPF (cliente) ou CNPJ (restaurante); avaliações, cupons resgatados e itens salvos.</p>
+        <p><strong className="text-ink">Dados coletados:</strong> nome, e-mail, telefone e CPF (cliente) ou CNPJ (restaurante); avaliações, restaurantes favoritos, cupons resgatados e itens salvos.</p>
         <p><strong className="text-ink">Finalidade:</strong> criar sua conta, impedir cadastros duplicados, emitir cupons pessoais e recomendar restaurantes.</p>
         <p><strong className="text-ink">Compartilhamento:</strong> o restaurante vê apenas o primeiro nome e o código de quem resgatou o cupom dele. CPF/CNPJ não é exibido a ninguém além do titular.</p>
         <p><strong className="text-ink">Seus direitos (LGPD):</strong> acessar, corrigir e excluir seus dados a qualquer momento, pela sua conta ou pelo formulário acima.</p>

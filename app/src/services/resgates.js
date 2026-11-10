@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, runTransaction, serverTimestamp, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { cupomValido } from "./dados";
+import { promocaoAtiva } from "../lib/promocoes";
 
 // Resgate de cupom = "ingresso": cada cliente recebe um código único (com QR Code),
 // válido uma única vez, e o cupom tem limite total de resgates.
@@ -9,7 +10,8 @@ import { cupomValido } from "./dados";
 //  - resgates/{cupomId_uid}: no máximo um resgate por cliente para cada cupom;
 //  - codigosResgate/{codigo}: o código é chave única (não pode repetir);
 //  - cupons/{id}.resgatados: soma 1 na mesma transação e nunca passa do limite;
-//  - só o restaurante dono valida, e só uma vez (ativo -> usado).
+//  - só o restaurante dono valida, e só uma vez (ativo -> usado);
+//  - cupom vinculado a uma promoção só é resgatado enquanto ela estiver ativa.
 
 export class ErroResgate extends Error {
   constructor(mensagem, codigo) {
@@ -44,6 +46,15 @@ export async function resgatarCupom(usuario, cupom, restauranteNome) {
       }
       const resgatados = Number(c.resgatados) || 0;
       if (c.limiteTotal && resgatados >= c.limiteTotal) throw new ErroResgate("Este cupom esgotou.", "esgotado");
+
+      // Cupom vinculado a uma promoção: só vale enquanto ela existir e estiver ativa
+      // (as regras do Firestore conferem a mesma coisa).
+      if (c.promocaoId) {
+        const promo = await tx.get(doc(db, "promocoes", c.promocaoId));
+        if (!promo.exists() || !promocaoAtiva(promo.data())) {
+          throw new ErroResgate("Este cupom depende de uma promoção que não está ativa no momento.", "promocao-inativa");
+        }
+      }
 
       // Código único: se por acaso já existir, sorteia outro (chance mínima).
       let codigo;

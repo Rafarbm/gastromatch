@@ -56,7 +56,7 @@ export async function enviarRecuperacaoSenha(email) {
 }
 
 // Exclusão da conta do cliente (direito de eliminação da LGPD). Apaga:
-// CPF (área privada) + índice do CPF, avaliações, itens salvos, o perfil e o login.
+// CPF (área privada) + índice do CPF, avaliações, itens salvos, favoritos, o perfil e o login.
 // Ficam só os ingressos já resgatados, que são o histórico do restaurante e
 // guardam apenas o primeiro nome.
 export async function excluirMinhaConta(senhaAtual) {
@@ -70,7 +70,7 @@ export async function excluirMinhaConta(senhaAtual) {
       if (numero) await deleteDoc(doc(db, "documentos", await hashDocumento(tipo, numero))).catch(() => {});
       await deleteDoc(privado.ref);
     }
-    for (const colecao of ["avaliacoes", "salvos"]) {
+    for (const colecao of ["avaliacoes", "salvos", "favoritos"]) {
       const snap = await getDocs(query(collection(db, colecao), where("usuarioId", "==", uid)));
       await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
     }

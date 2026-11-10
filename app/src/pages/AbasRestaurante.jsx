@@ -2,15 +2,19 @@ import { useEffect, useState } from "react";
 import GerenciadorLista, { DIAS } from "../components/GerenciadorLista";
 import { Carregando, Erro } from "../components/Estados";
 import { useAuth } from "../contexts/AuthContext";
-import { atualizarPerfil, excluirItem, listarDoRestaurante, listarEventosPlataforma, obterPerfil, participarEvento, salvarItem } from "../services/painelRestaurante";
+import { deleteField } from "firebase/firestore";
+import { atualizarPerfil, cuponsDaPromocao, encerrarPromocao, excluirCupom, excluirItem, listarDoRestaurante, listarEventosPlataforma, obterPerfil, participarEvento, reativarPromocao, salvarCupom, salvarItem } from "../services/painelRestaurante";
+import { podeEncerrar, podeReativar, STATUS_PROMOCAO, statusPromocao } from "../lib/promocoes";
 import { COZINHAS, EXPERIENCIAS, FAIXAS_PRECO, OCASIOES } from "../lib/catalogo";
 import { CATEGORIAS } from "../lib/planilha";
 import { ESTADOS } from "../lib/regioes";
 import { erroTexto, mascaraTelefone } from "../lib/validacao";
-import { dataCurta, moeda, periodo } from "../lib/formato";
+import { dataCurta, isoHoje, moeda, periodo } from "../lib/formato";
 
 const FOTO_PADRAO = "/img/interior-2.jpg";
-const hoje = () => new Date().toISOString().split("T")[0];
+const hoje = () => isoHoje();
+// Código do cupom: letras maiúsculas, números, hífen e sublinhado (vira parte de uma chave única).
+const CODIGO_CUPOM = /^[A-Z0-9_-]{3,30}$/;
 const urlValida = (u) => /^(https?:\/\/|\/)[^\s<>"`]+$/.test(u);
 
 // ============================================================ dados do restaurante
@@ -164,39 +168,63 @@ export function AbaCardapio({ extra }) {
 
 export function AbaCupons() {
   const { usuario } = useAuth();
+  // Promoções do restaurante: para o campo "Vincular à promoção" e para mostrar o vínculo na lista.
+  const [promocoes, setPromocoes] = useState([]);
+  useEffect(() => {
+    listarDoRestaurante("promocoes", usuario.uid).then(setPromocoes).catch((e) => console.error(e));
+  }, [usuario.uid]);
+  const promocaoDe = (c) => promocoes.find((p) => p.id === c.promocaoId);
+
   return (
     <GerenciadorLista
       nomeItem="Cupom"
       vazio="Nenhum cupom cadastrado."
       carregar={() => listarDoRestaurante("cupons", usuario.uid)}
-      salvar={(id, d) => salvarItem("cupons", id, d)}
-      excluir={(id) => excluirItem("cupons", id)}
-      buscarEm={(c) => [c.codigo, c.desconto, c.condicoes]}
+      salvar={(id, d, item) => salvarCupom(usuario.uid, id, d, item?.codigo)}
+      excluir={(id, item) => excluirCupom(usuario.uid, item)}
+      buscarEm={(c) => [c.codigo, c.desconto, c.condicoes, promocaoDe(c)?.titulo]}
       campos={[
-        { nome: "codigo", rotulo: "Código do cupom", tipo: "texto", obrigatorio: true, min: 3, max: 30, ajuda: "Ex.: BRASA15" },
+        { nome: "codigo", rotulo: "Código do cupom", tipo: "texto", obrigatorio: true, min: 3, max: 30, ajuda: "Ex.: BRASA15. Só letras, números, hífen e sublinhado. Não pode repetir um código seu." },
         { nome: "desconto", rotulo: "Benefício", tipo: "texto", obrigatorio: true, max: 60, ajuda: "Ex.: 15% ou Sobremesa grátis" },
         { nome: "validadeInicio", rotulo: "Válido a partir de", tipo: "data", obrigatorio: true },
         { nome: "validadeFim", rotulo: "Válido até", tipo: "data", obrigatorio: true },
         { nome: "limiteTotal", rotulo: "Limite de resgates", tipo: "numero", min: 1, max: 100000, ajuda: "Vazio = sem limite. Cada cliente resgata uma vez." },
+        {
+          nome: "promocaoId", rotulo: "Vincular à promoção", tipo: "select", vazio: "Sem vínculo (cupom avulso)",
+          opcoes: promocoes.map((p) => ({ valor: p.id, rotulo: `${p.titulo} (${STATUS_PROMOCAO[statusPromocao(p)].rotulo.toLowerCase()})` })),
+          ajuda: "Opcional. Cupom vinculado só pode ser resgatado enquanto a promoção estiver ativa.",
+        },
         { nome: "condicoes", rotulo: "Condições", tipo: "textarea", max: 500 },
       ]}
-      paraFormulario={(c) => ({ codigo: c?.codigo || "", desconto: c?.desconto || "", validadeInicio: c?.validadeInicio || hoje(), validadeFim: c?.validadeFim || "", limiteTotal: c?.limiteTotal ?? "", condicoes: c?.condicoes || "" })}
+      paraFormulario={(c) => ({ codigo: c?.codigo || "", desconto: c?.desconto || "", validadeInicio: c?.validadeInicio || hoje(), validadeFim: c?.validadeFim || "", limiteTotal: c?.limiteTotal ?? "", promocaoId: c?.promocaoId || "", condicoes: c?.condicoes || "" })}
       paraBanco={(v, item) => {
+        const codigo = v.codigo.trim().toUpperCase();
+        if (!CODIGO_CUPOM.test(codigo)) return "Código: use só letras, números, hífen ou sublinhado, sem espaços (3 a 30 caracteres).";
         if (v.validadeFim < v.validadeInicio) return "A data final precisa ser depois da inicial.";
         const limite = v.limiteTotal === "" ? null : Math.floor(Number(v.limiteTotal));
         if (item && limite != null && limite < (item.resgatados || 0)) return `O limite não pode ser menor que os ${item.resgatados} resgates já feitos.`;
-        const dados = { restauranteId: usuario.uid, restaurante: usuario.nome.slice(0, 120), codigo: v.codigo.trim().toUpperCase(), desconto: v.desconto.trim(), validadeInicio: v.validadeInicio, validadeFim: v.validadeFim, limiteTotal: limite, condicoes: v.condicoes.trim() };
+        const dados = { restauranteId: usuario.uid, restaurante: usuario.nome.slice(0, 120), codigo, desconto: v.desconto.trim(), validadeInicio: v.validadeInicio, validadeFim: v.validadeFim, limiteTotal: limite, condicoes: v.condicoes.trim() };
+        // Vínculo opcional: sem promoção escolhida, o campo não existe no cupom (ao editar, é removido).
+        if (v.promocaoId) dados.promocaoId = v.promocaoId;
+        else if (item) dados.promocaoId = deleteField();
         // Criar: contador começa em zero. Editar: o contador não é enviado (só o sistema mexe nele).
         return item ? dados : { ...dados, resgatados: 0, diasValidos: DIAS, horaInicio: "", horaFim: "", prato: "Cupom Avulso" };
       }}
       resumo={(c) => {
         const vencido = c.validadeFim && c.validadeFim < hoje();
         const esgotado = c.limiteTotal && (c.resgatados || 0) >= c.limiteTotal;
+        const promo = promocaoDe(c);
+        // Vinculado a promoção que não está ativa (ou que não existe mais): o cupom fica fora do site.
+        const semPromocao = Boolean(c.promocaoId) && (!promo || statusPromocao(promo) !== "ativa");
         return {
           titulo: `${c.codigo} · ${c.desconto}`,
-          selo: vencido ? "Vencido" : esgotado ? "Esgotado" : "Ativo",
-          seloCor: vencido || esgotado ? "bg-ink/10 text-inksoft" : "bg-sage/25",
-          linhas: [`${dataCurta(c.validadeInicio)} a ${dataCurta(c.validadeFim)}`, `Resgates: ${c.resgatados || 0}${c.limiteTotal ? ` de ${c.limiteTotal}` : " (sem limite)"}`],
+          selo: vencido ? "Vencido" : esgotado ? "Esgotado" : semPromocao ? "Promoção inativa" : "Ativo",
+          seloCor: vencido || esgotado || semPromocao ? "bg-ink/10 text-inksoft" : "bg-sage/25",
+          linhas: [
+            `${dataCurta(c.validadeInicio)} a ${dataCurta(c.validadeFim)}`,
+            `Resgates: ${c.resgatados || 0}${c.limiteTotal ? ` de ${c.limiteTotal}` : " (sem limite)"}`,
+            c.promocaoId && `Promoção: ${promo ? promo.titulo : "não encontrada"}`,
+          ],
           link: `/cupons/${c.id}`,
         };
       }}
@@ -215,20 +243,53 @@ export function AbaPromocoes() {
       carregar={() => listarDoRestaurante("promocoes", usuario.uid)}
       salvar={(id, d) => salvarItem("promocoes", id, d)}
       excluir={(id) => excluirItem("promocoes", id)}
-      buscarEm={(p) => [p.titulo, p.descricao, p.prato]}
+      // Excluir é definitivo; por isso é bloqueado enquanto houver cupons vinculados.
+      antesDeExcluir={async (p) => {
+        const vinculados = await cuponsDaPromocao(usuario.uid, p.id);
+        if (!vinculados.length) return "";
+        return `Não é possível excluir "${p.titulo}": ${vinculados.length === 1 ? "o cupom" : "os cupons"} ${vinculados.map((c) => c.codigo).join(", ")} ${vinculados.length === 1 ? "está vinculado" : "estão vinculados"} a ela. Desvincule ou exclua ${vinculados.length === 1 ? "o cupom" : "os cupons"} antes, ou use Encerrar.`;
+      }}
+      // Encerrar tira do site e guarda o registro; Reativar devolve ao site (até a data final).
+      acoes={(p) => [
+        podeEncerrar(p) && {
+          rotulo: "Encerrar",
+          confirmar: `Encerrar "${p.titulo}"? Ela sai do site, mas continua aqui no painel e pode ser reativada até a data final.`,
+          executar: () => encerrarPromocao(p.id),
+          ok: "Promoção encerrada. Ela não aparece mais no site.",
+        },
+        podeReativar(p) && { rotulo: "Reativar", executar: () => reativarPromocao(p.id), ok: "Promoção reativada." },
+      ].filter(Boolean)}
+      buscarEm={(p) => [p.titulo, p.descricao, p.prato, STATUS_PROMOCAO[statusPromocao(p)].rotulo]}
       campos={[
         { nome: "titulo", rotulo: "Título", tipo: "texto", obrigatorio: true, min: 3, max: 120 },
         { nome: "valorPromocional", rotulo: "Valor", tipo: "texto", max: 60, ajuda: "Ex.: R$ 49,90" },
         { nome: "prato", rotulo: "Prato", tipo: "texto", max: 120 },
         { nome: "foto", rotulo: "Foto (endereço)", tipo: "url" },
+        { nome: "inicio", rotulo: "Início (entra no site)", tipo: "data", obrigatorio: true, ajuda: "Hoje = publica agora. Data futura = fica agendada e entra no site sozinha nesse dia." },
+        { nome: "fim", rotulo: "Fim (último dia)", tipo: "data", obrigatorio: true, ajuda: "Depois desse dia a promoção sai do site." },
         { nome: "horaInicio", rotulo: "Das", tipo: "hora" },
         { nome: "horaFim", rotulo: "Até", tipo: "hora" },
         { nome: "diasValidos", rotulo: "Dias válidos", tipo: "dias", obrigatorio: true },
         { nome: "descricao", rotulo: "Descrição", tipo: "textarea", obrigatorio: true, max: 1000 },
       ]}
-      paraFormulario={(p) => ({ titulo: p?.titulo || "", valorPromocional: p?.valorPromocional || "", prato: p?.prato || "", foto: p?.foto || "", horaInicio: p?.horaInicio || "", horaFim: p?.horaFim || "", diasValidos: p?.diasValidos || DIAS, descricao: p?.descricao || "" })}
-      paraBanco={(v) => ({ restauranteId: usuario.uid, restaurante: usuario.nome.slice(0, 120), titulo: v.titulo.trim(), valorPromocional: v.valorPromocional.trim(), prato: v.prato.trim(), foto: v.foto.trim() || FOTO_PADRAO, imagem: v.foto.trim() || FOTO_PADRAO, horaInicio: v.horaInicio, horaFim: v.horaFim, diasValidos: v.diasValidos, descricao: v.descricao.trim() })}
-      resumo={(p) => ({ titulo: p.titulo, foto: p.foto || p.imagem, selo: p.valorPromocional, linhas: [p.diasValidos?.join(", "), p.descricao], link: `/promocoes/${p.id}` })}
+      paraFormulario={(p) => ({ titulo: p?.titulo || "", valorPromocional: p?.valorPromocional || "", prato: p?.prato || "", foto: p?.foto || "", inicio: p?.inicio || hoje(), fim: p?.fim || "", horaInicio: p?.horaInicio || "", horaFim: p?.horaFim || "", diasValidos: p?.diasValidos || DIAS, descricao: p?.descricao || "" })}
+      paraBanco={(v, item) => {
+        if (v.fim < v.inicio) return "A data final não pode ser anterior à data de início.";
+        // Na criação (ou ao mudar a data de início), não se agenda para o passado.
+        if ((!item || item.inicio !== v.inicio) && v.inicio < hoje()) return "A data de início não pode ser anterior a hoje.";
+        return { restauranteId: usuario.uid, restaurante: usuario.nome.slice(0, 120), titulo: v.titulo.trim(), valorPromocional: v.valorPromocional.trim(), prato: v.prato.trim(), foto: v.foto.trim() || FOTO_PADRAO, imagem: v.foto.trim() || FOTO_PADRAO, inicio: v.inicio, fim: v.fim, horaInicio: v.horaInicio, horaFim: v.horaFim, diasValidos: v.diasValidos, descricao: v.descricao.trim() };
+      }}
+      resumo={(p) => {
+        const status = STATUS_PROMOCAO[statusPromocao(p)];
+        return {
+          titulo: p.titulo,
+          foto: p.foto || p.imagem,
+          selo: status.rotulo,
+          seloCor: status.cor,
+          linhas: [p.inicio ? `Vigência: ${periodo(p.inicio, p.fim)}` : "Sem período definido (sempre ativa)", p.valorPromocional, p.diasValidos?.join(", "), p.descricao],
+          link: `/promocoes/${p.id}`,
+        };
+      }}
     />
   );
 }

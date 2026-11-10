@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { periodo } from "../lib/formato";
+import { dataCurta, periodo } from "../lib/formato";
 
 export function CardPromocao({ promocao: p, className = "" }) {
   return (
@@ -13,6 +13,7 @@ export function CardPromocao({ promocao: p, className = "" }) {
         <h3 className="mt-1 font-display font-semibold text-xl leading-tight">{p.titulo}</h3>
         <p className="mt-1 text-sm text-inksoft line-clamp-2">{p.descricao}</p>
         {p.valor && <p className="mt-3 font-display font-semibold text-2xl text-terra">{p.valor}</p>}
+        {p.fim && <p className="mt-1 text-xs font-semibold text-inksoft">Até {dataCurta(p.fim)}</p>}
       </div>
     </Link>
   );

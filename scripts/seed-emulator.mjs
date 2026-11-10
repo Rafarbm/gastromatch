@@ -69,10 +69,13 @@ function embaralhar(lista) {
 }
 const amostra = (lista, n) => embaralhar(lista).slice(0, n);
 
+// Data local (do computador), no formato AAAA-MM-DD. Não usa toISOString(): ele converte
+// para UTC e, no Brasil, viraria "amanhã" depois das 21h.
 function dataRelativa(dias) {
   const d = new Date();
   d.setDate(d.getDate() + dias);
-  return d.toISOString().split("T")[0];
+  const dois = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${dois(d.getMonth() + 1)}-${dois(d.getDate())}`;
 }
 const instanteRelativo = (dias) => new Date(Date.now() + dias * 86400000);
 
@@ -540,11 +543,21 @@ async function main() {
     const valor = (principal[2] * 0.8).toFixed(2).replace(".", ",");
     promocoes.push([r.chave, escolher(["Almoço executivo", "Combo da casa", "Prato do dia", "Promoção de meio de semana", "Happy hour"]), `${principal[0]} com bebida da casa por preço especial.`, principal[0], `R$ ${valor}`]);
   }
-  for (const [i, [chave, titulo, descricao, prato, valor]] of promocoes.entries()) {
+  // Exemplos dos outros status no restaurante demo: [..., início, fim, encerrada?]
+  // (ficam no fim da lista para não mudar os ids das promoções anteriores).
+  const PROMO_ENCERRADA = promocoes.length + 1;
+  promocoes.push(
+    ["brasa-lenha", "Festival da costela", "Costela no fogo de chão com acompanhamentos.", "Costela fogo de chão", "R$ 89,90", 5, 20],
+    ["brasa-lenha", "Semana do churrasco", "Cortes nobres com 15% de desconto.", "Seleção de cortes", "R$ 149,90", -10, 10, true],
+    ["brasa-lenha", "Especial de inverno", "Caldos e grelhados para os dias frios.", "Caldo de costela", "R$ 39,90", -40, -5],
+  );
+  // Vigência padrão das demais (todas ativas): começou há alguns dias e termina nas próximas semanas.
+  for (const [i, [chave, titulo, descricao, prato, valor, ini = -1 - (i % 7), fim = 10 + (i % 5) * 7, encerrada = false]] of promocoes.entries()) {
     const r = restaurantes.find((x) => x.chave === chave);
     gravar(`promocoes/promo-${i}`, {
       restauranteId: uid[chave], restaurante: r.nome, cozinha: r.cozinha, evento: "",
       titulo, descricao, prato, valorPromocional: valor, diasValidos: TODOS_DIAS,
+      inicio: dataRelativa(ini), fim: dataRelativa(fim), ...(encerrada ? { encerradaEm: agora } : {}),
       horaInicio: "", horaFim: "", foto: r.fotos[0], imagem: r.fotos[0], criadoEm: agora,
     });
   }
@@ -565,20 +578,28 @@ async function main() {
     const codigo = `${slug(r.nome).replace(/-/g, "").toUpperCase().slice(0, 6)}${escolher([10, 15, 20])}`;
     cupons.push([r.chave, codigo, `${codigo.slice(-2)}%`, -inteiro(0, 5), inteiro(10, 60), escolher([20, 30, 50, 100, null]), inteiro(0, 4)]);
   }
+  // Vínculo cupom -> promoção (opcional): BRASA15 pertence à promoção ativa "Jantar a dois";
+  // CHURRAS10 pertence à promoção encerrada (por isso não aparece no site).
+  const VINCULOS = { BRASA15: "promo-0", CHURRAS10: `promo-${PROMO_ENCERRADA}` };
+  const primeiroCupomExtra = cupons.length;
+  cupons.push(["brasa-lenha", "CHURRAS10", "10%", -5, 10, null, 0]);
   let totalResgates = 0;
   const codigosUsados = new Set();
   for (const [i, [chave, codigo, desconto, ini, fim, limite, qtdResgates]] of cupons.entries()) {
     const r = restaurantes.find((x) => x.chave === chave);
     const cupomId = `cupom-${i}`;
     // A cliente demo não recebe resgate do BRASA15: ele fica livre para a demonstração ao vivo.
-    const quem = amostra(outrosClientes, qtdResgates);
+    const quem = i >= primeiroCupomExtra ? [] : amostra(outrosClientes, qtdResgates);
     if (chave === "sakura-zen") quem[0] = demo; // demo já tem um ingresso ativo
     gravar(`cupons/${cupomId}`, {
       restauranteId: uid[chave], restaurante: r.nome, codigo, desconto,
       validadeInicio: dataRelativa(ini), validadeFim: dataRelativa(fim),
       horaInicio: "", horaFim: "", diasValidos: TODOS_DIAS, limiteTotal: limite, resgatados: quem.length,
       condicoes: "Cupom fictício de demonstração. Válido para consumo no local.", prato: "Cupom Avulso", criadoEm: agora,
+      ...(VINCULOS[codigo] ? { promocaoId: VINCULOS[codigo] } : {}),
     });
+    // Índice do código (chave única por restaurante).
+    gravar(`codigosCupom/${uid[chave]}_${codigo}`, { cupomId });
     for (const [k, c] of quem.entries()) {
       let cod;
       do cod = gerarCodigo();
@@ -637,6 +658,11 @@ async function main() {
     promocaoId: "promo-0", titulo: "Jantar a dois", descricao: "Picanha para dois + duas taças de vinho.",
     foto: "/img/churrasco-1.jpg", restauranteId: uid["brasa-lenha"], restauranteNome: "Brasa & Lenha", dataResgate: agora,
   });
+
+  // Favoritos da cliente demo (ID uid_restauranteId; sem e-mail nem nome).
+  for (const chave of ["brasa-lenha", "osteria-aurora", "sakura-zen"]) {
+    gravar(`favoritos/${demo.uid}_${uid[chave]}`, { usuarioId: demo.uid, restauranteId: uid[chave], criadoEm: agora });
+  }
 
   gravar("contatos_suporte/contato-demo", {
     nome: "Visitante Demo", email: "visitante@demo.gastromatch", assunto: "Dúvida de demonstração",

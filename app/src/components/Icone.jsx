@@ -27,6 +27,7 @@ const CAMINHOS = {
   editar: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4",
   lixeira: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
   mais: "M12 5v14M5 12h14",
+  coracao: "M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z",
 };
 
 export default function Icone({ nome, className = "size-5" }) {

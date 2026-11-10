@@ -11,6 +11,7 @@ import Recomendar from "./pages/Recomendar";
 import AbrirChat from "./pages/AbrirChat";
 import { ChatProvider } from "./contexts/ChatContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { FavoritosProvider } from "./contexts/FavoritosContext";
 import Entrar from "./pages/Entrar";
 import Cadastro from "./pages/Cadastro";
 import MinhaConta from "./pages/MinhaConta";
@@ -27,6 +28,7 @@ import { EventoDetalhe, Prato, PromocaoDetalhe } from "./pages/Detalhes";
 export default function App() {
   return (
     <AuthProvider>
+    <FavoritosProvider>
     <LocalidadeProvider>
       <ChatProvider>
       <BrowserRouter>
@@ -59,6 +61,7 @@ export default function App() {
       </BrowserRouter>
       </ChatProvider>
     </LocalidadeProvider>
+    </FavoritosProvider>
     </AuthProvider>
   );
 }

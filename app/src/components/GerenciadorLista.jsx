@@ -9,10 +9,13 @@ export const DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 // Lista com busca + formulário de criar/editar + excluir, montados a partir de uma
 // descrição dos campos. Evita repetir o mesmo código para cardápio, cupons, promoções e eventos.
 //
-// campos: [{ nome, rotulo, tipo: texto|textarea|numero|data|hora|select|dias|url, opcoes, obrigatorio, max, min, ajuda, largura }]
+// campos: [{ nome, rotulo, tipo: texto|textarea|numero|data|hora|select|dias|url, opcoes, vazio, obrigatorio, max, min, ajuda, largura }]
 // paraFormulario(item) -> valores iniciais; paraBanco(valores, item) -> dados a gravar (ou string de erro)
 // resumo(item) -> { titulo, linhas: [], selo }
-export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, excluir, paraFormulario, paraBanco, resumo, buscarEm, vazio, extraAcoes }) {
+// salvar(id, dados, item) e excluir(id, item): "item" é o registro atual (null ao criar).
+// acoes(item) -> [{ rotulo, confirmar, executar, ok }]: botões extras de cada item (ex.: Encerrar, Reativar).
+// antesDeExcluir(item) -> texto explicando por que não pode excluir (ou vazio se pode).
+export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, excluir, paraFormulario, paraBanco, resumo, buscarEm, vazio, extraAcoes, acoes, antesDeExcluir }) {
   const [itens, setItens] = useState(null);
   const [erroCarga, setErroCarga] = useState(false);
   const [editando, setEditando] = useState(null); // null | "novo" | item
@@ -67,29 +70,48 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
       const limite = new Promise((_, rejeitar) => {
         timer = setTimeout(() => rejeitar(new Error("demorou")), 15000);
       });
-      await Promise.race([salvar(editando === "novo" ? null : editando.id, dados), limite]).finally(() => clearTimeout(timer));
+      const atual = editando === "novo" ? null : editando;
+      await Promise.race([salvar(atual ? atual.id : null, dados, atual), limite]).finally(() => clearTimeout(timer));
       setEditando(null);
       setEstado({ salvando: false, erro: "", ok: `${nomeItem} ${editando === "novo" ? "criado(a)" : "atualizado(a)"} com sucesso.` });
       recarregar();
     } catch (e2) {
-      console.error(e2);
+      // Recusas esperadas (ex.: código de cupom repetido) não são erro do sistema: só aparecem na tela.
+      if (!e2.paraUsuario) console.error(e2);
       if (e2.message === "demorou") {
         setEstado({ salvando: false, erro: "A gravação está demorando. Confira a lista abaixo antes de tentar de novo (pode já ter sido salva).", ok: "" });
         recarregar();
         return;
       }
-      setEstado({ salvando: false, erro: "O banco recusou a gravação. Confira os campos e tente de novo.", ok: "" });
+      // Erros com mensagem própria (ex.: código de cupom repetido) aparecem como vieram.
+      setEstado({ salvando: false, erro: e2.paraUsuario ? e2.message : "O banco recusou a gravação. Confira os campos e tente de novo.", ok: "" });
     }
   }
 
   async function remover(item) {
-    if (!window.confirm(`Excluir "${resumo(item).titulo}"? Esta ação não pode ser desfeita.`)) return;
     try {
-      await excluir(item.id);
+      const impedimento = antesDeExcluir ? await antesDeExcluir(item) : "";
+      if (impedimento) return setEstado({ salvando: false, erro: impedimento, ok: "" });
+      if (!window.confirm(`Excluir "${resumo(item).titulo}"? Esta ação não pode ser desfeita.`)) return;
+      await excluir(item.id, item);
       setEstado({ salvando: false, erro: "", ok: `${nomeItem} excluído(a).` });
       recarregar();
-    } catch {
+    } catch (e) {
+      console.error(e);
       setEstado({ salvando: false, erro: "Não foi possível excluir.", ok: "" });
+    }
+  }
+
+  // Botões extras do item (Encerrar, Reativar...): pedem confirmação quando a ação define uma.
+  async function executarAcao(acao) {
+    if (acao.confirmar && !window.confirm(acao.confirmar)) return;
+    try {
+      await acao.executar();
+      setEstado({ salvando: false, erro: "", ok: acao.ok || "Feito." });
+      recarregar();
+    } catch (e) {
+      console.error(e);
+      setEstado({ salvando: false, erro: `Não foi possível concluir: ${acao.rotulo.toLowerCase()}.`, ok: "" });
     }
   }
 
@@ -120,7 +142,7 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
                 <textarea rows={3} maxLength={c.max} value={valores[c.nome] ?? ""} onChange={(e) => mudar(c.nome, e.target.value)} className={campoCls} />
               ) : c.tipo === "select" ? (
                 <select value={valores[c.nome] ?? ""} onChange={(e) => mudar(c.nome, e.target.value)} className={campoCls}>
-                  <option value="">Escolha</option>
+                  <option value="">{c.vazio || "Escolha"}</option>
                   {c.opcoes.map((o) => <option key={o.valor ?? o} value={o.valor ?? o}>{o.rotulo ?? o}</option>)}
                 </select>
               ) : c.tipo === "dias" ? (
@@ -170,9 +192,12 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
                   {r.selo && <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${r.seloCor || "bg-cream ring-1 ring-ink/10"}`}>{r.selo}</span>}
                 </div>
                 {r.linhas.filter(Boolean).map((l) => <p key={l} className="text-xs text-inksoft">{l}</p>)}
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   <button type="button" onClick={() => abrir(item)} className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra"><Icone nome="editar" className="size-3.5" /> Editar</button>
                   <button type="button" onClick={() => remover(item)} className="inline-flex items-center gap-1 rounded-full bg-cream px-3 py-1 text-xs font-semibold ring-1 ring-ink/10 hover:text-red-700"><Icone nome="lixeira" className="size-3.5" /> Excluir</button>
+                  {(acoes ? acoes(item) : []).map((a) => (
+                    <button key={a.rotulo} type="button" onClick={() => executarAcao(a)} className="inline-flex items-center rounded-full bg-cream px-3 py-1 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra">{a.rotulo}</button>
+                  ))}
                   {r.link && <a href={r.link} className="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold text-terra underline">Ver no site</a>}
                 </div>
               </div>
