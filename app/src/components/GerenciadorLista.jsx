@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Icone from "./Icone";
 import BuscaLista, { filtrarPorTexto } from "./BuscaLista";
 import { Carregando, Erro } from "./Estados";
 import { erroTexto } from "../lib/validacao";
+import EnviarFoto from "./EnviarFoto";
+import { apagarFotoPorUrl } from "../services/fotos";
 
 export const DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 // Lista com busca + formulário de criar/editar + excluir, montados a partir de uma
 // descrição dos campos. Evita repetir o mesmo código para cardápio, cupons, promoções e eventos.
 //
-// campos: [{ nome, rotulo, tipo: texto|textarea|numero|data|hora|select|dias|url, opcoes, vazio, obrigatorio, max, min, ajuda, largura }]
+// campos: [{ nome, rotulo, tipo: texto|textarea|numero|data|hora|select|dias|url, opcoes, vazio, obrigatorio, max, min, ajuda, largura, upload }]
+// upload: true num campo "url" mostra também o botão "Enviar foto" (a foto vai para o banco e o
+// campo recebe o endereço dela). Fotos trocadas, descartadas ou de itens excluídos são apagadas.
 // paraFormulario(item) -> valores iniciais; paraBanco(valores, item) -> dados a gravar (ou string de erro)
 // resumo(item) -> { titulo, linhas: [], selo }
 // salvar(id, dados, item) e excluir(id, item): "item" é o registro atual (null ao criar).
@@ -22,6 +26,9 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
   const [valores, setValores] = useState({});
   const [estado, setEstado] = useState({ salvando: false, erro: "", ok: "" });
   const [texto, setTexto] = useState("");
+  // Fotos enviadas durante a edição atual (apagadas se a edição for cancelada ou se forem trocadas).
+  const enviadas = useRef([]);
+  const camposFoto = campos.filter((c) => c.upload).map((c) => c.nome);
 
   const recarregar = () =>
     carregar()
@@ -35,7 +42,18 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
     recarregar();
   }, []);
 
+  function descartarEnviadas(manter = []) {
+    enviadas.current.filter((u) => !manter.includes(u)).forEach((u) => apagarFotoPorUrl(u));
+    enviadas.current = [];
+  }
+
+  function cancelar() {
+    descartarEnviadas();
+    setEditando(null);
+  }
+
   function abrir(item) {
+    descartarEnviadas();
     setEditando(item || "novo");
     setValores(paraFormulario(item || null));
     setEstado({ salvando: false, erro: "", ok: "" });
@@ -72,6 +90,10 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
       });
       const atual = editando === "novo" ? null : editando;
       await Promise.race([salvar(atual ? atual.id : null, dados, atual), limite]).finally(() => clearTimeout(timer));
+      // Fotos: fica só a que está em uso; a antiga (trocada) e as enviadas e não usadas são apagadas.
+      const emUso = camposFoto.map((n) => valores[n]);
+      descartarEnviadas(emUso);
+      if (atual) camposFoto.forEach((n) => atual[n] && !emUso.includes(atual[n]) && apagarFotoPorUrl(atual[n]));
       setEditando(null);
       setEstado({ salvando: false, erro: "", ok: `${nomeItem} ${editando === "novo" ? "criado(a)" : "atualizado(a)"} com sucesso.` });
       recarregar();
@@ -94,6 +116,7 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
       if (impedimento) return setEstado({ salvando: false, erro: impedimento, ok: "" });
       if (!window.confirm(`Excluir "${resumo(item).titulo}"? Esta ação não pode ser desfeita.`)) return;
       await excluir(item.id, item);
+      camposFoto.forEach((n) => item[n] && apagarFotoPorUrl(item[n]));
       setEstado({ salvando: false, erro: "", ok: `${nomeItem} excluído(a).` });
       recarregar();
     } catch (e) {
@@ -167,12 +190,18 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
                 />
               )}
               {c.ajuda && <span className="mt-1 block text-[11px] text-inksoft">{c.ajuda}</span>}
+              {c.upload && (
+                <>
+                  <EnviarFoto aoEnviar={(url) => { enviadas.current.push(url); mudar(c.nome, url); }} />
+                  {valores[c.nome] && <img src={valores[c.nome]} alt="Prévia da foto" className="mt-2 h-24 w-36 rounded-xl object-cover ring-1 ring-ink/10" />}
+                </>
+              )}
             </label>
           ))}
           {estado.erro && <p role="alert" className="sm:col-span-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">{estado.erro}</p>}
           <div className="sm:col-span-2 flex gap-3">
             <button type="submit" disabled={estado.salvando} className="rounded-full bg-terra text-cream px-5 py-2.5 text-sm font-semibold disabled:opacity-60">{estado.salvando ? "Salvando..." : "Salvar"}</button>
-            <button type="button" onClick={() => setEditando(null)} className="rounded-full bg-paper px-5 py-2.5 text-sm font-semibold ring-1 ring-ink/10">Cancelar</button>
+            <button type="button" onClick={cancelar} className="rounded-full bg-paper px-5 py-2.5 text-sm font-semibold ring-1 ring-ink/10">Cancelar</button>
           </div>
         </form>
       )}

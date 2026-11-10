@@ -3,6 +3,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, up
 import { auth, db } from "../lib/firebase";
 import { obterHashDocumento } from "./documento";
 import { excluirAvaliacao } from "./avaliacoes";
+import { apagarFotosDoDono } from "./fotos";
 
 // Ações da própria conta (clientes e restaurantes): editar dados, trocar senha, trocar e-mail,
 // recuperar senha e excluir a conta (LGPD).
@@ -97,6 +98,8 @@ async function apagarConteudoDoRestaurante(uid) {
     const docs = (await doRestaurante(colecao)).filter((d) => d.data().tipoEvento !== "geral_plataforma");
     await apagarEmLotes(docs.map((d) => d.ref), 100);
   }
+
+  await apagarFotosDoDono(uid);
 
   const ficha = await getDoc(doc(db, "restaurantes", uid));
   if (ficha.exists()) {

@@ -306,6 +306,22 @@ service cloud.firestore {
             || meuUid() + '_' + getAfter(doc('cupons', resource.data.cupomId)).data.codigo != chave));
     }
 
+    // Fotos enviadas pelo restaurante (conteúdo da imagem no próprio documento, porque o
+    // Firebase Storage exige plano pago). A foto já chega reduzida e comprimida pelo navegador:
+    // WebP (ou JPEG em navegadores sem WebP), até 500 KB. Só o dono envia e apaga.
+    match /fotos/{id} {
+      allow read: if true;
+      allow create: if restaurante()
+        && request.resource.data.keys().hasOnly(['donoUid', 'dados', 'tipo', 'largura', 'altura', 'tamanho', 'criadoEm'])
+        && request.resource.data.donoUid == meuUid()
+        && request.resource.data.dados is bytes
+        && request.resource.data.dados.size() <= 512000
+        && request.resource.data.tipo in ['image/webp', 'image/jpeg']
+        && request.resource.data.largura is int && request.resource.data.largura <= 1600
+        && request.resource.data.altura is int && request.resource.data.altura <= 1600;
+      allow delete: if admin() || (logado() && resource.data.donoUid == meuUid());
+    }
+
     // Participar de evento da plataforma: o restaurante só pode se acrescentar na lista.
     function soSeAcrescentou() {
       return soAlterou(['restaurantesParticipantes'])

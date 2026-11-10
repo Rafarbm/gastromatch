@@ -140,7 +140,7 @@ export default function Ajuda() {
             <li><strong className="text-ink">Restaurantes:</strong> veem apenas o primeiro nome e o código de quem resgatou um cupom deles. Não veem e-mail, telefone ou CPF de clientes, nem quem favoritou o restaurante ou salvou uma promoção.</li>
             <li><strong className="text-ink">Público:</strong> nas avaliações aparece só o seu primeiro nome. Os dados do estabelecimento são públicos; os dados pessoais do responsável não são.</li>
             <li><strong className="text-ink">Suporte:</strong> a equipe vê nome, e-mail e telefone das contas para moderação. CPF e CNPJ não são visíveis nem para o suporte.</li>
-            <li><strong className="text-ink">Serviços que fazem o site funcionar:</strong> Google Firebase (login e banco de dados), Netlify (hospedagem do site e das fotos) e GroqCloud (inteligência artificial). Para a IA são enviados o texto digitado no assistente, os dados públicos dos restaurantes e comentários de avaliações sem o nome do autor. E-mail, telefone, CPF e CNPJ nunca são enviados à IA.</li>
+            <li><strong className="text-ink">Serviços que fazem o site funcionar:</strong> Google Firebase (login, banco de dados e fotos enviadas pelos restaurantes), Netlify (hospedagem do site) e GroqCloud (inteligência artificial). Para a IA são enviados o texto digitado no assistente, os dados públicos dos restaurantes e comentários de avaliações sem o nome do autor. E-mail, telefone, CPF e CNPJ nunca são enviados à IA.</li>
           </ul>
         </Topico>
         <Topico titulo="5. Por quanto tempo guardamos">

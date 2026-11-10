@@ -16,6 +16,7 @@ export function valorSimples(v) {
   if ("doubleValue" in v) return Number(v.doubleValue);
   if ("booleanValue" in v) return v.booleanValue;
   if ("timestampValue" in v) return v.timestampValue;
+  if ("bytesValue" in v) return v.bytesValue; // conteúdo binário, em base64
   if ("arrayValue" in v) return (v.arrayValue.values || []).map(valorSimples);
   if ("mapValue" in v) return camposSimples(v.mapValue.fields);
   return null;

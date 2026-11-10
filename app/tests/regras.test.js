@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
-import { deleteDoc, deleteField, doc, getDoc, getDocs, runTransaction, serverTimestamp, setDoc, updateDoc, collection, query, where, writeBatch } from "firebase/firestore";
+import { Bytes, deleteDoc, deleteField, doc, getDoc, getDocs, runTransaction, serverTimestamp, setDoc, updateDoc, collection, query, where, writeBatch } from "firebase/firestore";
 
 let ambiente;
 
@@ -682,6 +682,34 @@ describe("nota média gravada no restaurante", () => {
       await deleteDoc(doc(db, "restaurantes", RESTAURANTE));
     });
     await assertSucceeds(deleteDoc(doc(como(CLIENTE), "avaliacoes", ID)));
+  });
+});
+
+describe("fotos enviadas (guardadas no Firestore)", () => {
+  const foto = (extra = {}) => ({ donoUid: RESTAURANTE, dados: Bytes.fromUint8Array(new Uint8Array(1000)), tipo: "image/webp", largura: 800, altura: 600, tamanho: 1000, ...extra });
+
+  it("restaurante envia foto WebP (ou JPEG) de até 500 KB; qualquer um pode ver", async () => {
+    await assertSucceeds(setDoc(doc(como(RESTAURANTE), "fotos", "f1"), foto()));
+    await assertSucceeds(setDoc(doc(como(RESTAURANTE), "fotos", "f2"), foto({ tipo: "image/jpeg" })));
+    await assertSucceeds(getDoc(doc(anonimo(), "fotos", "f1")));
+  });
+  it("foto maior que 500 KB, de outro tipo, grande demais em pixels ou em nome de outro é recusada", async () => {
+    const db = como(RESTAURANTE);
+    await assertFails(setDoc(doc(db, "fotos", "f1"), foto({ dados: Bytes.fromUint8Array(new Uint8Array(512001)) })));
+    await assertFails(setDoc(doc(db, "fotos", "f1"), foto({ tipo: "image/svg+xml" })));
+    await assertFails(setDoc(doc(db, "fotos", "f1"), foto({ largura: 4000 })));
+    await assertFails(setDoc(doc(db, "fotos", "f1"), foto({ donoUid: OUTRO_RESTAURANTE })));
+    await assertFails(setDoc(doc(db, "fotos", "f1"), foto({ dados: "texto no lugar da imagem" })));
+  });
+  it("cliente e visitante não enviam fotos", async () => {
+    await assertFails(setDoc(doc(como(CLIENTE), "fotos", "f1"), foto({ donoUid: CLIENTE })));
+    await assertFails(setDoc(doc(anonimo(), "fotos", "f1"), foto()));
+  });
+  it("só o dono (ou o admin) apaga; ninguém altera uma foto já enviada", async () => {
+    await semRegras((db) => setDoc(doc(db, "fotos", "f1"), foto()));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "fotos", "f1"), { tipo: "image/jpeg" }));
+    await assertFails(deleteDoc(doc(como(OUTRO_RESTAURANTE), "fotos", "f1")));
+    await assertSucceeds(deleteDoc(doc(como(RESTAURANTE), "fotos", "f1")));
   });
 });
 

@@ -10,6 +10,7 @@ import { criarMiddlewareIA } from "../../server/ia.js";
 import { criarMiddlewareResumo } from "../../server/resumo.js";
 import { criarMiddlewareDatas } from "../../server/datas.js";
 import { criarMiddlewareDocumento } from "../../server/documento.js";
+import { criarMiddlewareFoto } from "../../server/foto.js";
 
 export default async (request) => {
   const env = {
@@ -27,7 +28,9 @@ export default async (request) => {
   };
 
   // /api/ia chega aqui como /.netlify/functions/api/ia: a rota é o último trecho.
-  const rota = new URL(request.url).pathname.split("/").filter(Boolean).pop();
+  // Tudo o que vem depois de ".../api/" (ex.: "ia", "foto/abc123").
+  const partes = new URL(request.url).pathname.split("/").filter(Boolean);
+  const rota = partes.slice(partes.lastIndexOf("api") + 1).join("/");
   let body = {};
   try {
     body = request.method === "POST" ? await request.json() : {};
@@ -48,7 +51,7 @@ export default async (request) => {
     };
     // O cabeçalho Authorization leva o comprovante de login (conferido em server/auth.js).
     const req = { url: `/api/${rota}`, method: request.method, body, headers: { authorization: request.headers.get("authorization") || "" } };
-    const rotas = [criarMiddlewareIA(env), criarMiddlewareResumo(env), criarMiddlewareDatas(env), criarMiddlewareDocumento(env)];
+    const rotas = [criarMiddlewareIA(env), criarMiddlewareResumo(env), criarMiddlewareDatas(env), criarMiddlewareDocumento(env), criarMiddlewareFoto(env)];
     const proxima = (i) => () => {
       if (i < rotas.length) return rotas[i](req, res, proxima(i + 1));
       resolve(Response.json({ erro: "Rota não encontrada." }, { status: 404 }));

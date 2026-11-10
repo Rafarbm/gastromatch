@@ -6,6 +6,7 @@ import { criarMiddlewareResumo } from "./server/resumo.js";
 import { criarMiddlewareLegado } from "./server/legado.js";
 import { criarMiddlewareDatas } from "./server/datas.js";
 import { criarMiddlewareDocumento } from "./server/documento.js";
+import { criarMiddlewareFoto } from "./server/foto.js";
 
 // Registra as rotas /api/ia (assistente), /api/resumo (resumo do restaurante) e
 // /api/datas (textos das datas especiais)
@@ -13,7 +14,7 @@ import { criarMiddlewareDocumento } from "./server/documento.js";
 // loadEnv com prefixo "" lê variáveis SEM o prefixo VITE_, que por isso
 // nunca são embutidas no código enviado ao navegador.
 function pluginIA(env) {
-  const middlewares = [criarMiddlewareLegado(), criarMiddlewareIA(env), criarMiddlewareResumo(env), criarMiddlewareDatas(env), criarMiddlewareDocumento(env)];
+  const middlewares = [criarMiddlewareLegado(), criarMiddlewareIA(env), criarMiddlewareResumo(env), criarMiddlewareDatas(env), criarMiddlewareDocumento(env), criarMiddlewareFoto(env)];
   return {
     name: "gastromatch-ia",
     // Chaves obrigatórias: se o hook retornar uma função, o Vite a executa
