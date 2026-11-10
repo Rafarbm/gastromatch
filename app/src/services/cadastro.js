@@ -96,7 +96,8 @@ export async function cadastrar(dados) {
     }
     await lote.commit();
   } catch (e) {
-    console.error("Cadastro recusado pelo banco:", e);
+    // Recusa por documento já usado é esperada: não é erro do sistema (só a mensagem neutra na tela).
+    if (e.code !== "permission-denied") console.error("Cadastro recusado pelo banco:", e);
     await deleteUser(user).catch(() => {});
     if (e.code === "permission-denied") throw new ErroCadastro(JA_CADASTRADO);
     throw new ErroCadastro("Não foi possível concluir o cadastro. Tente de novo.");

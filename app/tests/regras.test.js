@@ -500,6 +500,50 @@ describe("validade do cupom conferida pelo banco", () => {
   });
 });
 
+describe("conta: troca de e-mail e exclusão do restaurante", () => {
+  it("o perfil só aceita o e-mail que o login passou a ter (troca confirmada)", async () => {
+    // O login já usa o endereço novo (o token leva o e-mail novo).
+    const db = como(CLIENTE, "novo-endereco@teste.com");
+    await assertSucceeds(updateDoc(doc(db, "usuarios", CLIENTE), { email: "novo-endereco@teste.com" }));
+  });
+  it("ninguém grava no perfil um e-mail diferente do login", async () => {
+    await assertFails(updateDoc(doc(como(CLIENTE), "usuarios", CLIENTE), { email: "outro@teste.com" }));
+  });
+  it("restaurante exclui a própria conta: cupons e códigos, promoções, cardápio, ficha pública, slug, CNPJ e perfil", async () => {
+    await semRegras(async (db) => {
+      await setDoc(doc(db, "promocoes", "p1"), promocao());
+      await setDoc(doc(db, "eventos", "e1"), { restauranteId: RESTAURANTE, titulo: "Noite do vinho" });
+      await setDoc(doc(db, "usuarios", RESTAURANTE, "privado", "documento"), { cnpj: "11222333000181" });
+      await setDoc(doc(db, "documentos", "hash-rest"), { uid: RESTAURANTE, tipo: "cnpj" });
+    });
+    const db = como(RESTAURANTE);
+    // Mesma ordem do app (services/conta.js).
+    const cupons = writeBatch(db);
+    cupons.delete(doc(db, "cupons", "cupom1"));
+    cupons.delete(doc(db, "codigosCupom", `${RESTAURANTE}_BRASA15`));
+    await assertSucceeds(cupons.commit());
+    const conteudo = writeBatch(db);
+    conteudo.delete(doc(db, "promocoes", "p1"));
+    conteudo.delete(doc(db, "menus", "prato1"));
+    conteudo.delete(doc(db, "eventos", "e1"));
+    await assertSucceeds(conteudo.commit());
+    const ficha = writeBatch(db);
+    ficha.delete(doc(db, "restaurantes", RESTAURANTE));
+    ficha.delete(doc(db, "slugs", "brasa"));
+    await assertSucceeds(ficha.commit());
+    await assertSucceeds(deleteDoc(doc(db, "documentos", "hash-rest")));
+    await assertSucceeds(deleteDoc(doc(db, "usuarios", RESTAURANTE, "privado", "documento")));
+    await assertSucceeds(deleteDoc(doc(db, "usuarios", RESTAURANTE)));
+  });
+  it("um restaurante não apaga a ficha, o slug nem o conteúdo de outro", async () => {
+    const db = como(OUTRO_RESTAURANTE);
+    await assertFails(deleteDoc(doc(db, "restaurantes", RESTAURANTE)));
+    await assertFails(deleteDoc(doc(db, "slugs", "brasa")));
+    await assertFails(deleteDoc(doc(db, "menus", "prato1")));
+    await assertFails(deleteDoc(doc(db, "cupons", "cupom1")));
+  });
+});
+
 describe("favoritos", () => {
   const fav = (uid, rest = RESTAURANTE) => ({ usuarioId: uid, restauranteId: rest });
   const semear = (id, dados) => ambiente.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), "favoritos", id), dados));

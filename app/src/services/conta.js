@@ -1,9 +1,10 @@
-import { deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, updatePassword } from "firebase/auth";
-import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
+import { deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, updatePassword, verifyBeforeUpdateEmail } from "firebase/auth";
+import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where, writeBatch } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { obterHashDocumento } from "./documento";
 
-// Ações da própria conta: editar dados, trocar senha, recuperar senha e excluir a conta (LGPD).
+// Ações da própria conta (clientes e restaurantes): editar dados, trocar senha, trocar e-mail,
+// recuperar senha e excluir a conta (LGPD).
 
 export class ErroConta extends Error {}
 
@@ -45,6 +46,22 @@ export async function trocarSenha(senhaAtual, novaSenha) {
   }
 }
 
+// Troca de e-mail: o Firebase envia um link para o NOVO endereço e o login só muda depois
+// que a pessoa clicar nele (prova que o e-mail é dela). O e-mail do perfil é acertado no
+// próximo login (contexts/AuthContext.jsx).
+export async function trocarEmail(senhaAtual, novoEmail) {
+  const user = await confirmarSenha(senhaAtual);
+  try {
+    await verifyBeforeUpdateEmail(user, novoEmail.trim().toLowerCase());
+  } catch (e) {
+    // Mensagem neutra: não confirma se o e-mail já pertence a outra conta.
+    if (e.code === "auth/email-already-in-use" || e.code === "auth/invalid-email" || e.code === "auth/invalid-new-email") {
+      throw new ErroConta("Não foi possível usar este e-mail. Confira o endereço ou tente outro.");
+    }
+    throw traduzir(e, "Não foi possível iniciar a troca de e-mail. Tente de novo.");
+  }
+}
+
 // Mesma resposta exista ou não a conta: não revela quais e-mails estão cadastrados.
 export async function enviarRecuperacaoSenha(email) {
   try {
@@ -55,9 +72,45 @@ export async function enviarRecuperacaoSenha(email) {
   }
 }
 
-// Exclusão da conta do cliente (direito de eliminação da LGPD). Apaga:
-// CPF (área privada) + índice do CPF, avaliações, itens salvos, favoritos, o perfil e o login.
-// Ficam só os ingressos já resgatados, que são o histórico do restaurante e
+// Apaga documentos em lotes (cada lote é "tudo ou nada").
+async function apagarEmLotes(refs, tamanho) {
+  for (let i = 0; i < refs.length; i += tamanho) {
+    const lote = writeBatch(db);
+    refs.slice(i, i + tamanho).forEach((ref) => lote.delete(ref));
+    await lote.commit();
+  }
+}
+
+// Tudo o que o restaurante publicou: cupons (e os códigos reservados), promoções, cardápio,
+// eventos próprios, a ficha pública e o slug. A ordem importa: as regras só deixam o dono
+// apagar enquanto o perfil dele ainda existe, e promoção com cupom vinculado sai depois do cupom.
+async function apagarConteudoDoRestaurante(uid) {
+  const doRestaurante = async (colecao) => (await getDocs(query(collection(db, colecao), where("restauranteId", "==", uid)))).docs;
+
+  const cupons = await doRestaurante("cupons");
+  // Cupom + índice do código juntos; lotes pequenos (as regras conferem cada par).
+  const pares = cupons.flatMap((d) => [d.ref, ...(d.data().codigo ? [doc(db, "codigosCupom", `${uid}_${d.data().codigo}`)] : [])]);
+  await apagarEmLotes(pares, 8);
+
+  for (const colecao of ["promocoes", "menus", "eventos"]) {
+    const docs = (await doRestaurante(colecao)).filter((d) => d.data().tipoEvento !== "geral_plataforma");
+    await apagarEmLotes(docs.map((d) => d.ref), 100);
+  }
+
+  const ficha = await getDoc(doc(db, "restaurantes", uid));
+  if (ficha.exists()) {
+    const lote = writeBatch(db);
+    lote.delete(ficha.ref);
+    if (ficha.data().slug) lote.delete(doc(db, "slugs", ficha.data().slug));
+    await lote.commit();
+  }
+}
+
+// Exclusão da conta pelo titular (direito de eliminação da LGPD).
+// Cliente: apaga CPF (área privada) + índice do CPF, avaliações, itens salvos, favoritos, o perfil e o login.
+// Restaurante: apaga CNPJ + índice, ficha pública, slug, cardápio, promoções, cupons, eventos próprios,
+// o perfil e o login. As avaliações recebidas deixam de aparecer (a página não existe mais).
+// Ficam só os ingressos já resgatados, que são o histórico de quem resgatou e
 // guardam apenas o primeiro nome.
 export async function excluirMinhaConta(senhaAtual) {
   const user = await confirmarSenha(senhaAtual);
@@ -70,6 +123,8 @@ export async function excluirMinhaConta(senhaAtual) {
       if (numero) await deleteDoc(doc(db, "documentos", await obterHashDocumento(user, tipo, numero))).catch(() => {});
       await deleteDoc(privado.ref);
     }
+    const perfil = await getDoc(doc(db, "usuarios", uid));
+    if (perfil.data()?.tipo === "restaurante") await apagarConteudoDoRestaurante(uid);
     for (const colecao of ["avaliacoes", "salvos", "favoritos"]) {
       const snap = await getDocs(query(collection(db, colecao), where("usuarioId", "==", uid)));
       await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));

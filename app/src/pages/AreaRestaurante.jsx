@@ -211,6 +211,7 @@ export default function AreaRestaurante() {
           <h1 className="mt-1 font-display font-semibold text-4xl">{usuario.nome}</h1>
         </div>
         <Link to={linkRestaurante({ id: usuario.uid, slug: usuario.slug })} className="rounded-full bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">Ver minha página pública</Link>
+        <Link to="/minha-conta/dados" className="rounded-full bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">E-mail, senha e conta</Link>
       </header>
 
       <nav aria-label="Seções do painel" className="-mx-4 px-4 overflow-x-auto scroll-oculto">

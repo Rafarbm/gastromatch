@@ -4,10 +4,10 @@ import CampoSenha from "../components/CampoSenha";
 import Icone from "../components/Icone";
 import { Carregando } from "../components/Estados";
 import { useAuth } from "../contexts/AuthContext";
-import { atualizarMeusDados, excluirMinhaConta, obterMeusDados, trocarSenha } from "../services/conta";
-import { erroSenha, erroTexto, mascaraTelefone, somenteDigitos } from "../lib/validacao";
+import { atualizarMeusDados, excluirMinhaConta, obterMeusDados, trocarEmail, trocarSenha } from "../services/conta";
+import { emailValido, erroSenha, erroTexto, mascaraTelefone, somenteDigitos } from "../lib/validacao";
 
-// Meus dados (substitui perfil-usuario.html): dados pessoais, senha e exclusão da conta.
+// Meus dados: dados pessoais (cliente), e-mail, senha e exclusão da conta (cliente e restaurante).
 
 const campo = "mt-1 w-full rounded-2xl bg-cream px-4 py-3 ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-terra/40";
 
@@ -48,11 +48,42 @@ function Dados({ usuario, recarregar }) {
   return (
     <form onSubmit={salvar} noValidate className="grid sm:grid-cols-2 gap-4 text-sm">
       <label className="sm:col-span-2"><span className="font-semibold">Nome completo</span><input value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} maxLength={120} autoComplete="name" className={campo} /></label>
-      <label><span className="font-semibold">E-mail</span><input value={usuario.email} disabled className={`${campo} opacity-60`} /><span className="mt-1 block text-[11px] text-inksoft">O e-mail é o seu login e não pode ser trocado aqui.</span></label>
+      <label><span className="font-semibold">E-mail</span><input value={usuario.email} disabled className={`${campo} opacity-60`} /><span className="mt-1 block text-[11px] text-inksoft">O e-mail é o seu login. Para trocar, use o cartão "E-mail" abaixo.</span></label>
       <label><span className="font-semibold">Telefone</span><input inputMode="tel" value={f.telefone} onChange={(e) => setF({ ...f, telefone: mascaraTelefone(e.target.value) })} autoComplete="tel" className={campo} /></label>
       <p className="sm:col-span-2 text-xs text-inksoft">Seu CPF fica guardado em área privada e não pode ser alterado (ele garante que cada pessoa tenha uma só conta).</p>
       <div className="sm:col-span-2"><Aviso e={estado} /></div>
       <button type="submit" disabled={estado.salvando} className="sm:col-span-2 rounded-2xl bg-terra text-cream py-3 font-semibold disabled:opacity-60">{estado.salvando ? "Salvando..." : "Salvar dados"}</button>
+    </form>
+  );
+}
+
+// Troca de e-mail: pede a senha atual e manda um link de confirmação para o NOVO endereço.
+function Email({ usuario }) {
+  const [f, setF] = useState({ novo: "", senha: "" });
+  const [estado, setEstado] = useState({ msg: "", erro: false, salvando: false });
+
+  async function enviar(e) {
+    e.preventDefault();
+    const novo = f.novo.trim().toLowerCase();
+    const erro = (!emailValido(novo) && "Digite um e-mail válido.") || (novo === usuario.email && "Este já é o seu e-mail atual.") || (!f.senha && "Digite sua senha atual.");
+    if (erro) return setEstado({ msg: erro, erro: true, salvando: false });
+    setEstado({ msg: "", erro: false, salvando: true });
+    try {
+      await trocarEmail(f.senha, novo);
+      setF({ novo: "", senha: "" });
+      setEstado({ msg: `Enviamos um link de confirmação para ${novo}. A troca só vale depois que você abrir esse link. Em seguida, entre de novo usando o novo e-mail.`, erro: false, salvando: false });
+    } catch (err) {
+      setEstado({ msg: err.message, erro: true, salvando: false });
+    }
+  }
+
+  return (
+    <form onSubmit={enviar} noValidate className="grid sm:grid-cols-2 gap-4 text-sm">
+      <p className="sm:col-span-2 text-inksoft">E-mail atual: <strong className="text-ink">{usuario.email}</strong></p>
+      <label><span className="font-semibold">Novo e-mail</span><input type="email" autoComplete="email" value={f.novo} onChange={(e) => setF({ ...f, novo: e.target.value })} className={campo} /></label>
+      <label><span className="font-semibold">Senha atual</span><CampoSenha value={f.senha} onChange={(e) => setF({ ...f, senha: e.target.value })} autoComplete="current-password" className={campo} /></label>
+      <div className="sm:col-span-2"><Aviso e={estado} /></div>
+      <button type="submit" disabled={estado.salvando} className="sm:col-span-2 rounded-2xl bg-ink text-cream py-3 font-semibold disabled:opacity-60">{estado.salvando ? "Enviando..." : "Trocar e-mail"}</button>
     </form>
   );
 }
@@ -87,7 +118,7 @@ function Senha() {
   );
 }
 
-function Excluir({ aoMudarExclusao }) {
+function Excluir({ aoMudarExclusao, restaurante }) {
   const [aberto, setAberto] = useState(false);
   const [senha, setSenha] = useState("");
   const [confirmo, setConfirmo] = useState(false);
@@ -111,7 +142,11 @@ function Excluir({ aoMudarExclusao }) {
   if (!aberto) {
     return (
       <div className="space-y-3 text-sm">
-        <p className="text-inksoft">Apaga seus dados pessoais, CPF, avaliações e itens salvos. Cupons já resgatados ficam no histórico do restaurante só com seu primeiro nome. <strong>Não dá para desfazer.</strong></p>
+        {restaurante ? (
+          <p className="text-inksoft">Apaga a página do restaurante, o endereço dela, o cardápio, as promoções, os cupons, os eventos, o CNPJ, seus dados e o seu login. Cupons já resgatados continuam no histórico dos clientes, mas não poderão mais ser validados. <strong>Não dá para desfazer.</strong></p>
+        ) : (
+          <p className="text-inksoft">Apaga seus dados pessoais, CPF, avaliações, favoritos e itens salvos. Cupons já resgatados ficam no histórico do restaurante só com seu primeiro nome. <strong>Não dá para desfazer.</strong></p>
+        )}
         <button type="button" onClick={() => setAberto(true)} className="rounded-full bg-paper px-5 py-2.5 font-semibold text-red-700 ring-1 ring-red-200 hover:bg-red-50">Quero excluir minha conta</button>
       </div>
     );
@@ -138,16 +173,23 @@ export default function MeusDados() {
   if (!usuario && excluindo) return <Navigate to="/?conta=excluida" replace />;
   if (carregando) return <div className="mx-auto max-w-3xl px-4"><Carregando /></div>;
   if (!usuario) return <Navigate to="/entrar?voltar=/minha-conta/dados" replace />;
-  if (usuario.papel !== "cliente") return <Navigate to="/minha-conta" replace />;
+  // Clientes e restaurantes cuidam da própria conta aqui (o admin não é criado nem excluído pelo site).
+  if (!["cliente", "restaurante"].includes(usuario.papel)) return <Navigate to="/minha-conta" replace />;
+  const restaurante = usuario.papel === "restaurante";
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-8 pt-6 pb-12 space-y-6">
-      <Link to="/minha-conta" className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra">
-        <Icone nome="esquerda" className="size-4" /> Minha conta
+      <Link to={restaurante ? "/restaurante" : "/minha-conta"} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra">
+        <Icone nome="esquerda" className="size-4" /> {restaurante ? "Painel do restaurante" : "Minha conta"}
       </Link>
-      <h1 className="font-display font-semibold text-4xl">Meus dados</h1>
-      <Cartao titulo="Dados pessoais"><Dados usuario={usuario} recarregar={recarregar} /></Cartao>
+      <h1 className="font-display font-semibold text-4xl">{restaurante ? "Minha conta" : "Meus dados"}</h1>
+      {restaurante ? (
+        <p className="text-sm text-inksoft">Os dados do estabelecimento e o nome do responsável ficam em <Link to="/restaurante?aba=dados" className="font-semibold text-terra hover:underline">Painel → Dados do restaurante</Link>.</p>
+      ) : (
+        <Cartao titulo="Dados pessoais"><Dados usuario={usuario} recarregar={recarregar} /></Cartao>
+      )}
+      <Cartao titulo="E-mail"><Email usuario={usuario} /></Cartao>
       <Cartao titulo="Senha"><Senha /></Cartao>
-      <Cartao titulo="Excluir conta" perigo><Excluir aoMudarExclusao={setExcluindo} /></Cartao>
+      <Cartao titulo="Excluir conta" perigo><Excluir aoMudarExclusao={setExcluindo} restaurante={restaurante} /></Cartao>
     </div>
   );
 }

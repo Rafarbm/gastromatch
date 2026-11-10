@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { desfavoritar, favoritar, listarFavoritos } from "../services/favoritos";
+import { auth } from "../lib/firebase";
 
 // Favoritos do cliente logado, compartilhados pelo site inteiro: a lista é lida
 // uma vez após o login e todos os corações (cartões, página do restaurante,
@@ -23,7 +24,9 @@ export function FavoritosProvider({ children }) {
     listarFavoritos(uid)
       .then((lista) => ativo && setIds(lista))
       .catch((e) => {
-        console.error("Erro ao carregar favoritos:", e);
+        // Se a sessão terminou no meio do caminho (ex.: cadastro recusado, que apaga o login
+        // recém-criado), a recusa do banco é esperada: não é erro.
+        if (auth.currentUser?.uid === uid) console.error("Erro ao carregar favoritos:", e);
         if (ativo) setIds([]);
       });
     return () => {

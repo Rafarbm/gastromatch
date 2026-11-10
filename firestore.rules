@@ -74,9 +74,11 @@ service cloud.firestore {
         // Conta de restaurante nasce junto com a ficha pública do estabelecimento (mesma gravação).
         && (request.resource.data.tipo != 'restaurante' || existsAfter(doc('restaurantes', id)));
 
-      // Dono: não muda tipo nem e-mail; só pode mudar o status para "excluido".
+      // Dono: não muda o tipo; só pode mudar o status para "excluido". O e-mail do perfil só
+      // muda para o e-mail que o login passou a ter (troca confirmada pelo link enviado ao novo endereço).
       allow update: if logado() && meuUid() == id
-        && inalterados(['tipo', 'email', 'criadoEm', 'banidoEm', 'motivoBanimento'])
+        && inalterados(['tipo', 'criadoEm', 'banidoEm', 'motivoBanimento'])
+        && (request.resource.data.email == resource.data.email || request.resource.data.email == request.auth.token.email)
         && (request.resource.data.get('status', 'ativo') == resource.data.get('status', 'ativo')
             || request.resource.data.status == 'excluido')
         && perfilValido(request.resource.data);

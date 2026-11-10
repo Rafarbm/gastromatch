@@ -95,6 +95,11 @@ export default function MinhaConta() {
       {usuario.papel === "restaurante" && (
         <PainelAtalho titulo="Painel do restaurante" texto="Dados, cardápio (inclusive por planilha), cupons, promoções, eventos e validação de cupons." para="/restaurante" />
       )}
+      {usuario.papel === "restaurante" && (
+        <p className="mt-4 text-sm text-inksoft">
+          <Link to="/minha-conta/dados" className="font-semibold text-terra hover:underline">E-mail, senha e exclusão da conta</Link>
+        </p>
+      )}
       {usuario.papel === "admin" && (
         <PainelAtalho titulo="Painel de suporte" texto="Usuários e restaurantes (banir, restaurar, destacar), mensagens e moderação de avaliações." para="/suporte" />
       )}
@@ -102,7 +107,7 @@ export default function MinhaConta() {
       {usuario.papel === "cliente" && (
         <>
           <p className="mt-1 text-sm text-inksoft">
-            Seus restaurantes favoritos, cupons e ofertas salvas. <Link to="/minha-conta/dados" className="font-semibold text-terra hover:underline">Meus dados, senha e exclusão da conta</Link>
+            Seus restaurantes favoritos, cupons e ofertas salvas. <Link to="/minha-conta/dados" className="font-semibold text-terra hover:underline">Meus dados, e-mail, senha e exclusão da conta</Link>
           </p>
           {erro && <div className="mt-6"><Erro /></div>}
           {!salvos && !erro && <Carregando />}

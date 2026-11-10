@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 
 // Sessão do usuário no app novo. Como o sistema antigo roda no mesmo endereço
@@ -24,6 +24,11 @@ async function carregarPerfil(user) {
     getDoc(doc(db, "admins", user.uid)).catch(() => null),
   ]);
   const perfil = snap.exists() ? snap.data() : {};
+  // Depois de uma troca de e-mail confirmada, o login já usa o endereço novo: acerta o perfil.
+  // (As regras só aceitam gravar no perfil o mesmo e-mail que está no login.)
+  if (snap.exists() && perfil.email && user.email && perfil.email !== user.email) {
+    await updateDoc(snap.ref, { email: user.email }).catch((e) => console.error("E-mail do perfil não atualizado:", e));
+  }
   const papel = definirPapel(Boolean(snapAdmin?.exists()), perfil);
   // Restaurante: o nome exibido e o endereço da página (slug) vêm da ficha pública do estabelecimento.
   let ficha = {};
