@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import Icone from "./Icone";
 import ChatWidget from "./ChatWidget";
 import MenuUsuario from "./MenuUsuario";
+import { acompanharSeloNetlify } from "../lib/seloNetlify";
 import { useChat } from "../contexts/ChatContext";
 
 const NAV = [
@@ -102,6 +103,8 @@ export default function Layout() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+  // Selo "Powered by Netlify" (inserido pelo Netlify no site publicado): os botões fixos sobem acima dele.
+  useEffect(() => acompanharSeloNetlify(), []);
 
   return (
     <div className="min-h-screen flex flex-col">

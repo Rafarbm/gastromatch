@@ -121,7 +121,8 @@ export default function ChatWidget() {
   };
 
   // Na página do restaurante (celular) existe a barra fixa de reserva: o botão sobe.
-  const naPaginaRestaurante = /^\/restaurantes\/[^/]+$/.test(pathname);
+  // A página abre por /r/{slug} (endereço oficial) e por /restaurantes/{id} (links antigos).
+  const naPaginaRestaurante = /^\/(restaurantes|r)\/[^/]+$/.test(pathname);
   const posicaoBotao = naPaginaRestaurante ? "bottom-24 lg:bottom-6" : "bottom-5 sm:bottom-6";
 
   const { busca } = useLocalidade();
@@ -132,7 +133,7 @@ export default function ChatWidget() {
   return (
     <>
       {!aberto && (
-        <div className={`fixed right-3 sm:right-6 z-40 flex flex-col items-end gap-2 sm:gap-3 ${posicaoBotao}`}>
+        <div className={`fixed right-3 sm:right-6 z-40 flex flex-col items-end gap-2 sm:gap-3 ${posicaoBotao}`} style={{ transform: "translateY(calc(-1 * var(--selo-netlify, 0px)))" }}>
           {convite && (
             <div role="status" className="relative hidden sm:block max-w-64 rounded-2xl rounded-br-md bg-ink text-cream px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm shadow-clay-lg">
               <button type="button" onClick={fecharConvite} aria-label="Fechar convite" className="absolute -top-2 -left-2 grid place-items-center size-6 rounded-full bg-paper text-ink ring-1 ring-ink/10">
@@ -164,6 +165,8 @@ export default function ChatWidget() {
           aria-modal="false"
           aria-label="Assistente GastroMatch"
           className="fixed z-50 inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[420px] sm:h-[min(680px,calc(100vh-3rem))] flex flex-col bg-cream sm:rounded-[28px] shadow-clay-lg ring-1 ring-ink/10 overflow-hidden"
+          // O campo de digitar fica acima do selo do Netlify (quando existe).
+          style={{ paddingBottom: "var(--selo-netlify, 0px)" }}
         >
           <header className="flex items-center justify-between gap-2 bg-terra text-cream px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
             <div className="flex items-center gap-2 min-w-0">

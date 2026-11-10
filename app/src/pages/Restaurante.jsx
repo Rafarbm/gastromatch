@@ -136,7 +136,7 @@ function PaginaRestaurante({ id }) {
   categorias.sort((a, b) => (ordemCategorias.indexOf(a) + 1 || 99) - (ordemCategorias.indexOf(b) + 1 || 99));
 
   return (
-    <div className="pb-24 lg:pb-0">
+    <div className="pb-[calc(6rem+var(--selo-netlify,0px))] lg:pb-0">
       <div className="mx-auto max-w-6xl px-4 sm:px-8 py-4">
         <Link to="/restaurantes" className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra">
           <Icone nome="esquerda" className="size-4" /> Restaurantes
@@ -277,7 +277,7 @@ function PaginaRestaurante({ id }) {
       </div>
 
       {/* Barra fixa no celular: não cobre conteúdo porque a página tem pb-24 */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-cream/95 backdrop-blur border-t border-ink/10 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-3">
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-cream/95 backdrop-blur border-t border-ink/10 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-3" style={{ transform: "translateY(calc(-1 * var(--selo-netlify, 0px)))" }}>
         <CartaoReserva r={r} compacto />
       </div>
     </div>
