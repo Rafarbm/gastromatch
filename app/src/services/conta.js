@@ -1,7 +1,7 @@
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, updatePassword } from "firebase/auth";
 import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
-import { hashDocumento } from "../lib/validacao";
+import { obterHashDocumento } from "./documento";
 
 // Ações da própria conta: editar dados, trocar senha, recuperar senha e excluir a conta (LGPD).
 
@@ -67,7 +67,7 @@ export async function excluirMinhaConta(senhaAtual) {
     if (privado.exists()) {
       const { cpf, cnpj } = privado.data();
       const [tipo, numero] = cpf ? ["cpf", cpf] : ["cnpj", cnpj];
-      if (numero) await deleteDoc(doc(db, "documentos", await hashDocumento(tipo, numero))).catch(() => {});
+      if (numero) await deleteDoc(doc(db, "documentos", await obterHashDocumento(user, tipo, numero))).catch(() => {});
       await deleteDoc(privado.ref);
     }
     for (const colecao of ["avaliacoes", "salvos", "favoritos"]) {

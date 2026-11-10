@@ -47,14 +47,8 @@ export function mascaraTelefone(v) {
   return d.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
 }
 
-// Chave única do documento: hash SHA-256 de "tipo:número". O número em si não vira ID.
-// Observação: CPF tem poucas combinações, então o hash não é segredo forte; em produção
-// o ideal é calcular um HMAC com chave secreta no servidor.
-export async function hashDocumento(tipo, numero) {
-  const bytes = new TextEncoder().encode(`gastromatch:${tipo}:${somenteDigitos(numero)}`);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+// A chave única do CPF/CNPJ (documentos/{hash}) NÃO é calculada aqui: é um HMAC com chave
+// secreta, feito no servidor (server/documento.js; no site, services/documento.js).
 
 // ---------- textos e senha ----------
 

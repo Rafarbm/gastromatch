@@ -123,7 +123,11 @@ export async function validarResgate(resgateId) {
   return runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new ErroResgate("Resgate não encontrado.", "inexistente");
-    if (snap.data().status !== "ativo") throw new ErroResgate("Este código já foi utilizado.", "ja-usado");
+    const r = snap.data();
+    if (r.status !== "ativo") throw new ErroResgate("Este código já foi utilizado.", "ja-usado");
+    // As regras do Firestore conferem o mesmo: ingresso dentro da validade e cupom ainda existente.
+    if (!cupomValido({ validadeFim: r.validadeFim })) throw new ErroResgate("Este cupom está vencido.", "vencido");
+    if (!(await tx.get(doc(db, "cupons", r.cupomId))).exists()) throw new ErroResgate("Este cupom foi excluído pelo restaurante e não pode mais ser validado.", "cupom-excluido");
     tx.update(ref, { status: "usado", usadoEm: serverTimestamp() });
   });
 }

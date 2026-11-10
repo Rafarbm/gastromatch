@@ -467,6 +467,39 @@ describe("resgate de cupom vinculado a promoção", () => {
   });
 });
 
+describe("validade do cupom conferida pelo banco", () => {
+  const comDatas = (dados) => semRegras((db) => updateDoc(doc(db, "cupons", "cupom1"), dados));
+  const ingresso = (extra = {}) =>
+    semRegras((db) => setDoc(doc(db, "resgates", `cupom1_${CLIENTE}`), { cupomId: "cupom1", usuarioId: CLIENTE, restauranteId: RESTAURANTE, codigo: "ABCDE23456", status: "ativo", validadeFim: dia(5), ...extra }));
+
+  it("cupom dentro da validade: o cliente resgata", async () => {
+    await comDatas({ validadeInicio: dia(-5), validadeFim: dia(5) });
+    await assertSucceeds(resgatar(como(CLIENTE), CLIENTE));
+  });
+  it("cupom vencido ou que ainda não começou: resgate recusado mesmo fora das telas", async () => {
+    await comDatas({ validadeInicio: dia(-10), validadeFim: dia(-5) });
+    await assertFails(resgatar(como(CLIENTE), CLIENTE));
+    await comDatas({ validadeInicio: dia(5), validadeFim: dia(10) });
+    await assertFails(resgatar(como(CLIENTE), CLIENTE));
+  });
+  it("restaurante valida o ingresso dentro da validade", async () => {
+    await ingresso();
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "resgates", `cupom1_${CLIENTE}`), { status: "usado", usadoEm: serverTimestamp() }));
+  });
+  it("ingresso vencido não é validado", async () => {
+    await ingresso({ validadeFim: dia(-5) });
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "resgates", `cupom1_${CLIENTE}`), { status: "usado", usadoEm: serverTimestamp() }));
+  });
+  it("ingresso de cupom excluído não é validado", async () => {
+    await ingresso();
+    await semRegras((db) => deleteDoc(doc(db, "cupons", "cupom1")));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "resgates", `cupom1_${CLIENTE}`), { status: "usado", usadoEm: serverTimestamp() }));
+  });
+  it("na edição, o cupom não aceita campos fora da lista", async () => {
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { campoInventado: "x" }));
+  });
+});
+
 describe("favoritos", () => {
   const fav = (uid, rest = RESTAURANTE) => ({ usuarioId: uid, restauranteId: rest });
   const semear = (id, dados) => ambiente.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), "favoritos", id), dados));

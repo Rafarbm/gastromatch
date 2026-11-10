@@ -157,7 +157,8 @@ service cloud.firestore {
         && (!existsAfter(doc('restaurantes', meuUid())) || getAfter(doc('restaurantes', meuUid())).data.slug != slug));
     }
 
-    // Índice de unicidade de CPF/CNPJ: o ID é um hash do documento. Como só existe
+    // Índice de unicidade de CPF/CNPJ: o ID é um identificador sigiloso (HMAC calculado no
+    // servidor com chave secreta; ver app/server/documento.js). Como só existe
     // "create" (sem update), um segundo cadastro com o mesmo CPF/CNPJ é recusado.
     match /documentos/{hash} {
       allow create: if logado()
@@ -239,6 +240,7 @@ service cloud.firestore {
         && codigoCupomUnico(id, request.resource.data)
         && vinculoPromocaoValido(request.resource.data);
       allow update: if donoAtual() && request.resource.data.restauranteId == meuUid()
+        && request.resource.data.keys().hasOnly(['restauranteId', 'restaurante', 'codigo', 'desconto', 'validadeInicio', 'validadeFim', 'horaInicio', 'horaFim', 'diasValidos', 'condicoes', 'prato', 'criadoEm', 'limiteTotal', 'resgatados', 'promocaoId'])
         && request.resource.data.get('resgatados', 0) == resource.data.get('resgatados', 0)
         && codigoCupomValido(request.resource.data.codigo) && textoOpc(request.resource.data, 'condicoes', 500)
         && numeroOpc(request.resource.data, 'limiteTotal', 1, 100000)
@@ -321,6 +323,12 @@ service cloud.firestore {
       allow delete: if logado() && resource.data.usuarioId == meuUid();
     }
 
+    // Cupom dentro do período de validade (datas AAAA-MM-DD; hoje no horário de Brasília).
+    function cupomNoPrazo(c) {
+      return (c.get('validadeInicio', '') == '' || c.validadeInicio <= hoje())
+        && (c.get('validadeFim', '') == '' || c.validadeFim >= hoje());
+    }
+
     // Resgate de cupom = "ingresso": ID cupomId_uid (1 por cliente), código único.
     match /resgates/{id} {
       // resource == null: a transação do resgate consulta "já resgatei?" antes de o documento existir.
@@ -332,6 +340,8 @@ service cloud.firestore {
         && request.resource.data.status == 'ativo'
         && request.resource.data.codigo.matches('^[A-Z0-9]{10}$')
         && request.resource.data.restauranteId == get(doc('cupons', request.resource.data.cupomId)).data.restauranteId
+        // O cupom precisa estar dentro da validade (conferido aqui, não só na tela).
+        && cupomNoPrazo(get(doc('cupons', request.resource.data.cupomId)).data)
         // Cupom vinculado a uma promoção: só pode ser resgatado enquanto ela existir e estiver ativa.
         && (!('promocaoId' in get(doc('cupons', request.resource.data.cupomId)).data)
             || promocaoAtiva(get(doc('promocoes', get(doc('cupons', request.resource.data.cupomId)).data.promocaoId)).data))
@@ -339,12 +349,15 @@ service cloud.firestore {
         && existsAfter(doc('codigosResgate', request.resource.data.codigo))
         && getAfter(doc('cupons', request.resource.data.cupomId)).data.resgatados
            == get(doc('cupons', request.resource.data.cupomId)).data.get('resgatados', 0) + 1;
-      // Só o restaurante dono valida, e só uma vez (ativo -> usado).
+      // Só o restaurante dono valida, e só uma vez (ativo -> usado). O ingresso precisa estar
+      // dentro da validade e o cupom precisa ainda existir (cupom excluído não é mais validado).
       allow update: if restaurante()
         && resource.data.restauranteId == meuUid()
         && resource.data.status == 'ativo'
         && request.resource.data.status == 'usado'
-        && soAlterou(['status', 'usadoEm']);
+        && soAlterou(['status', 'usadoEm'])
+        && (resource.data.get('validadeFim', '') == '' || resource.data.validadeFim >= hoje())
+        && exists(doc('cupons', resource.data.cupomId));
     }
 
     // Índice do código do resgate (chave única). Ler um código exige conhecê-lo.

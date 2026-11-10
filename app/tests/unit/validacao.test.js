@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { cnpjValido, cpfValido, emailValido, erroSenha, erroTexto, hashDocumento, mascaraCNPJ, mascaraCPF } from "../../src/lib/validacao.js";
+import { CHAVE_LOCAL, chaveHmac, hashDocumentoServidor } from "../../server/documento.js";
+import { cnpjValido, cpfValido, emailValido, erroSenha, erroTexto, mascaraCNPJ, mascaraCPF } from "../../src/lib/validacao.js";
 
 describe("CPF", () => {
   it("aceita CPF com dígitos verificadores corretos (com ou sem máscara)", () => {
@@ -27,16 +28,25 @@ describe("CNPJ", () => {
   });
 });
 
-describe("hash do documento (chave única)", () => {
-  it("é igual para o mesmo CPF com ou sem máscara e não contém o número", async () => {
-    const a = await hashDocumento("cpf", "529.982.247-25");
-    const b = await hashDocumento("cpf", "52998224725");
+describe("identificador sigiloso do documento (HMAC calculado no servidor)", () => {
+  const CHAVE = "chave-de-teste";
+  it("é igual para o mesmo CPF com ou sem máscara e não contém o número", () => {
+    const a = hashDocumentoServidor(CHAVE, "cpf", "529.982.247-25");
+    const b = hashDocumentoServidor(CHAVE, "cpf", "52998224725");
     expect(a).toBe(b);
     expect(a).toMatch(/^[0-9a-f]{64}$/);
     expect(a).not.toContain("52998224725");
   });
-  it("CPF e CNPJ com os mesmos dígitos geram chaves diferentes", async () => {
-    expect(await hashDocumento("cpf", "123")).not.toBe(await hashDocumento("cnpj", "123"));
+  it("CPF e CNPJ com os mesmos dígitos geram identificadores diferentes", () => {
+    expect(hashDocumentoServidor(CHAVE, "cpf", "123")).not.toBe(hashDocumentoServidor(CHAVE, "cnpj", "123"));
+  });
+  it("sem a chave secreta não dá para reproduzir o identificador (chave diferente, resultado diferente)", () => {
+    expect(hashDocumentoServidor("outra-chave", "cpf", "52998224725")).not.toBe(hashDocumentoServidor(CHAVE, "cpf", "52998224725"));
+  });
+  it("a chave de desenvolvimento só vale no emulador; na nuvem, sem variável de ambiente, não há chave", () => {
+    expect(chaveHmac({})).toBe(CHAVE_LOCAL);
+    expect(chaveHmac({ GASTROMATCH_AMBIENTE: "staging" })).toBe("");
+    expect(chaveHmac({ GASTROMATCH_AMBIENTE: "staging", DOCUMENTO_HMAC_KEY: "segredo" })).toBe("segredo");
   });
 });
 

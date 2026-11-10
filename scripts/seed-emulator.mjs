@@ -14,7 +14,7 @@
 //
 // Os dados são gerados com um sorteio de semente fixa: rodar de novo produz o mesmo resultado.
 
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
@@ -100,7 +100,12 @@ function gerarCNPJ() {
   }
   return n.join("");
 }
-const hashDocumento = (tipo, numero) => createHash("sha256").update(`gastromatch:${tipo}:${numero}`).digest("hex");
+// Identificador sigiloso do CPF/CNPJ: mesmo cálculo do servidor (app/server/documento.js).
+// No emulador usa a chave fixa de desenvolvimento; na nuvem, a chave vem da variável de
+// ambiente DOCUMENTO_HMAC_KEY (a MESMA cadastrada no Netlify), que nunca é exibida.
+const CHAVE_HMAC = NA_NUVEM ? process.env.DOCUMENTO_HMAC_KEY : "chave-local-somente-emulador";
+if (!CHAVE_HMAC) throw new Error("Defina a variável de ambiente DOCUMENTO_HMAC_KEY (a mesma do Netlify) antes de rodar com --demo.");
+const hashDocumento = (tipo, numero) => createHmac("sha256", CHAVE_HMAC).update(`gastromatch:${tipo}:${numero}`).digest("hex");
 
 const ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const gerarCodigo = () => Array.from({ length: 10 }, () => escolher([...ALFABETO_CODIGO])).join("");

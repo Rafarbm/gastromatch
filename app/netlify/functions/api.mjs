@@ -9,11 +9,14 @@ import { tmpdir } from "node:os";
 import { criarMiddlewareIA } from "../../server/ia.js";
 import { criarMiddlewareResumo } from "../../server/resumo.js";
 import { criarMiddlewareDatas } from "../../server/datas.js";
+import { criarMiddlewareDocumento } from "../../server/documento.js";
 
 export default async (request) => {
   const env = {
     GROQ_API_KEY: process.env.GROQ_API_KEY,
     GROQ_MODEL: process.env.GROQ_MODEL,
+    // Chave secreta do identificador de CPF/CNPJ (cadastrar nas variáveis de ambiente do Netlify).
+    DOCUMENTO_HMAC_KEY: process.env.DOCUMENTO_HMAC_KEY,
     // O site do Netlify é o de demonstração (netlify.toml fixa VITE_AMBIENTE = "staging"):
     // o servidor confere os logins e lê o banco desse mesmo projeto Firebase.
     GASTROMATCH_AMBIENTE: process.env.GASTROMATCH_AMBIENTE || "staging",
@@ -45,7 +48,7 @@ export default async (request) => {
     };
     // O cabeçalho Authorization leva o comprovante de login (conferido em server/auth.js).
     const req = { url: `/api/${rota}`, method: request.method, body, headers: { authorization: request.headers.get("authorization") || "" } };
-    const rotas = [criarMiddlewareIA(env), criarMiddlewareResumo(env), criarMiddlewareDatas(env)];
+    const rotas = [criarMiddlewareIA(env), criarMiddlewareResumo(env), criarMiddlewareDatas(env), criarMiddlewareDocumento(env)];
     const proxima = (i) => () => {
       if (i < rotas.length) return rotas[i](req, res, proxima(i + 1));
       resolve(Response.json({ erro: "Rota não encontrada." }, { status: 404 }));

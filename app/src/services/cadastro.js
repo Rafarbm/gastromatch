@@ -1,7 +1,8 @@
 import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
 import { doc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
-import { hashDocumento, somenteDigitos } from "../lib/validacao";
+import { somenteDigitos } from "../lib/validacao";
+import { obterHashDocumento } from "./documento";
 
 // Cadastro de cliente ou restaurante.
 // Grava, numa única operação atômica (batch):
@@ -11,13 +12,18 @@ import { hashDocumento, somenteDigitos } from "../lib/validacao";
 //  e, para restaurantes:
 //  4. restaurantes/{uid}          -> ficha PÚBLICA do estabelecimento
 //  5. slugs/{slug}                -> chave única do endereço da página (/r/slug)
+// O ID do passo 3 é um identificador sigiloso calculado no servidor (/api/documento).
 // Se o CPF/CNPJ já existir, o passo 3 é recusado pelas regras e NADA é gravado;
 // a conta recém-criada no Auth é então apagada, para não sobrar conta órfã.
 
 export class ErroCadastro extends Error {}
 
+// Mensagem NEUTRA para e-mail ou CPF/CNPJ já usados: não confirma para um curioso qual dos
+// dados já está cadastrado (nem que aquela pessoa tem conta no GastroMatch).
+const JA_CADASTRADO = "Não foi possível criar a conta com esses dados. Se você já tem cadastro, use Entrar ou Esqueci a senha.";
+
 const MENSAGENS_AUTH = {
-  "auth/email-already-in-use": "Este e-mail já tem uma conta. Use a opção Entrar.",
+  "auth/email-already-in-use": JA_CADASTRADO,
   "auth/invalid-email": "E-mail inválido.",
   "auth/weak-password": "Senha fraca. Use pelo menos 8 caracteres com letras e números.",
   "auth/network-request-failed": "Sem conexão. Verifique a internet e tente de novo.",
@@ -78,7 +84,8 @@ export async function cadastrar(dados) {
   }
 
   try {
-    const hash = await hashDocumento(tipoDocumento, documento);
+    // Identificador sigiloso do CPF/CNPJ, calculado no servidor com chave secreta.
+    const hash = await obterHashDocumento(user, tipoDocumento, documento);
     const lote = writeBatch(db);
     lote.set(doc(db, "usuarios", user.uid), perfil);
     lote.set(doc(db, "usuarios", user.uid, "privado", "documento"), { [tipoDocumento]: documento });
@@ -91,9 +98,7 @@ export async function cadastrar(dados) {
   } catch (e) {
     console.error("Cadastro recusado pelo banco:", e);
     await deleteUser(user).catch(() => {});
-    if (e.code === "permission-denied") {
-      throw new ErroCadastro(`Este ${tipoDocumento.toUpperCase()} já está cadastrado em outra conta.`);
-    }
+    if (e.code === "permission-denied") throw new ErroCadastro(JA_CADASTRADO);
     throw new ErroCadastro("Não foi possível concluir o cadastro. Tente de novo.");
   }
   return user;
