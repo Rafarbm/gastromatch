@@ -70,7 +70,8 @@ export async function obterResumo(dados) {
     const resp = await fetch("/api/resumo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ restaurante: dados }),
+      // Só o id: o servidor lê os dados do restaurante direto do banco.
+      body: JSON.stringify({ restauranteId: dados.id }),
     });
     if (!resp.ok) throw new Error(String(resp.status));
     const r = await resp.json();

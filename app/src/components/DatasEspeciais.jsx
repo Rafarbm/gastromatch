@@ -27,15 +27,10 @@ export default function DatasEspeciais({ estado, restaurantes }) {
     let ativo = true;
     setTextos({});
     setPorIA(false);
+    // Só identificadores: o servidor busca o nome da data na tabela e os restaurantes no banco.
     const corpo = {
-      estado: ESTADOS[estado] || "Brasil",
-      datas: datas.map((d) => ({
-        id: d.id,
-        nome: d.nome,
-        data: dataLonga(d.data),
-        regional: d.regional,
-        restaurantes: d.restaurantes.map((r) => ({ nome: r.nome, cozinha: r.cozinha, experiencias: r.experiencias })),
-      })),
+      estado: estado || "",
+      datas: datas.map((d) => ({ id: d.id, restauranteIds: d.restaurantes.map((r) => r.id) })),
     };
     fetch("/api/datas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))

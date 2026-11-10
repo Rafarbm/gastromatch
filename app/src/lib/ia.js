@@ -38,10 +38,15 @@ export class ErroIA extends Error {
   }
 }
 
-async function chamar(corpo) {
+// token: comprovante de login (o servidor só atende a IA para quem está logado).
+async function chamar(corpo, token) {
   let resp;
   try {
-    resp = await fetch("/api/ia", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+    resp = await fetch("/api/ia", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify(corpo),
+    });
   } catch {
     throw new ErroIA("Sem conexão com o servidor.");
   }
@@ -50,15 +55,15 @@ async function chamar(corpo) {
   return dados;
 }
 
-export async function conversarComIA({ mensagens, vocabulario, catalogo, preferencias }) {
+export async function conversarComIA({ mensagens, vocabulario, catalogo, preferencias, token }) {
   const ultimaFala = mensagens[mensagens.length - 1]?.texto || "";
   const comCatalogo = precisaCatalogo(ultimaFala);
   const relevantes = catalogoEmTexto(selecionarCatalogo(catalogo, ultimaFala, preferencias));
-  let dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: comCatalogo ? relevantes : "" });
+  let dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: comCatalogo ? relevantes : "" }, token);
 
   // A IA avisa quando precisa do catálogo e ele não foi enviado: reenviamos uma vez.
   if (dados.tipo === "precisa_catalogo" && !comCatalogo) {
-    dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: relevantes });
+    dados = await chamar({ mensagens, vocabulario, preferencias, catalogo: relevantes }, token);
   }
 
   const idsValidos = new Set(catalogo.map((r) => r.id));

@@ -1,6 +1,8 @@
 // Textos das "Datas especiais na sua região", escritos por IA (roda no SERVIDOR do Vite).
-// POST /api/datas recebe { estado, datas: [{ id, nome, data, restaurantes: [{ nome, cozinha, experiencias }] }] }
-// e devolve { textos: { [id]: "..." }, fonte }.
+// POST /api/datas recebe { estado: "DF", datas: [{ id, restauranteIds: [...] }] } e devolve
+// { textos: { [id]: "..." }, fonte }. O navegador só manda IDENTIFICADORES: o nome e o dia de
+// cada data vêm da tabela conferida (src/lib/regioes.js) e os nomes dos restaurantes vêm do
+// banco, lidos aqui no servidor. Ninguém consegue mandar um texto inventado para a IA.
 //
 // Divisão de responsabilidades (para a IA não inventar fatos):
 //  - QUAIS datas e QUAIS restaurantes: tabela conferida (src/lib/regioes.js) + nosso banco;
@@ -12,6 +14,35 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { iaPausada, lerCorpo, MODELO_PADRAO, registrarFalhaGroq, responder, URL_GROQ } from "./ia.js";
+import { ID_VALIDO, lerDocumento } from "./firestore.js";
+import { normalizarRestaurante } from "../src/lib/normalizar.js";
+import { proximasDatas } from "../src/lib/regioes.js";
+
+const dataLonga = (d) => d.toLocaleDateString("pt-BR", { day: "numeric", month: "long" });
+
+// Monta as datas a partir de fontes confiáveis: tabela de datas + restaurantes do banco.
+export async function montarDatas(env, corpo) {
+  const uf = String(corpo?.estado || "").toUpperCase().slice(0, 2);
+  const tabela = Object.fromEntries(proximasDatas(uf, { dias: 160 }).map((d) => [d.id, d]));
+  const pedidas = (Array.isArray(corpo?.datas) ? corpo.datas : []).filter((d) => tabela[d?.id]).slice(0, 6);
+  const idsDe = (d) => (Array.isArray(d.restauranteIds) ? d.restauranteIds : []).map(String).filter((id) => ID_VALIDO.test(id)).slice(0, 3);
+
+  const fichas = {};
+  await Promise.all(
+    [...new Set(pedidas.flatMap(idsDe))].map(async (id) => {
+      const bruto = await lerDocumento(env, `restaurantes/${id}`);
+      const r = bruto && normalizarRestaurante(id, bruto);
+      if (r?.ativo) fichas[id] = { nome: r.nome, cozinha: r.cozinha, experiencias: r.experiencias };
+    }),
+  );
+  return pedidas.map((d) => ({
+    id: d.id,
+    nome: tabela[d.id].nome,
+    data: dataLonga(tabela[d.id].data),
+    regional: tabela[d.id].regional,
+    restaurantes: idsDe(d).map((id) => fichas[id]).filter(Boolean),
+  }));
+}
 
 // Na nuvem (Cloud Functions) a pasta do código é só leitura: env.CACHE_DIR aponta para a pasta temporária.
 const PASTA_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache");
@@ -68,8 +99,14 @@ export function criarMiddlewareDatas(env) {
     } catch {
       return responder(res, 400, { erro: "JSON inválido." });
     }
-    const datas = Array.isArray(corpo?.datas) ? corpo.datas.slice(0, 6) : [];
-    if (!datas.length) return responder(res, 400, { erro: "Nenhuma data enviada." });
+    let datas;
+    try {
+      datas = await montarDatas(env, corpo);
+    } catch (e) {
+      console.error("[datas] leitura do banco:", e.message);
+      return responder(res, 502, { erro: "Não foi possível ler os dados dos restaurantes." });
+    }
+    if (!datas.length) return responder(res, 400, { erro: "Nenhuma data válida enviada." });
 
     const chave = createHash("sha1").update(`v${VERSAO_PROMPT}:${JSON.stringify(datas)}`).digest("hex");
     const salvo = lerCache(env)[chave];

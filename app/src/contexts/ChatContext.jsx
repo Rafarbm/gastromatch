@@ -6,6 +6,7 @@ import { recomendarComSituacao, SITUACAO } from "../lib/recomendacao";
 import { conversarComIA } from "../lib/ia";
 import { aplicarOpcao, extrairPorPalavras, montarCatalogo, PERGUNTAS, proximoSlot, slotsRespondidos } from "../lib/assistente";
 import { useLocalidade } from "./LocalidadeContext";
+import { auth } from "../lib/firebase";
 
 // Estado do assistente, compartilhado pelo site inteiro: a conversa continua
 // aberta enquanto a pessoa navega entre as páginas.
@@ -48,6 +49,8 @@ function linkCatalogo(pref) {
 
 export function ChatProvider({ children }) {
   const { posicaoAtual } = useLocalidade();
+  // A IA é só para quem está logado; o visitante conversa pelo modo rápido (sem IA).
+  const avisouLogin = useRef(false);
   const [aberto, setAberto] = useState(false);
   const [mensagens, setMensagens] = useState([msg("assistente", SAUDACAO)]);
   const [pref, setPref] = useState(PREF_VAZIA);
@@ -154,17 +157,28 @@ export function ChatProvider({ children }) {
       setPensando(true);
       try {
         const b = base || (await carregarBase());
-        if (modoOffline) {
+        // Espera o Firebase terminar de reconhecer o login (logo após abrir a página ele
+        // ainda pode estar restaurando a sessão) antes de decidir entre IA e modo rápido.
+        await auth.authStateReady();
+        const logado = Boolean(auth.currentUser);
+        if (modoOffline || !logado) {
           // Calculado FORA do setMensagens: o React pode executar a função de atualização
           // duas vezes (StrictMode), e efeitos colaterais lá dentro se perdem.
           const respostas = responderOffline(b, prefBase, texto);
-          setMensagens((m) => [...m, ...respostas]);
+          // Visitante: avisa uma vez que a IA exige login e segue ajudando sem ela.
+          const convite =
+            !logado && !avisouLogin.current
+              ? [msg("assistente", "Para conversar com a inteligência artificial, entre na sua conta. Enquanto isso, sigo te ajudando pelo modo rápido.")]
+              : [];
+          if (!logado) avisouLogin.current = true;
+          setMensagens((m) => [...m, ...convite, ...respostas]);
           return;
         }
         const historico = [...mensagens, msg("usuario", texto)].filter((m) => m.texto).map(({ papel, texto: t }) => ({ papel, texto: t }));
         let r;
         try {
-          r = await conversarComIA({ mensagens: historico, vocabulario: b.vocabulario, catalogo: b.catalogo, preferencias: prefBase });
+          const token = await auth.currentUser.getIdToken();
+          r = await conversarComIA({ mensagens: historico, vocabulario: b.vocabulario, catalogo: b.catalogo, preferencias: prefBase, token });
         } catch (erro) {
           // Limite por minuto (429) é passageiro: responde este turno sem IA e tenta de novo no próximo.
           // Sem conexão/sem chave: segue no modo offline até recomeçar a conversa.

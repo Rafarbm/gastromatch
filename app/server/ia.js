@@ -7,6 +7,8 @@
 //  2. responde perguntas livres usando SOMENTE o catálogo de restaurantes enviado.
 // O ranking das recomendações continua no motor de regras (src/lib/recomendacao.js).
 
+import { usuarioDoPedido } from "./auth.js";
+
 export const URL_GROQ = "https://api.groq.com/openai/v1/chat/completions";
 // Modelo aberto (open-weight) hospedado na Groq. Em out/2026 a Groq não oferece
 // mais Llama para conversa; gpt-oss-120b foi o que completou o fluxo nos testes.
@@ -104,6 +106,9 @@ export function criarMiddlewareIA(env) {
   return async (req, res, next) => {
     if (req.url !== "/api/ia") return next();
     if (req.method !== "POST") return responder(res, 405, { erro: "Use POST." });
+    // O assistente com IA é só para quem está logado (o login é conferido aqui, no servidor).
+    // Visitantes usam o modo rápido, que não gasta a cota da IA.
+    if (!(await usuarioDoPedido(env, req))) return responder(res, 401, { erro: "Entre na sua conta para usar a IA." });
     if (!env.GROQ_API_KEY) return responder(res, 503, { erro: "IA não configurada (GROQ_API_KEY ausente)." });
     if (iaPausada()) return responder(res, 503, { erro: "IA indisponível no momento." });
 

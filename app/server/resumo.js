@@ -1,6 +1,6 @@
 // Resumo da experiência de um restaurante, gerado por IA (roda no SERVIDOR do Vite).
-// POST /api/resumo recebe os dados públicos do restaurante e devolve
-// { resumo, destaques, fonte }.
+// POST /api/resumo recebe SÓ o id do restaurante; os dados são lidos do banco aqui no
+// servidor (server/dadosResumo.js) e a resposta é { resumo, destaques, fonte }.
 //
 // Proteções:
 //  - a IA só pode usar os dados recebidos (sem avaliações, não pode "elogiar";
@@ -15,6 +15,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { iaPausada, lerCorpo, MODELO_PADRAO, registrarFalhaGroq, responder, URL_GROQ } from "./ia.js";
+import { dadosDoRestaurante } from "./dadosResumo.js";
+import { ID_VALIDO } from "./firestore.js";
 
 // Na nuvem (Cloud Functions) a pasta do código é só leitura: env.CACHE_DIR aponta para a pasta temporária.
 const PASTA_CACHE = join(dirname(fileURLToPath(import.meta.url)), ".cache");
@@ -70,13 +72,23 @@ export function criarMiddlewareResumo(env) {
     if (req.url !== "/api/resumo") return next();
     if (req.method !== "POST") return responder(res, 405, { erro: "Use POST." });
 
-    let restaurante;
+    let restauranteId;
     try {
-      ({ restaurante } = await lerCorpo(req));
+      ({ restauranteId } = await lerCorpo(req));
     } catch {
       return responder(res, 400, { erro: "JSON inválido." });
     }
-    if (!restaurante?.id || !restaurante?.nome) return responder(res, 400, { erro: "Restaurante ausente." });
+    if (!ID_VALIDO.test(String(restauranteId || ""))) return responder(res, 400, { erro: "Restaurante ausente." });
+
+    // Os dados vêm do banco, não do navegador: só há resumo de restaurante cadastrado e ativo.
+    let restaurante;
+    try {
+      restaurante = await dadosDoRestaurante(env, restauranteId);
+    } catch (e) {
+      console.error("[resumo] leitura do banco:", e.message);
+      return responder(res, 502, { erro: "Não foi possível ler os dados do restaurante." });
+    }
+    if (!restaurante) return responder(res, 404, { erro: "Restaurante não encontrado." });
 
     // A chave do cache inclui um "hash" dos dados: se o restaurante mudar algo, gera de novo.
     const assinatura = createHash("sha1").update(`v${VERSAO_PROMPT}:${JSON.stringify(restaurante)}`).digest("hex");
