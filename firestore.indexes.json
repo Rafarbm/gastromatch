@@ -1,0 +1,93 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "restaurantes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "destaque",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "notaMedia",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "restaurantes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "estado",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "destaque",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "notaMedia",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "restaurantes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "cidade",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "destaque",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "notaMedia",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "restaurantes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "estado",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "cidade",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "destaque",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "notaMedia",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

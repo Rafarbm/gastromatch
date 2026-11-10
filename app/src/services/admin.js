@@ -1,6 +1,7 @@
 import { collection, deleteDoc, deleteField, doc, getDocs, serverTimestamp, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { invalidarCacheRestaurantes } from "./dados";
+import { excluirAvaliacao } from "./avaliacoes";
 
 // Operações do painel de suporte. As regras só permitem ao admin mudar status,
 // banimento, exclusão e destaque: nome, e-mail, CPF/CNPJ continuam intocáveis.
@@ -30,10 +31,8 @@ export async function listarTodasAvaliacoes() {
   return comId(await getDocs(collection(db, "avaliacoes"))).sort((a, b) => (b.atualizadoEm?.seconds || 0) - (a.atualizadoEm?.seconds || 0));
 }
 
-export async function excluirAvaliacaoAdmin(id) {
-  await deleteDoc(doc(db, "avaliacoes", id));
-  invalidarCacheRestaurantes();
-}
+// Moderação: mesma exclusão do autor (acerta a nota média do restaurante na mesma transação).
+export const excluirAvaliacaoAdmin = (id) => excluirAvaliacao(id);
 
 // Moderação: muda o status na ficha privada (bloqueia o login) e, se for restaurante,
 // também na ficha pública (tira ou devolve o estabelecimento ao site). Tudo junto (lote).

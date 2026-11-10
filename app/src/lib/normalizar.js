@@ -37,9 +37,9 @@ export function normalizarRestaurante(id, d) {
       { dias: d.diasFim, inicio: d.inicioFds, fim: d.fimFds },
     ].filter((h) => h.dias || h.inicio || h.fim),
     ativo: d.status !== "banido" && d.status !== "excluido",
-    // Preenchidos a partir da coleção "avaliacoes" (ver anexarNotas).
-    notaMedia: null,
-    totalAvaliacoes: 0,
+    // Nota média gravada no próprio restaurante (atualizada junto com cada avaliação).
+    notaMedia: Number(d.totalAvaliacoes) > 0 ? Math.round(Number(d.notaMedia) * 10) / 10 : null,
+    totalAvaliacoes: Number(d.totalAvaliacoes) || 0,
   };
 }
 

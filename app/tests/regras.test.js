@@ -596,8 +596,12 @@ describe("favoritos", () => {
 
 describe("avaliações", () => {
   const aval = (uid, extra = {}) => ({ alvo: "restaurante", alvoId: RESTAURANTE, restauranteId: RESTAURANTE, usuarioId: uid, nomeExibicao: "Ana", nota: 5, ...extra });
-  it("cliente avalia restaurante (1 a 5) e todos leem", async () => {
-    await assertSucceeds(setDoc(doc(como(CLIENTE), "avaliacoes", `${RESTAURANTE}_${CLIENTE}`), aval(CLIENTE)));
+  it("cliente avalia restaurante (1 a 5), com a nota média atualizada junto, e todos leem", async () => {
+    const db = como(CLIENTE);
+    const lote = writeBatch(db);
+    lote.set(doc(db, "avaliacoes", `${RESTAURANTE}_${CLIENTE}`), aval(CLIENTE));
+    lote.update(doc(db, "restaurantes", RESTAURANTE), { somaNotas: 5, totalAvaliacoes: 1, notaMedia: 5, ultimaAvaliacao: `${RESTAURANTE}_${CLIENTE}` });
+    await assertSucceeds(lote.commit());
     await assertSucceeds(getDocs(query(collection(anonimo(), "avaliacoes"), where("restauranteId", "==", RESTAURANTE))));
   });
   it("nota fora de 1..5 ou ID de outra pessoa é recusado", async () => {
@@ -614,6 +618,70 @@ describe("avaliações", () => {
   });
   it("comentário com HTML é recusado", async () => {
     await assertFails(setDoc(doc(como(CLIENTE), "avaliacoes", `${RESTAURANTE}_${CLIENTE}`), aval(CLIENTE, { comentario: "ótimo\n<script>x</script>" })));
+  });
+});
+
+describe("nota média gravada no restaurante", () => {
+  const ID = `${RESTAURANTE}_${CLIENTE}`;
+  const aval = (extra = {}) => ({ alvo: "restaurante", alvoId: RESTAURANTE, restauranteId: RESTAURANTE, usuarioId: CLIENTE, nomeExibicao: "Ana", nota: 4, ...extra });
+  const nota = (soma, total, id = ID) => ({ somaNotas: soma, totalAvaliacoes: total, notaMedia: total ? soma / total : 0, ultimaAvaliacao: id });
+  // Restaurante com 2 avaliações de outras pessoas (notas 5 e 3: soma 8, média 4).
+  const comDuas = () => semRegras((db) => updateDoc(doc(db, "restaurantes", RESTAURANTE), { somaNotas: 8, totalAvaliacoes: 2, notaMedia: 4 }));
+  const gravar = (db, avaliacao, agregadoNovo, apagar = false) => {
+    const lote = writeBatch(db);
+    if (apagar) lote.delete(doc(db, "avaliacoes", ID));
+    else lote.set(doc(db, "avaliacoes", ID), avaliacao);
+    if (agregadoNovo) lote.update(doc(db, "restaurantes", RESTAURANTE), agregadoNovo);
+    return lote.commit();
+  };
+
+  it("nova avaliação: soma e total sobem juntos (8+4=12, 3 avaliações)", async () => {
+    await comDuas();
+    await assertSucceeds(gravar(como(CLIENTE), aval(), nota(12, 3)));
+  });
+  it("avaliação sem atualizar a nota média é recusada", async () => {
+    await comDuas();
+    await assertFails(gravar(como(CLIENTE), aval(), null));
+  });
+  it("nota média com conta errada é recusada (soma, total ou média)", async () => {
+    await comDuas();
+    await assertFails(gravar(como(CLIENTE), aval(), nota(13, 3)));
+    await assertFails(gravar(como(CLIENTE), aval(), nota(12, 4)));
+    await assertFails(gravar(como(CLIENTE), aval(), { ...nota(12, 3), notaMedia: 5 }));
+  });
+  it("editar a nota troca só a soma (4 -> 2: soma 10, total 3)", async () => {
+    await comDuas();
+    await semRegras(async (db) => {
+      await setDoc(doc(db, "avaliacoes", ID), aval());
+      await updateDoc(doc(db, "restaurantes", RESTAURANTE), nota(12, 3));
+    });
+    await assertSucceeds(gravar(como(CLIENTE), aval({ nota: 2 }), nota(10, 3)));
+  });
+  it("apagar a avaliação desconta a nota (volta a 8 em 2)", async () => {
+    await comDuas();
+    await semRegras(async (db) => {
+      await setDoc(doc(db, "avaliacoes", ID), aval());
+      await updateDoc(doc(db, "restaurantes", RESTAURANTE), nota(12, 3));
+    });
+    await assertFails(gravar(como(CLIENTE), null, null, true));
+    await assertSucceeds(gravar(como(CLIENTE), null, nota(8, 2), true));
+  });
+  it("admin modera (apaga) e acerta a nota; ninguém mexe na nota sem uma avaliação de verdade", async () => {
+    await comDuas();
+    await semRegras(async (db) => {
+      await setDoc(doc(db, "avaliacoes", ID), aval());
+      await updateDoc(doc(db, "restaurantes", RESTAURANTE), nota(12, 3));
+    });
+    await assertFails(updateDoc(doc(como(OUTRO_CLIENTE), "restaurantes", RESTAURANTE), nota(15, 3)));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "restaurantes", RESTAURANTE), nota(15, 3)));
+    await assertSucceeds(gravar(como(ADMIN), null, nota(8, 2), true));
+  });
+  it("avaliação de restaurante que não existe mais pode ser apagada pelo autor", async () => {
+    await semRegras(async (db) => {
+      await setDoc(doc(db, "avaliacoes", ID), aval());
+      await deleteDoc(doc(db, "restaurantes", RESTAURANTE));
+    });
+    await assertSucceeds(deleteDoc(doc(como(CLIENTE), "avaliacoes", ID)));
   });
 });
 

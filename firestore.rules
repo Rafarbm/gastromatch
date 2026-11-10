@@ -106,7 +106,31 @@ service cloud.firestore {
     function camposRestaurante() {
       return ['donoUid', 'slug', 'status', 'destaque', 'nomeRestaurante', 'cozinha', 'vibes', 'ocasioes', 'faixaPreco',
               'estado', 'cidade', 'bairro', 'endereco', 'lat', 'lng', 'telefone', 'whatsapp', 'descricao', 'fotos', 'foto',
-              'diasSemana', 'inicioSemana', 'fimSemana', 'diasFim', 'inicioFds', 'fimFds', 'criadoEm', 'atualizadoEm'];
+              'diasSemana', 'inicioSemana', 'fimSemana', 'diasFim', 'inicioFds', 'fimFds', 'criadoEm', 'atualizadoEm',
+              'somaNotas', 'totalAvaliacoes', 'notaMedia', 'ultimaAvaliacao'];
+    }
+    // Nota média gravada no restaurante (somaNotas / totalAvaliacoes). Ela só muda junto com
+    // uma avaliação, na mesma gravação: ultimaAvaliacao diz qual avaliação mudou, e a regra
+    // confere que a conta bate com a nota antes e depois dessa avaliação.
+    function mediaCoerente(n) {
+      return n.totalAvaliacoes is int && n.somaNotas is int && n.totalAvaliacoes >= 0
+        && n.notaMedia is number
+        && (n.totalAvaliacoes == 0 ? n.notaMedia == 0 : math.abs(n.notaMedia * n.totalAvaliacoes - n.somaNotas) < 0.0001);
+    }
+    function mudancaDeAvaliacao(rid) {
+      let n = request.resource.data;
+      let a = resource.data;
+      let caminho = doc('avaliacoes', n.ultimaAvaliacao);
+      let antes = exists(caminho);
+      let depois = existsAfter(caminho);
+      let av = depois ? getAfter(caminho).data : get(caminho).data;
+      return n.ultimaAvaliacao is string
+        && (antes || depois)
+        && av.alvo == 'restaurante' && av.alvoId == rid
+        && (av.usuarioId == meuUid() || admin())
+        && n.totalAvaliacoes == a.get('totalAvaliacoes', 0) + (depois ? 1 : 0) - (antes ? 1 : 0)
+        && n.somaNotas == a.get('somaNotas', 0) + (depois ? getAfter(caminho).data.nota : 0) - (antes ? get(caminho).data.nota : 0)
+        && mediaCoerente(n);
     }
     // Slug: letras minúsculas, números e hífens, de 3 a 60 caracteres.
     function slugValido(v) { return v is string && v.size() >= 3 && v.size() <= 60 && v.matches('^[a-z0-9]+(-[a-z0-9]+)*$'); }
@@ -133,12 +157,20 @@ service cloud.firestore {
         && getAfter(doc('usuarios', id)).data.get('status', 'ativo') == 'ativo'
         && request.resource.data.status == 'ativo'
         && request.resource.data.get('destaque', false) == false
+        // Restaurante novo nasce sem avaliações.
+        && request.resource.data.get('totalAvaliacoes', 0) == 0 && request.resource.data.get('somaNotas', 0) == 0
+        && request.resource.data.get('notaMedia', 0) == 0 && !('ultimaAvaliacao' in request.resource.data)
         && restauranteValido(id, request.resource.data);
 
       // Dono: edita os dados do estabelecimento, mas não o status de moderação nem o destaque.
       allow update: if restaurante() && meuUid() == id
-        && inalterados(['donoUid', 'status', 'destaque', 'criadoEm'])
+        && inalterados(['donoUid', 'status', 'destaque', 'criadoEm', 'somaNotas', 'totalAvaliacoes', 'notaMedia', 'ultimaAvaliacao'])
         && restauranteValido(id, request.resource.data);
+
+      // Nota média: o autor da avaliação (ou o admin, ao moderar) atualiza a conta junto com a avaliação.
+      allow update: if (cliente() || admin())
+        && soAlterou(['somaNotas', 'totalAvaliacoes', 'notaMedia', 'ultimaAvaliacao'])
+        && mudancaDeAvaliacao(id);
 
       // Admin: só moderação (status) e destaque.
       allow update: if admin() && soAlterou(['status', 'destaque']);
@@ -385,11 +417,34 @@ service cloud.firestore {
             ? d.alvoId == d.restauranteId && exists(doc('restaurantes', d.restauranteId))
             : get(doc('menus', d.alvoId)).data.restauranteId == d.restauranteId);
     }
+    // Avaliação de restaurante precisa vir junto com a atualização da nota média dele.
+    function rest(rid) { return doc('restaurantes', rid); }
+    function notaAcompanhaCriacao(d) {
+      return d.alvo != 'restaurante'
+        || (getAfter(rest(d.restauranteId)).data.get('ultimaAvaliacao', '') == d.alvoId + '_' + meuUid()
+            && getAfter(rest(d.restauranteId)).data.totalAvaliacoes == get(rest(d.restauranteId)).data.get('totalAvaliacoes', 0) + 1);
+    }
+    function notaAcompanhaEdicao(id) {
+      let d = request.resource.data;
+      return d.alvo != 'restaurante'
+        || (getAfter(rest(d.restauranteId)).data.get('ultimaAvaliacao', '') == id
+            && getAfter(rest(d.restauranteId)).data.get('somaNotas', 0)
+               == get(rest(d.restauranteId)).data.get('somaNotas', 0) - resource.data.nota + d.nota);
+    }
+    function notaAcompanhaExclusao(id) {
+      let d = resource.data;
+      return d.alvo != 'restaurante'
+        // Restaurante que já não existe: a avaliação pode ser apagada sem conta a acertar.
+        || !exists(rest(d.restauranteId))
+        || (getAfter(rest(d.restauranteId)).data.get('ultimaAvaliacao', '') == id
+            && getAfter(rest(d.restauranteId)).data.totalAvaliacoes == get(rest(d.restauranteId)).data.get('totalAvaliacoes', 0) - 1);
+    }
+
     match /avaliacoes/{id} {
       allow read: if true;
-      allow create: if cliente() && avaliacaoValida(id);
-      allow update: if cliente() && resource.data.usuarioId == meuUid() && avaliacaoValida(id);
-      allow delete: if logado() && (resource.data.usuarioId == meuUid() || admin());
+      allow create: if cliente() && avaliacaoValida(id) && notaAcompanhaCriacao(request.resource.data);
+      allow update: if cliente() && resource.data.usuarioId == meuUid() && avaliacaoValida(id) && notaAcompanhaEdicao(id);
+      allow delete: if logado() && (resource.data.usuarioId == meuUid() || admin()) && notaAcompanhaExclusao(id);
     }
 
     // Fale conosco: qualquer pessoa envia; só o suporte lê.

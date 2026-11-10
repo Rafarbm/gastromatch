@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, startAfter, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { isoHoje } from "../lib/formato";
 import { cupomValido, eventoVigente, normalizarCupom, normalizarEvento, normalizarMenu, normalizarPromocao, normalizarRestaurante } from "../lib/normalizar";
@@ -16,8 +16,8 @@ function hojeISO() {
 
 // ---------- consultas ----------
 
-// Média e total de avaliações de cada restaurante. Em produção, o ideal é manter esses
-// números agregados no próprio restaurante (atualizados no servidor); aqui são calculados.
+// Média e total de avaliações por alvo, a partir de uma lista já carregada (usada na página
+// do restaurante para as notas dos pratos). A nota do RESTAURANTE vem gravada nele.
 export function calcularNotas(avaliacoes) {
   const porAlvo = {};
   for (const a of avaliacoes) {
@@ -26,10 +26,6 @@ export function calcularNotas(avaliacoes) {
     porAlvo[a.alvoId].total += 1;
   }
   return Object.fromEntries(Object.entries(porAlvo).map(([id, v]) => [id, { media: Math.round((v.soma / v.total) * 10) / 10, total: v.total }]));
-}
-
-function anexarNotas(restaurantes, notas) {
-  return restaurantes.map((r) => (notas[r.id] ? { ...r, notaMedia: notas[r.id].media, totalAvaliacoes: notas[r.id].total } : r));
 }
 
 // Restaurantes vivem na coleção pública "restaurantes" (ficha do estabelecimento). Os dados
@@ -41,20 +37,44 @@ export function invalidarCacheRestaurantes() {
   cacheRestaurantes = null;
 }
 
+// Lista resumida de todos os restaurantes ativos (sem avaliações e sem cardápios): usada pelo
+// seletor de localidade, pela página inicial e pela recomendação. A nota média já vem gravada.
 export function listarRestaurantes() {
-  cacheRestaurantes ??= Promise.all([
-    getDocs(collection(db, "restaurantes")),
-    getDocs(query(collection(db, "avaliacoes"), where("alvo", "==", "restaurante"))),
-  ])
-    .then(([snap, snapAval]) => {
-      const notas = calcularNotas(snapAval.docs.map((d) => d.data()));
-      return anexarNotas(snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo), notas);
-    })
+  cacheRestaurantes ??= getDocs(query(collection(db, "restaurantes"), where("status", "==", "ativo")))
+    .then((snap) => snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo))
     .catch((erro) => {
       cacheRestaurantes = null;
       throw erro;
     });
   return cacheRestaurantes;
+}
+
+// Página da listagem: consulta NO BANCO filtrando pela localidade, em ordem de destaque e nota,
+// de "tamanho" em "tamanho" (cursor = último documento da página anterior).
+// Índices compostos em firestore.indexes.json.
+export async function paginaRestaurantes({ estado = "", cidade = "" } = {}, cursor = null, tamanho = 24) {
+  const filtros = [where("status", "==", "ativo")];
+  if (estado) filtros.push(where("estado", "==", estado));
+  if (cidade) filtros.push(where("cidade", "==", cidade));
+  const snap = await getDocs(
+    query(collection(db, "restaurantes"), ...filtros, orderBy("destaque", "desc"), orderBy("notaMedia", "desc"), ...(cursor ? [startAfter(cursor)] : []), limit(tamanho)),
+  );
+  return {
+    itens: snap.docs.map((d) => normalizarRestaurante(d.id, d.data())).filter((r) => r.ativo),
+    cursor: snap.docs.at(-1) || null,
+    fim: snap.docs.length < tamanho,
+  };
+}
+
+// Títulos dos pratos de alguns restaurantes (só quando a busca por texto é usada).
+// O operador "in" do Firestore aceita até 30 valores por consulta.
+export async function pratosDosRestaurantes(ids) {
+  const mapa = {};
+  for (let i = 0; i < ids.length; i += 30) {
+    const snap = await getDocs(query(collection(db, "menus"), where("restauranteId", "in", ids.slice(i, i + 30))));
+    for (const d of snap.docs) (mapa[d.data().restauranteId] ??= []).push(d.data().titulo || "");
+  }
+  return mapa;
 }
 
 export async function obterRestaurante(id) {

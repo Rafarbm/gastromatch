@@ -135,6 +135,9 @@ async function requisitar(url, opcoes = {}) {
 // "Bearer owner" é o token administrativo do emulador (ignora as regras).
 const fila = [];
 const gravar = (caminho, dados) => fila.push({ update: { name: `${RAIZ}/${caminho}`, fields: paraCampos(dados) } });
+// Atualiza só alguns campos de um documento já gravado (updateMask).
+const gravarCampos = (caminho, dados) =>
+  fila.push({ update: { name: `${RAIZ}/${caminho}`, fields: paraCampos(dados) }, updateMask: { fieldPaths: Object.keys(dados) } });
 
 async function enviarFila() {
   let total = 0;
@@ -491,7 +494,7 @@ async function main() {
       fotos: r.fotos, foto: r.fotos[0],
       diasSemana: cafe ? "Seg a Sex" : "Ter a Sex", inicioSemana: cafe ? "07:30" : noturno ? "18:00" : "11:30", fimSemana: cafe ? "18:00" : noturno ? "01:00" : "23:00",
       diasFim: "Sáb e Dom", inicioFds: cafe ? "08:00" : "12:00", fimFds: cafe ? "16:00" : noturno ? "02:00" : "23:30",
-      criadoEm: agora,
+      somaNotas: 0, totalAvaliacoes: 0, notaMedia: 0, criadoEm: agora,
     });
     gravar(`slugs/${slugRestaurante}`, { restauranteId: uid[r.chave] });
     gravar(`usuarios/${uid[r.chave]}/privado/documento`, { cnpj });
@@ -512,6 +515,13 @@ async function main() {
 
   // ----- avaliações (restaurante e prato) -----
   let totalAvaliacoes = 0;
+  // Soma e total das notas de cada restaurante (gravados na ficha pública no fim).
+  const notas = {};
+  const contar = (rid, nota) => {
+    notas[rid] ??= { soma: 0, total: 0 };
+    notas[rid].soma += nota;
+    notas[rid].total += 1;
+  };
   const outrosClientes = clientes.filter((c) => c.uid !== demo.uid);
   for (const r of restaurantes) {
     if (r.semAvaliacoes) continue;
@@ -525,6 +535,7 @@ async function main() {
       const dados = { alvo: "restaurante", alvoId: uid[r.chave], restauranteId: uid[r.chave], usuarioId: c.uid, nomeExibicao: c.nome.split(" ")[0], nota, criadoEm: quando, atualizadoEm: quando };
       if (aleatorio() < 0.75) dados.comentario = escolher(COMENTARIOS[nota]);
       gravar(`avaliacoes/${uid[r.chave]}_${c.uid}`, dados);
+      contar(uid[r.chave], nota);
       totalAvaliacoes++;
       // Parte dos clientes também avalia um prato.
       if (aleatorio() < 0.45) {
@@ -540,6 +551,10 @@ async function main() {
   // A cliente demo já avaliou um restaurante (para mostrar "Sua avaliação"), mas NÃO a Brasa & Lenha,
   // que fica livre para a demonstração ao vivo.
   gravar(`avaliacoes/${uid["sakura-zen"]}_${demo.uid}`, { alvo: "restaurante", alvoId: uid["sakura-zen"], restauranteId: uid["sakura-zen"], usuarioId: demo.uid, nomeExibicao: "Ana", nota: 5, comentario: "Omakase incrível e ambiente muito calmo.", criadoEm: agora, atualizadoEm: agora });
+  contar(uid["sakura-zen"], 5);
+  for (const [rid, n] of Object.entries(notas)) {
+    gravarCampos(`restaurantes/${rid}`, { somaNotas: n.soma, totalAvaliacoes: n.total, notaMedia: n.soma / n.total });
+  }
   totalAvaliacoes++;
 
   // ----- promoções -----

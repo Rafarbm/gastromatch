@@ -77,6 +77,11 @@ export async function cadastrar(dados) {
       whatsapp: dados.telefone.trim(),
       vibes: [],
       ocasioes: [],
+      // Campos da listagem ordenada (destaque e nota): todo restaurante precisa tê-los.
+      destaque: false,
+      somaNotas: 0,
+      totalAvaliacoes: 0,
+      notaMedia: 0,
       criadoEm: serverTimestamp(),
     };
   } else {

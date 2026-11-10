@@ -2,6 +2,7 @@ import { deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendPasswo
 import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where, writeBatch } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { obterHashDocumento } from "./documento";
+import { excluirAvaliacao } from "./avaliacoes";
 
 // Ações da própria conta (clientes e restaurantes): editar dados, trocar senha, trocar e-mail,
 // recuperar senha e excluir a conta (LGPD).
@@ -125,7 +126,10 @@ export async function excluirMinhaConta(senhaAtual) {
     }
     const perfil = await getDoc(doc(db, "usuarios", uid));
     if (perfil.data()?.tipo === "restaurante") await apagarConteudoDoRestaurante(uid);
-    for (const colecao of ["avaliacoes", "salvos", "favoritos"]) {
+    // Avaliações uma a uma: cada exclusão acerta a nota média do restaurante avaliado.
+    const avaliacoes = await getDocs(query(collection(db, "avaliacoes"), where("usuarioId", "==", uid)));
+    for (const d of avaliacoes.docs) await excluirAvaliacao(d.id);
+    for (const colecao of ["salvos", "favoritos"]) {
       const snap = await getDocs(query(collection(db, colecao), where("usuarioId", "==", uid)));
       await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
     }

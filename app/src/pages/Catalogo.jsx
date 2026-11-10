@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import CardRestaurante from "../components/CardRestaurante";
 import Icone from "../components/Icone";
@@ -6,11 +6,17 @@ import { Carregando, Erro, Vazio } from "../components/Estados";
 import { useCarregar } from "../hooks/useCarregar";
 import { useLocalidade } from "../contexts/LocalidadeContext";
 import { useChat } from "../contexts/ChatContext";
-import { listarMenus, listarRestaurantes } from "../services/dados";
+import { listarRestaurantes, paginaRestaurantes, pratosDosRestaurantes } from "../services/dados";
 import { cidadesEBairros, comDistancia, estadoDaCidade, filtrarRestaurantes, filtrosDaURL, filtrosParaURL } from "../lib/filtros";
 import { ESTADOS } from "../lib/regioes";
 import BarraBusca from "../components/BarraBusca";
-import { EXPERIENCIAS, FAIXAS_PRECO, OCASIOES } from "../lib/catalogo";
+import { COZINHAS, EXPERIENCIAS, FAIXAS_PRECO, OCASIOES } from "../lib/catalogo";
+
+// Quantos restaurantes aparecem por vez ("Ver mais" mostra outros 12) e quantos documentos
+// são pedidos ao banco a cada consulta.
+const POR_PAGINA = 12;
+const LOTE_BANCO = 24;
+const PAGINA_VAZIA = { chave: null, brutos: [], cursor: null, fim: false, carregando: false, erro: false };
 
 function GrupoFiltro({ titulo, children }) {
   return (
@@ -38,16 +44,9 @@ export default function Catalogo() {
   const [params, setParams] = useSearchParams();
   const { busca, setBusca, posicaoAtual } = useLocalidade();
   const { abrir: abrirChat } = useChat();
-  const { dados: restaurantes, carregando, erro } = useCarregar(listarRestaurantes);
-  const { dados: menus } = useCarregar(listarMenus);
+  // Lista resumida (sem avaliações nem cardápios), só para montar as opções de localidade.
+  const { dados: restaurantes } = useCarregar(listarRestaurantes);
   const [gavetaAberta, setGavetaAberta] = useState(false);
-
-  // Títulos dos pratos por restaurante: a busca também encontra "risoto", "picanha"...
-  const pratosPorRestaurante = useMemo(() => {
-    const mapa = {};
-    for (const m of menus || []) (mapa[m.restauranteId] ??= []).push(m.titulo);
-    return mapa;
-  }, [menus]);
 
   // Sem cidade na URL, usa a localidade escolhida no seletor da Home.
   useEffect(() => {
@@ -59,6 +58,50 @@ export default function Catalogo() {
   }, []);
 
   const filtros = filtrosDaURL(params);
+
+  // ---------- resultados paginados NO BANCO ----------
+  // O banco é consultado pela localidade (estado e cidade), em ordem de destaque e nota, de
+  // LOTE_BANCO em LOTE_BANCO. Os demais filtros (experiência, cozinha, preço, bairro, ocasião,
+  // texto) são aplicados aos restaurantes já trazidos; se faltarem resultados para completar a
+  // página, o próximo lote é pedido automaticamente.
+  const chaveLocal = `${filtros.estado}|${filtros.cidade}`;
+  const [pag, setPag] = useState(PAGINA_VAZIA);
+  const [mostrar, setMostrar] = useState(POR_PAGINA);
+  // Títulos dos pratos por restaurante: a busca também encontra "risoto", "picanha"...
+  // Só são buscados quando há texto digitado, e só dos restaurantes já trazidos.
+  const [pratos, setPratos] = useState({});
+
+  useEffect(() => {
+    setPag({ ...PAGINA_VAZIA, chave: chaveLocal });
+    setMostrar(POR_PAGINA);
+  }, [chaveLocal]);
+
+  const carregarLote = useCallback(async () => {
+    if (pag.chave !== chaveLocal || pag.carregando || pag.fim || pag.erro) return;
+    setPag((p) => ({ ...p, carregando: true }));
+    try {
+      const r = await paginaRestaurantes({ estado: filtros.estado, cidade: filtros.cidade }, pag.cursor, LOTE_BANCO);
+      setPag((p) => (p.chave !== chaveLocal ? p : { ...p, brutos: [...p.brutos, ...r.itens], cursor: r.cursor, fim: r.fim, carregando: false }));
+    } catch (e) {
+      console.error(e);
+      setPag((p) => (p.chave !== chaveLocal ? p : { ...p, carregando: false, erro: true }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pag, chaveLocal]);
+
+  useEffect(() => {
+    if (!filtros.q || !pag.brutos.length) return;
+    const faltam = pag.brutos.map((r) => r.id).filter((id) => !(id in pratos));
+    if (!faltam.length) return;
+    let ativo = true;
+    pratosDosRestaurantes(faltam)
+      .then((mapa) => ativo && setPratos((atual) => ({ ...atual, ...Object.fromEntries(faltam.map((id) => [id, mapa[id] || []])) })))
+      .catch((e) => console.error(e));
+    return () => {
+      ativo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtros.q, pag.brutos]);
   const atualizar = (novo) => {
     const f = { ...filtros, ...novo };
     setParams(filtrosParaURL(f), { replace: true });
@@ -70,16 +113,29 @@ export default function Catalogo() {
     return {
       estados: [...new Set(lista.map((r) => r.estado).filter(Boolean))].sort(),
       locais: cidadesEBairros(lista, filtros.estado),
-      cozinhas: [...new Set(lista.map((r) => r.cozinha).filter(Boolean))].sort(),
-      experiencias: EXPERIENCIAS.filter((e) => lista.some((r) => r.experiencias.includes(e.id))),
+      cozinhas: COZINHAS,
+      experiencias: EXPERIENCIAS,
     };
   }, [restaurantes, filtros.estado]);
 
   const resultado = useMemo(
-    () => (restaurantes ? comDistancia(filtrarRestaurantes(restaurantes, filtros, pratosPorRestaurante), posicaoAtual) : []),
+    () => comDistancia(filtrarRestaurantes(pag.brutos, filtros, pratos), posicaoAtual),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [restaurantes, params.toString(), posicaoAtual, pratosPorRestaurante],
+    [pag.brutos, params.toString(), posicaoAtual, pratos],
   );
+  const visiveis = resultado.slice(0, mostrar);
+  const carregando = pag.chave !== chaveLocal || (pag.carregando && pag.brutos.length === 0);
+  const erro = pag.erro && pag.brutos.length === 0;
+
+  // Completa a página: enquanto houver menos resultados do que o pedido e o banco tiver mais.
+  useEffect(() => {
+    if (resultado.length < mostrar && !pag.fim && !pag.carregando && !pag.erro && pag.chave === chaveLocal) carregarLote();
+  }, [resultado.length, mostrar, pag, chaveLocal, carregarLote]);
+
+  // Filtros novos: volta a mostrar a primeira página.
+  useEffect(() => {
+    setMostrar(POR_PAGINA);
+  }, [params.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalAtivos = filtros.experiencias.length + filtros.cozinhas.length + filtros.precos.length + (filtros.estado || filtros.cidade ? 1 : 0) + (filtros.ocasiao ? 1 : 0) + (filtros.q ? 1 : 0);
   const ocasiao = OCASIOES.find((o) => o.id === filtros.ocasiao);
@@ -145,7 +201,11 @@ export default function Catalogo() {
         <div>
           <h1 className="font-display font-semibold text-4xl sm:text-5xl">Restaurantes</h1>
           <p className="mt-1 text-sm text-inksoft" aria-live="polite">
-            {carregando ? "Carregando..." : `${resultado.length} ${resultado.length === 1 ? "restaurante encontrado" : "restaurantes encontrados"}`}
+            {carregando
+              ? "Carregando..."
+              : pag.fim
+                ? `${resultado.length} ${resultado.length === 1 ? "restaurante encontrado" : "restaurantes encontrados"}`
+                : `Mostrando ${visiveis.length} restaurantes (há mais)`}
             {ocasiao && ` para ${ocasiao.rotulo}`}
           </p>
         </div>
@@ -172,14 +232,21 @@ export default function Catalogo() {
         <section className="lg:col-span-8 xl:col-span-9" aria-label="Resultados">
           {carregando && <Carregando texto="Carregando restaurantes..." />}
           {erro && <Erro />}
-          {!carregando && !erro && resultado.length === 0 && (
+          {!carregando && !erro && pag.fim && resultado.length === 0 && (
             <Vazio titulo="Nenhum restaurante com essa combinação" texto="Tente remover algum filtro ou buscar em outra cidade.">
               <button type="button" onClick={() => setParams("", { replace: true })} className="rounded-full bg-terra text-cream px-5 py-2.5 text-sm font-semibold">Limpar filtros</button>
             </Vazio>
           )}
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-            {resultado.map((r) => <CardRestaurante key={r.id} restaurante={r} />)}
+            {visiveis.map((r) => <CardRestaurante key={r.id} restaurante={r} />)}
           </div>
+          {!carregando && (resultado.length > mostrar || !pag.fim) && (
+            <div className="mt-6 text-center">
+              <button type="button" onClick={() => setMostrar((m) => m + POR_PAGINA)} disabled={pag.carregando} className="rounded-full bg-paper px-6 py-3 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra disabled:opacity-60">
+                {pag.carregando ? "Carregando..." : "Ver mais restaurantes"}
+              </button>
+            </div>
+          )}
         </section>
       </div>
 
@@ -194,7 +261,7 @@ export default function Catalogo() {
             </div>
             {painelFiltros}
             <button type="button" onClick={() => setGavetaAberta(false)} className="mt-4 w-full rounded-full bg-terra text-cream py-3 font-semibold">
-              Ver {resultado.length} {resultado.length === 1 ? "resultado" : "resultados"}
+              Ver resultados
             </button>
           </div>
         </div>
