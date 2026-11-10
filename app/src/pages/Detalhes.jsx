@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Avaliacoes from "../components/Avaliacoes";
@@ -42,7 +43,7 @@ function Moldura({ voltar, foto, selo, titulo, subtitulo, children, lateral }) {
 function CartaoRestaurante({ r }) {
   if (!r) return null;
   return (
-    <Link to={`/restaurantes/${r.id}`} className="flex gap-4 items-center rounded-[24px] bg-paper p-4 ring-1 ring-ink/5 shadow-clay hover:text-terra">
+    <Link to={linkRestaurante(r)} className="flex gap-4 items-center rounded-[24px] bg-paper p-4 ring-1 ring-ink/5 shadow-clay hover:text-terra">
       <img src={r.fotos[0]} alt="" className="size-16 rounded-2xl object-cover" />
       <span className="min-w-0">
         <span className="block text-xs font-semibold uppercase tracking-wider text-terra">{r.cozinha}</span>
@@ -97,7 +98,7 @@ export function Prato() {
   const nota = avaliacoes && calcularNotas(avaliacoes)[m.id];
   return (
     <Moldura
-      voltar={{ para: `/restaurantes/${r.id}#menu`, rotulo: r.nome }}
+      voltar={{ para: linkRestaurante(r, "#menu"), rotulo: r.nome }}
       foto={m.foto || r.fotos[0]}
       selo={m.categoria}
       subtitulo={`${r.cozinha} · ${r.nome}`}

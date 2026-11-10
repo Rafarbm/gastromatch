@@ -9,6 +9,7 @@ import { COZINHAS, EXPERIENCIAS, FAIXAS_PRECO, OCASIOES } from "../lib/catalogo"
 import { CATEGORIAS } from "../lib/planilha";
 import { ESTADOS } from "../lib/regioes";
 import { erroTexto, mascaraTelefone } from "../lib/validacao";
+import { erroSlug } from "../lib/slug";
 import { dataCurta, isoHoje, moeda, periodo } from "../lib/formato";
 
 const FOTO_PADRAO = "/img/interior-2.jpg";
@@ -23,10 +24,14 @@ export function AbaDados() {
   const { usuario, recarregar } = useAuth();
   const [f, setF] = useState(null);
   const [estado, setEstado] = useState({ salvando: false, erro: "", ok: "" });
+  // Slug gravado no banco: se o restaurante mudar o campo, o antigo é liberado e o novo é ocupado.
+  const [slugOriginal, setSlugOriginal] = useState("");
 
   useEffect(() => {
-    obterPerfil(usuario.uid).then((p) =>
+    obterPerfil(usuario.uid).then((p) => {
+      setSlugOriginal(p.slug || "");
       setF({
+        slug: p.slug || "",
         nomeRestaurante: p.nomeRestaurante || "", nomeResponsavel: p.nomeResponsavel || "", cozinha: p.cozinha || "",
         vibes: p.vibes || [], ocasioes: p.ocasioes || [], faixaPreco: String(p.faixaPreco || ""),
         estado: p.estado || "", cidade: p.cidade || "", bairro: p.bairro || "", endereco: p.endereco || "",
@@ -34,8 +39,8 @@ export function AbaDados() {
         diasSemana: p.diasSemana || "", inicioSemana: p.inicioSemana || "", fimSemana: p.fimSemana || "",
         diasFim: p.diasFim || "", inicioFds: p.inicioFds || "", fimFds: p.fimFds || "",
         fotos: (p.fotos?.length ? p.fotos : [p.foto].filter(Boolean)).join("\n"),
-      }),
-    );
+      });
+    });
   }, [usuario.uid]);
 
   if (!f) return <Carregando />;
@@ -58,6 +63,8 @@ export function AbaDados() {
       const erro = erroTexto(f[k], { rotulo, min, max });
       if (erro) return setEstado({ salvando: false, erro, ok: "" });
     }
+    const eSlug = erroSlug(f.slug);
+    if (eSlug) return setEstado({ salvando: false, erro: eSlug, ok: "" });
     if (!COZINHAS.includes(f.cozinha)) return setEstado({ salvando: false, erro: "Escolha o tipo de cozinha.", ok: "" });
     if (!ESTADOS[f.estado]) return setEstado({ salvando: false, erro: "Escolha o estado.", ok: "" });
     const fotos = f.fotos.split(/\s+/).filter(Boolean);
@@ -70,12 +77,14 @@ export function AbaDados() {
         faixaPreco: Number(faixaPreco) || null,
         fotos: fotos.length ? fotos : [FOTO_PADRAO],
         foto: fotos[0] || FOTO_PADRAO,
-      });
+      }, slugOriginal);
+      setSlugOriginal(f.slug);
       await recarregar();
       setEstado({ salvando: false, erro: "", ok: "Dados salvos. A página pública já mostra as mudanças." });
     } catch (err) {
-      console.error(err);
-      setEstado({ salvando: false, erro: "O banco recusou a gravação. Confira os campos.", ok: "" });
+      // Recusa esperada (ex.: endereço de página já usado por outro restaurante) aparece como veio.
+      if (!err.paraUsuario) console.error(err);
+      setEstado({ salvando: false, erro: err.paraUsuario ? err.message : "O banco recusou a gravação. Confira os campos.", ok: "" });
     }
   }
 
@@ -86,6 +95,20 @@ export function AbaDados() {
   return (
     <form onSubmit={salvar} noValidate className="grid sm:grid-cols-2 gap-4 text-sm">
       <label className="sm:col-span-2"><span className="font-semibold">Nome do restaurante *</span><input value={f.nomeRestaurante} onChange={mudar("nomeRestaurante")} maxLength={120} className={cls} /></label>
+      <label className="sm:col-span-2"><span className="font-semibold">Endereço da página *</span>
+        <input
+          value={f.slug}
+          onChange={(e) => setF((x) => ({ ...x, slug: e.target.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9-]/g, "-") }))}
+          maxLength={60}
+          autoCapitalize="none"
+          spellCheck={false}
+          className={cls}
+        />
+        <span className="mt-1 block text-[11px] text-inksoft">Sua página fica em <strong>/r/{f.slug}</strong>. Se mudar, o endereço antigo deixa de funcionar e fica livre para outro restaurante.</span>
+      </label>
+      <label className="sm:col-span-2"><span className="font-semibold">Responsável *</span><input value={f.nomeResponsavel} onChange={mudar("nomeResponsavel")} maxLength={120} className={cls} />
+        <span className="mt-1 block text-[11px] text-inksoft">Não aparece no site: fica só na sua conta.</span>
+      </label>
       <label><span className="font-semibold">Tipo de cozinha *</span>
         <select value={f.cozinha} onChange={mudar("cozinha")} className={cls}>
           <option value="">Escolha</option>

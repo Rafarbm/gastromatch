@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import BuscaLista, { filtrarPorTexto } from "../components/BuscaLista";
@@ -209,7 +210,7 @@ export default function AreaRestaurante() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-terra">Painel do restaurante</p>
           <h1 className="mt-1 font-display font-semibold text-4xl">{usuario.nome}</h1>
         </div>
-        <Link to={`/restaurantes/${usuario.uid}`} className="rounded-full bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">Ver minha página pública</Link>
+        <Link to={linkRestaurante({ id: usuario.uid, slug: usuario.slug })} className="rounded-full bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-ink/10 hover:text-terra">Ver minha página pública</Link>
       </header>
 
       <nav aria-label="Seções do painel" className="-mx-4 px-4 overflow-x-auto scroll-oculto">

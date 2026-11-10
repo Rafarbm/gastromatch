@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Secao from "./Secao";
@@ -68,7 +69,7 @@ export default function DatasEspeciais({ estado, restaurantes }) {
               <ul className="mt-3 flex flex-wrap gap-2">
                 {d.restaurantes.map((r) => (
                   <li key={r.id}>
-                    <Link to={`/restaurantes/${r.id}`} className="inline-block rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra">
+                    <Link to={linkRestaurante(r)} className="inline-block rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra">
                       {r.nome}
                     </Link>
                   </li>

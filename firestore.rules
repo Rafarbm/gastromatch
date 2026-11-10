@@ -4,6 +4,8 @@
 //  Valem para o emulador local e são a base para produção. Princípios:
 //  - nada é permitido por padrão (o que não está escrito aqui é negado);
 //  - cada usuário só altera os próprios dados; admin tem poderes limitados;
+//  - ficha privada (usuarios) separada da ficha pública do restaurante (restaurantes);
+//    o endereço da página (slug) é único;
 //  - CPF/CNPJ ficam em subcoleção privada (só o dono lê; nem o suporte);
 //  - "chaves primárias" por ID de documento: 1 CPF/CNPJ por conta,
 //    1 avaliação por cliente/alvo, 1 resgate por cliente/cupom, 1 favorito por
@@ -47,46 +49,41 @@ service cloud.firestore {
     function inalterados(campos) { return !request.resource.data.diff(resource.data).affectedKeys().hasAny(campos); }
     function soAlterou(campos) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos); }
 
-    // ============================================================ usuarios
-    // Perfil público do restaurante e perfil do cliente. CPF/CNPJ NÃO ficam aqui.
+    // ============================================================ usuarios (ficha PRIVADA)
+    // Perfil do cliente e do RESPONSÁVEL pelo restaurante: e-mail, nome, telefone pessoal.
+    // Só o dono e o admin leem. Os dados públicos do estabelecimento ficam em "restaurantes".
+    // CPF/CNPJ NÃO ficam aqui (subcoleção "privado").
     function camposPerfil() {
-      return ['email', 'tipo', 'status', 'nome', 'telefone', 'criadoEm', 'aceiteTermosEm', 'atualizadoEm',
-              'nomeRestaurante', 'nomeResponsavel', 'cozinha', 'vibes', 'ocasioes', 'faixaPreco',
-              'estado', 'cidade', 'bairro', 'endereco', 'lat', 'lng', 'whatsapp', 'descricao', 'fotos', 'foto',
-              'diasSemana', 'inicioSemana', 'fimSemana', 'diasFim', 'inicioFds', 'fimFds',
-              'excluidoEm', 'banidoEm', 'motivoBanimento', 'destaque'];
+      return ['email', 'tipo', 'status', 'nome', 'nomeResponsavel', 'telefone', 'criadoEm', 'aceiteTermosEm', 'atualizadoEm',
+              'excluidoEm', 'banidoEm', 'motivoBanimento'];
     }
     function perfilValido(d) {
       return d.keys().hasOnly(camposPerfil())
-        && textoOpc(d, 'nome', 120) && textoOpc(d, 'nomeRestaurante', 120) && textoOpc(d, 'nomeResponsavel', 120)
-        && textoOpc(d, 'telefone', 30) && textoOpc(d, 'whatsapp', 30) && textoOpc(d, 'cozinha', 40)
-        && textoOpc(d, 'estado', 2) && textoOpc(d, 'cidade', 80) && textoOpc(d, 'bairro', 80)
-        && textoOpc(d, 'endereco', 200) && textoOpc(d, 'descricao', 1000)
-        && textoOpc(d, 'diasSemana', 40) && textoOpc(d, 'diasFim', 40)
-        && numeroOpc(d, 'faixaPreco', 1, 4) && listaOpc(d, 'vibes', 3) && listaOpc(d, 'ocasioes', 10) && listaOpc(d, 'fotos', 10);
+        && textoOpc(d, 'nome', 120) && textoOpc(d, 'nomeResponsavel', 120) && textoOpc(d, 'telefone', 30);
     }
 
     match /usuarios/{id} {
-      // Restaurantes são públicos; perfis de clientes só para o dono e o admin.
-      allow read: if (logado() && meuUid() == id) || admin() || resource.data.tipo == 'restaurante';
+      // Nenhum perfil é público: nem o do cliente, nem o do responsável pelo restaurante.
+      allow read: if (logado() && meuUid() == id) || admin();
 
       allow create: if logado() && meuUid() == id
         && request.resource.data.tipo in ['cliente', 'restaurante']
         && request.resource.data.status == 'ativo'
         && request.resource.data.email == request.auth.token.email
-        && !('destaque' in request.resource.data)
-        && perfilValido(request.resource.data);
+        && perfilValido(request.resource.data)
+        // Conta de restaurante nasce junto com a ficha pública do estabelecimento (mesma gravação).
+        && (request.resource.data.tipo != 'restaurante' || existsAfter(doc('restaurantes', id)));
 
-      // Dono: não muda tipo, e-mail nem destaque; só pode mudar o status para "excluido".
+      // Dono: não muda tipo nem e-mail; só pode mudar o status para "excluido".
       allow update: if logado() && meuUid() == id
-        && inalterados(['tipo', 'email', 'destaque', 'criadoEm', 'banidoEm', 'motivoBanimento'])
+        && inalterados(['tipo', 'email', 'criadoEm', 'banidoEm', 'motivoBanimento'])
         && (request.resource.data.get('status', 'ativo') == resource.data.get('status', 'ativo')
             || request.resource.data.status == 'excluido')
         && perfilValido(request.resource.data);
 
-      // Admin: moderação (banir, restaurar, excluir) e destaque; nada mais.
+      // Admin: moderação (banir, restaurar, excluir); nada mais.
       allow update: if admin()
-        && soAlterou(['status', 'banidoEm', 'motivoBanimento', 'excluidoEm', 'destaque']);
+        && soAlterou(['status', 'banidoEm', 'motivoBanimento', 'excluidoEm']);
 
       allow delete: if logado() && meuUid() == id;
 
@@ -99,6 +96,65 @@ service cloud.firestore {
           && (!('cnpj' in request.resource.data) || request.resource.data.cnpj.matches('^[0-9]{14}$'));
         allow delete: if logado() && meuUid() == id;
       }
+    }
+
+    // ============================================================ restaurantes (ficha PÚBLICA)
+    // Dados do estabelecimento que qualquer visitante pode ver. O ID é o uid do responsável.
+    // Não guarda e-mail, nome nem telefone pessoal do responsável.
+    function camposRestaurante() {
+      return ['donoUid', 'slug', 'status', 'destaque', 'nomeRestaurante', 'cozinha', 'vibes', 'ocasioes', 'faixaPreco',
+              'estado', 'cidade', 'bairro', 'endereco', 'lat', 'lng', 'telefone', 'whatsapp', 'descricao', 'fotos', 'foto',
+              'diasSemana', 'inicioSemana', 'fimSemana', 'diasFim', 'inicioFds', 'fimFds', 'criadoEm', 'atualizadoEm'];
+    }
+    // Slug: letras minúsculas, números e hífens, de 3 a 60 caracteres.
+    function slugValido(v) { return v is string && v.size() >= 3 && v.size() <= 60 && v.matches('^[a-z0-9]+(-[a-z0-9]+)*$'); }
+    function restauranteValido(id, d) {
+      return d.keys().hasOnly(camposRestaurante())
+        && d.donoUid == id
+        && texto(d.nomeRestaurante, 120) && textoOpc(d, 'cozinha', 40)
+        && textoOpc(d, 'estado', 2) && textoOpc(d, 'cidade', 80) && textoOpc(d, 'bairro', 80)
+        && textoOpc(d, 'endereco', 200) && textoOpc(d, 'descricao', 1000)
+        && textoOpc(d, 'telefone', 30) && textoOpc(d, 'whatsapp', 30)
+        && textoOpc(d, 'diasSemana', 40) && textoOpc(d, 'diasFim', 40)
+        && numeroOpc(d, 'faixaPreco', 1, 4) && listaOpc(d, 'vibes', 3) && listaOpc(d, 'ocasioes', 10) && listaOpc(d, 'fotos', 10)
+        // Slug único: depois da gravação, o índice do slug aponta para ESTE restaurante.
+        && slugValido(d.slug)
+        && getAfter(doc('slugs', d.slug)).data.restauranteId == id;
+    }
+
+    match /restaurantes/{id} {
+      allow read: if true;
+
+      // Criação: só o próprio responsável, com conta do tipo restaurante (que pode estar nascendo na mesma gravação).
+      allow create: if logado() && meuUid() == id
+        && getAfter(doc('usuarios', id)).data.tipo == 'restaurante'
+        && getAfter(doc('usuarios', id)).data.get('status', 'ativo') == 'ativo'
+        && request.resource.data.status == 'ativo'
+        && request.resource.data.get('destaque', false) == false
+        && restauranteValido(id, request.resource.data);
+
+      // Dono: edita os dados do estabelecimento, mas não o status de moderação nem o destaque.
+      allow update: if restaurante() && meuUid() == id
+        && inalterados(['donoUid', 'status', 'destaque', 'criadoEm'])
+        && restauranteValido(id, request.resource.data);
+
+      // Admin: só moderação (status) e destaque.
+      allow update: if admin() && soAlterou(['status', 'destaque']);
+
+      allow delete: if admin() || (logado() && meuUid() == id);
+    }
+
+    // Índice do slug (chave única): ID = o próprio slug. Não existe "update":
+    // um slug que já tem dono não pode ser tomado por outro restaurante.
+    match /slugs/{slug} {
+      allow read: if true;
+      allow create: if logado()
+        && request.resource.data.keys().hasOnly(['restauranteId'])
+        && request.resource.data.restauranteId == meuUid()
+        && getAfter(doc('restaurantes', meuUid())).data.slug == slug;
+      // Só libera o slug se, depois da gravação, o restaurante não existir mais ou usar outro slug.
+      allow delete: if admin() || (logado() && resource.data.restauranteId == meuUid()
+        && (!existsAfter(doc('restaurantes', meuUid())) || getAfter(doc('restaurantes', meuUid())).data.slug != slug));
     }
 
     // Índice de unicidade de CPF/CNPJ: o ID é um hash do documento. Como só existe
@@ -240,13 +296,15 @@ service cloud.firestore {
     }
 
     // ============================================================ ações dos clientes
+    // Itens salvos (promoções e eventos): só o próprio cliente lê. O documento não guarda
+    // e-mail nem nome do cliente, e o restaurante não tem acesso a quem salvou.
     match /salvos/{id} {
-      allow read: if logado() && (resource.data.usuarioId == meuUid() || resource.data.restauranteId == meuUid() || admin());
+      allow read: if logado() && (resource.data.usuarioId == meuUid() || admin());
       allow create: if cliente()
         && request.resource.data.usuarioId == meuUid()
-        && request.resource.data.keys().hasOnly(['usuarioId', 'usuarioEmail', 'usuarioNome', 'promocaoId', 'eventoId', 'titulo', 'descricao', 'foto', 'restauranteId', 'restauranteNome', 'dataResgate', 'valor', 'inicio', 'fim'])
+        && request.resource.data.keys().hasOnly(['usuarioId', 'promocaoId', 'eventoId', 'titulo', 'descricao', 'foto', 'restauranteId', 'restauranteNome', 'dataResgate', 'valor', 'inicio', 'fim'])
         && texto(request.resource.data.titulo, 200) && textoOpc(request.resource.data, 'descricao', 1000)
-        && textoOpc(request.resource.data, 'usuarioNome', 120) && textoOpc(request.resource.data, 'restauranteNome', 120);
+        && textoOpc(request.resource.data, 'restauranteNome', 120);
       allow delete: if logado() && (resource.data.usuarioId == meuUid() || admin());
     }
 
@@ -259,7 +317,7 @@ service cloud.firestore {
         && request.resource.data.usuarioId == meuUid()
         && request.resource.data.restauranteId is string
         && id == meuUid() + '_' + request.resource.data.restauranteId
-        && get(doc('usuarios', request.resource.data.restauranteId)).data.tipo == 'restaurante';
+        && exists(doc('restaurantes', request.resource.data.restauranteId));
       allow delete: if logado() && resource.data.usuarioId == meuUid();
     }
 
@@ -309,7 +367,7 @@ service cloud.firestore {
         && d.nota is int && d.nota >= 1 && d.nota <= 5
         && texto(d.nomeExibicao, 40) && textoOpc(d, 'comentario', 500) && textoOpc(d, 'tituloPrato', 120)
         && (d.alvo == 'restaurante'
-            ? d.alvoId == d.restauranteId && get(doc('usuarios', d.restauranteId)).data.tipo == 'restaurante'
+            ? d.alvoId == d.restauranteId && exists(doc('restaurantes', d.restauranteId))
             : get(doc('menus', d.alvoId)).data.restauranteId == d.restauranteId);
     }
     match /avaliacoes/{id} {

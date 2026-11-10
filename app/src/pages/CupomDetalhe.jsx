@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import BotaoResgatar from "../components/BotaoResgatar";
@@ -42,7 +43,7 @@ export default function CupomDetalhe() {
   const { cupom: c, restaurante: r } = dados;
   return (
     <div className="mx-auto max-w-md px-4 pt-6 pb-10">
-      <Link to={`/restaurantes/${r.id}#cupons`} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra">
+      <Link to={linkRestaurante(r, "#cupons")} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-inksoft hover:text-terra">
         <Icone nome="esquerda" className="size-4" /> {r.nome}
       </Link>
       <article className="mt-4 rounded-[28px] border-2 border-dashed border-terra/40 bg-paper p-6">

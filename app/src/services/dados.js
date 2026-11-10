@@ -19,6 +19,7 @@ function normalizarRestaurante(id, d) {
   const fotos = [...(d.fotos || []), d.foto, d.imagem].filter(Boolean);
   return {
     id,
+    slug: d.slug || "",
     nome: d.nomeRestaurante || d.nome || "Restaurante",
     cozinha: d.cozinha || "",
     experiencias: Array.isArray(d.vibes) ? d.vibes : [],
@@ -139,7 +140,8 @@ function anexarNotas(restaurantes, notas) {
   return restaurantes.map((r) => (notas[r.id] ? { ...r, notaMedia: notas[r.id].media, totalAvaliacoes: notas[r.id].total } : r));
 }
 
-// Restaurantes vivem em "usuarios" (só os campos públicos; CPF/CNPJ ficam na subcoleção privada).
+// Restaurantes vivem na coleção pública "restaurantes" (ficha do estabelecimento). Os dados
+// pessoais do responsável ficam em "usuarios", que só ele e o admin leem.
 // A lista é guardada em memória durante a sessão para evitar consultas repetidas.
 let cacheRestaurantes = null;
 
@@ -149,7 +151,7 @@ export function invalidarCacheRestaurantes() {
 
 export function listarRestaurantes() {
   cacheRestaurantes ??= Promise.all([
-    getDocs(query(collection(db, "usuarios"), where("tipo", "==", "restaurante"))),
+    getDocs(collection(db, "restaurantes")),
     getDocs(query(collection(db, "avaliacoes"), where("alvo", "==", "restaurante"))),
   ])
     .then(([snap, snapAval]) => {
@@ -164,10 +166,16 @@ export function listarRestaurantes() {
 }
 
 export async function obterRestaurante(id) {
-  const snap = await getDoc(doc(db, "usuarios", id));
-  if (!snap.exists() || snap.data().tipo !== "restaurante") return null;
+  const snap = await getDoc(doc(db, "restaurantes", id));
+  if (!snap.exists()) return null;
   const r = normalizarRestaurante(snap.id, snap.data());
   return r.ativo ? r : null;
+}
+
+// Endereço /r/{slug}: o índice "slugs" diz qual restaurante é o dono do slug.
+export async function idDoSlug(slug) {
+  const snap = await getDoc(doc(db, "slugs", String(slug || "").toLowerCase()));
+  return snap.exists() ? snap.data().restauranteId : null;
 }
 
 async function listarPorRestaurante(colecao, restauranteId) {

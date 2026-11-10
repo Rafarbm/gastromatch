@@ -5,11 +5,12 @@ import CampoSenha from "../components/CampoSenha";
 import { cadastrar } from "../services/cadastro";
 import { COZINHAS, FAIXAS_PRECO } from "../lib/catalogo";
 import { ESTADOS } from "../lib/regioes";
+import { erroSlug, gerarSlug } from "../lib/slug";
 import { cnpjValido, cpfValido, emailValido, erroSenha, erroTexto, mascaraCNPJ, mascaraCPF, mascaraTelefone, somenteDigitos } from "../lib/validacao";
 
 const VAZIO = {
   nome: "", email: "", telefone: "", documento: "", senha: "", confirmacao: "", aceite: false,
-  nomeRestaurante: "", cozinha: "", faixaPreco: "", estado: "", cidade: "", bairro: "", endereco: "",
+  nomeRestaurante: "", slug: "", cozinha: "", faixaPreco: "", estado: "", cidade: "", bairro: "", endereco: "",
 };
 
 // Valida tudo antes de enviar e devolve { campo: mensagem }.
@@ -30,6 +31,8 @@ export function validarCadastro(f, tipo) {
   if (!f.aceite) e.aceite = "É preciso aceitar os termos e a política de privacidade.";
   if (restaurante) {
     t("nomeRestaurante", { rotulo: "Nome do restaurante", min: 2, max: 120 });
+    const eSlug = erroSlug(f.slug);
+    if (eSlug) e.slug = eSlug;
     if (!COZINHAS.includes(f.cozinha)) e.cozinha = "Escolha o tipo de cozinha.";
     if (!FAIXAS_PRECO.some((p) => String(p.id) === String(f.faixaPreco))) e.faixaPreco = "Escolha a faixa de preço.";
     if (!ESTADOS[f.estado]) e.estado = "Escolha o estado.";
@@ -62,6 +65,8 @@ export default function Cadastro() {
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState("");
   const [enviando, setEnviando] = useState(false);
+  // O endereço da página (slug) acompanha o nome do restaurante até a pessoa editar o campo.
+  const [slugEditado, setSlugEditado] = useState(false);
 
   if (!carregando && usuario && !enviando) return <Navigate to="/minha-conta" replace />;
 
@@ -115,7 +120,30 @@ export default function Cadastro() {
           {restaurante && (
             <>
               <Campo rotulo="Nome do restaurante" erro={erros.nomeRestaurante} className="sm:col-span-2">
-                <input value={f.nomeRestaurante} onChange={mudar("nomeRestaurante")} maxLength={120} className={estiloInput(erros.nomeRestaurante)} />
+                <input
+                  value={f.nomeRestaurante}
+                  onChange={(e) => setF((x) => ({ ...x, nomeRestaurante: e.target.value, slug: slugEditado ? x.slug : gerarSlug(e.target.value) }))}
+                  maxLength={120}
+                  className={estiloInput(erros.nomeRestaurante)}
+                />
+              </Campo>
+              <Campo rotulo="Endereço da sua página" erro={erros.slug} className="sm:col-span-2">
+                <input
+                  value={f.slug}
+                  onChange={(e) => {
+                    setSlugEditado(true);
+                    // Enquanto digita: minúsculas, sem acento; o que não for letra, número ou hífen vira hífen.
+                    const valor = e.target.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9-]/g, "-");
+                    setF((x) => ({ ...x, slug: valor }));
+                  }}
+                  maxLength={60}
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  className={estiloInput(erros.slug)}
+                />
+                <span className="mt-1 block text-[11px] text-inksoft">
+                  Sua página ficará em <strong>/r/{f.slug || "nome-do-restaurante"}</strong>. Sugerido a partir do nome; você pode mudar. Não pode repetir o de outro restaurante.
+                </span>
               </Campo>
               <Campo rotulo="Tipo de cozinha" erro={erros.cozinha}>
                 <select value={f.cozinha} onChange={mudar("cozinha")} className={estiloInput(erros.cozinha)}>

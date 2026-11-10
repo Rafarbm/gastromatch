@@ -1,13 +1,16 @@
 import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
-import { doc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { hashDocumento, somenteDigitos } from "../lib/validacao";
 
 // Cadastro de cliente ou restaurante.
 // Grava, numa única operação atômica (batch):
-//  1. usuarios/{uid}              -> perfil (público só para restaurantes)
+//  1. usuarios/{uid}              -> ficha PRIVADA (e-mail, nome, telefone; só o dono e o admin leem)
 //  2. usuarios/{uid}/privado/doc  -> CPF ou CNPJ (só o dono lê)
 //  3. documentos/{hash}           -> chave única do CPF/CNPJ
+//  e, para restaurantes:
+//  4. restaurantes/{uid}          -> ficha PÚBLICA do estabelecimento
+//  5. slugs/{slug}                -> chave única do endereço da página (/r/slug)
 // Se o CPF/CNPJ já existir, o passo 3 é recusado pelas regras e NADA é gravado;
 // a conta recém-criada no Auth é então apagada, para não sobrar conta órfã.
 
@@ -25,6 +28,13 @@ export async function cadastrar(dados) {
   const tipoDocumento = dados.tipo === "restaurante" ? "cnpj" : "cpf";
   const documento = somenteDigitos(dados.documento);
 
+  // O slug é conferido ANTES de criar o login, para dar a mensagem certa e não sobrar conta órfã.
+  // (Se duas pessoas tentarem o mesmo slug ao mesmo tempo, as regras do banco recusam a segunda.)
+  const restaurante = dados.tipo === "restaurante";
+  if (restaurante && (await getDoc(doc(db, "slugs", dados.slug))).exists()) {
+    throw new ErroCadastro("Este endereço de página já está em uso por outro restaurante. Escolha outro.");
+  }
+
   let credencial;
   try {
     credencial = await createUserWithEmailAndPassword(auth, email, dados.senha);
@@ -41,9 +51,14 @@ export async function cadastrar(dados) {
     criadoEm: serverTimestamp(),
     aceiteTermosEm: serverTimestamp(),
   };
-  if (dados.tipo === "restaurante") {
-    Object.assign(perfil, {
-      nomeResponsavel: dados.nome.trim(),
+  // Ficha pública do estabelecimento: nada de e-mail, nome ou telefone pessoal do responsável.
+  let ficha = null;
+  if (restaurante) {
+    perfil.nomeResponsavel = dados.nome.trim();
+    ficha = {
+      donoUid: user.uid,
+      slug: dados.slug,
+      status: "ativo",
       nomeRestaurante: dados.nomeRestaurante.trim(),
       cozinha: dados.cozinha,
       estado: dados.estado,
@@ -51,10 +66,13 @@ export async function cadastrar(dados) {
       bairro: dados.bairro.trim(),
       endereco: dados.endereco.trim(),
       faixaPreco: Number(dados.faixaPreco),
+      // Telefone informado no cadastro do restaurante é o contato comercial (público).
+      telefone: dados.telefone.trim(),
       whatsapp: dados.telefone.trim(),
       vibes: [],
       ocasioes: [],
-    });
+      criadoEm: serverTimestamp(),
+    };
   } else {
     perfil.nome = dados.nome.trim();
   }
@@ -65,6 +83,10 @@ export async function cadastrar(dados) {
     lote.set(doc(db, "usuarios", user.uid), perfil);
     lote.set(doc(db, "usuarios", user.uid, "privado", "documento"), { [tipoDocumento]: documento });
     lote.set(doc(db, "documentos", hash), { uid: user.uid, tipo: tipoDocumento });
+    if (ficha) {
+      lote.set(doc(db, "restaurantes", user.uid), ficha);
+      lote.set(doc(db, "slugs", ficha.slug), { restauranteId: user.uid });
+    }
     await lote.commit();
   } catch (e) {
     console.error("Cadastro recusado pelo banco:", e);

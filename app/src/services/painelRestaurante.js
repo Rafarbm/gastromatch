@@ -6,13 +6,30 @@ import { invalidarCacheRestaurantes } from "./dados";
 // então o que é cadastrado aqui aparece no site e nos painéis antigos.
 // As regras do Firestore garantem que cada restaurante só mexe no que é dele.
 
+// Perfil do restaurante = ficha pública do estabelecimento (restaurantes/{uid}) +
+// nome do responsável, que fica na ficha privada (usuarios/{uid}).
 export async function obterPerfil(uid) {
-  const snap = await getDoc(doc(db, "usuarios", uid));
-  return snap.exists() ? snap.data() : null;
+  const [publico, privado] = await Promise.all([getDoc(doc(db, "restaurantes", uid)), getDoc(doc(db, "usuarios", uid))]);
+  if (!publico.exists()) return null;
+  return { ...publico.data(), nomeResponsavel: privado.data()?.nomeResponsavel || "" };
 }
 
-export async function atualizarPerfil(uid, dados) {
-  await updateDoc(doc(db, "usuarios", uid), { ...dados, atualizadoEm: serverTimestamp() });
+// Grava as duas fichas juntas. Se o slug mudou, ocupa o novo e libera o antigo na mesma
+// transação: o índice "slugs" garante que dois restaurantes nunca tenham o mesmo endereço.
+export async function atualizarPerfil(uid, { nomeResponsavel, ...publicos }, slugAnterior) {
+  await runTransaction(db, async (tx) => {
+    if (publicos.slug !== slugAnterior) {
+      const novo = doc(db, "slugs", publicos.slug);
+      const ocupado = await tx.get(novo);
+      if (ocupado.exists() && ocupado.data().restauranteId !== uid) {
+        throw new ErroPainel("Este endereço de página já está em uso por outro restaurante. Escolha outro.");
+      }
+      if (!ocupado.exists()) tx.set(novo, { restauranteId: uid });
+      if (slugAnterior) tx.delete(doc(db, "slugs", slugAnterior));
+    }
+    tx.update(doc(db, "restaurantes", uid), { ...publicos, atualizadoEm: serverTimestamp() });
+    tx.update(doc(db, "usuarios", uid), { nomeResponsavel, atualizadoEm: serverTimestamp() });
+  });
   invalidarCacheRestaurantes();
 }
 

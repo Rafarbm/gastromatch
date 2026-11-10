@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Icone from "./Icone";
@@ -19,7 +20,7 @@ function lerConviteFechado() {
 // Card compacto de restaurante dentro da conversa.
 function CardChat({ restaurante: r, avaliacao, aoAbrir }) {
   return (
-    <Link to={`/restaurantes/${r.id}`} onClick={aoAbrir} className="flex gap-3 rounded-2xl bg-paper p-2.5 ring-1 ring-ink/10 hover:ring-terra/50 transition">
+    <Link to={linkRestaurante(r)} onClick={aoAbrir} className="flex gap-3 rounded-2xl bg-paper p-2.5 ring-1 ring-ink/10 hover:ring-terra/50 transition">
       <img src={r.fotos[0]} alt="" className="size-20 rounded-xl object-cover shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">

@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { Link } from "react-router-dom";
 import Icone from "./Icone";
 import BotaoFavorito from "./BotaoFavorito";
@@ -10,7 +11,7 @@ export default function CardRestaurante({ restaurante: r, className = "", childr
   return (
     <div className={`group relative hover:-translate-y-1 transition-transform ${className}`}>
       <Link
-        to={`/restaurantes/${r.id}`}
+        to={linkRestaurante(r)}
         className="block h-full rounded-[28px] bg-paper p-3 ring-1 ring-ink/5 shadow-clay focus-visible:outline-2 focus-visible:outline-terra"
       >
         <div className="relative">

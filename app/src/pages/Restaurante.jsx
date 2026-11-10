@@ -15,7 +15,7 @@ import Icone from "../components/Icone";
 import { CardEvento } from "../components/Cards";
 import { Carregando, Erro, Vazio } from "../components/Estados";
 import { useCarregar } from "../hooks/useCarregar";
-import { calcularNotas, obterConteudoRestaurante, obterRestaurante } from "../services/dados";
+import { calcularNotas, idDoSlug, obterConteudoRestaurante, obterRestaurante } from "../services/dados";
 import { FAIXAS_PRECO } from "../lib/catalogo";
 import { dataCurta, moeda } from "../lib/formato";
 
@@ -77,8 +77,7 @@ function CartaoReserva({ r, compacto = false }) {
   );
 }
 
-export default function Restaurante() {
-  const { id } = useParams();
+function PaginaRestaurante({ id }) {
   const { hash } = useLocation();
   const { dados, carregando, erro } = useCarregar(() => carregar(id), [id]);
   const { usuario } = useAuth();
@@ -283,4 +282,24 @@ export default function Restaurante() {
       </div>
     </div>
   );
+}
+
+// A página abre por dois endereços: /r/{slug} (o oficial, com o apelido do restaurante)
+// e /restaurantes/{id} (links antigos). Com slug, primeiro descobrimos de quem ele é.
+export default function Restaurante() {
+  const { id, slug } = useParams();
+  const { dados: idResolvido, carregando, erro } = useCarregar(() => (slug ? idDoSlug(slug) : Promise.resolve(id)), [id, slug]);
+
+  if (carregando) return <div className="mx-auto max-w-6xl px-4 sm:px-8"><Carregando texto="Carregando restaurante..." /></div>;
+  if (erro) return <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-8"><Erro /></div>;
+  if (!idResolvido) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 sm:px-8 pt-8">
+        <Vazio titulo="Restaurante não encontrado">
+          <Link to="/restaurantes" className="rounded-full bg-terra text-cream px-5 py-2.5 text-sm font-semibold">Ver restaurantes</Link>
+        </Vazio>
+      </div>
+    );
+  }
+  return <PaginaRestaurante key={idResolvido} id={idResolvido} />;
 }

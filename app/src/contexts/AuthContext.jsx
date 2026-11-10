@@ -25,8 +25,14 @@ async function carregarPerfil(user) {
   ]);
   const perfil = snap.exists() ? snap.data() : {};
   const papel = definirPapel(Boolean(snapAdmin?.exists()), perfil);
-  const nome = papel === "restaurante" ? perfil.nomeRestaurante || perfil.nomeResponsavel : perfil.nome;
-  return { uid: user.uid, email: user.email, papel, nome: nome || user.email.split("@")[0], status: perfil.status || "ativo" };
+  // Restaurante: o nome exibido e o endereço da página (slug) vêm da ficha pública do estabelecimento.
+  let ficha = {};
+  if (papel === "restaurante") {
+    const snapFicha = await getDoc(doc(db, "restaurantes", user.uid)).catch(() => null);
+    ficha = snapFicha?.exists() ? snapFicha.data() : {};
+  }
+  const nome = papel === "restaurante" ? ficha.nomeRestaurante || perfil.nomeResponsavel : perfil.nome;
+  return { uid: user.uid, email: user.email, papel, nome: nome || user.email.split("@")[0], status: perfil.status || "ativo", slug: ficha.slug || "" };
 }
 
 export function AuthProvider({ children }) {

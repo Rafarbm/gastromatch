@@ -3,8 +3,7 @@ import { db } from "../lib/firebase";
 
 // Itens salvos pelo cliente (promoções e eventos). Cupons resgatados ficam em
 // "resgates" (services/resgates.js); salvos antigos de cupom continuam sendo listados.
-// Usa a mesma coleção "salvos" e os mesmos campos do sistema antigo, então o
-// painel do restaurante ("Guardado por clientes") já enxerga o que é salvo aqui.
+// Só o próprio cliente lê os itens salvos dele (regras do Firestore).
 
 export function tipoDoSalvo(s) {
   if (s.cupomId) return "cupom";
@@ -21,9 +20,8 @@ export async function listarSalvos(uid) {
 // item: { tipo: "promocao" | "evento", id, titulo, descricao, foto, restauranteId, restauranteNome, ...extras }
 export async function salvarItem(usuario, item) {
   const base = {
+    // Só o id do cliente: nada de e-mail ou nome (o restaurante não vê quem salvou).
     usuarioId: usuario.uid,
-    usuarioEmail: usuario.email,
-    usuarioNome: usuario.nome,
     restauranteId: item.restauranteId || "",
     restauranteNome: item.restauranteNome || "",
     titulo: item.titulo,

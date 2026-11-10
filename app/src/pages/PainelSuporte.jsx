@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import BuscaLista, { filtrarPorTexto } from "../components/BuscaLista";
@@ -69,7 +70,7 @@ function Usuarios() {
     if (motivo == null) return;
     const erro = erroTexto(motivo, { rotulo: "Motivo", min: 3, max: 200 });
     if (erro) return setAviso(erro);
-    acao(() => banir(u.id, motivo.trim()), "Conta banida. A pessoa não consegue mais entrar.");
+    acao(() => banir(u, motivo.trim()), "Conta banida. A pessoa não consegue mais entrar.");
   }
 
   if (erro) return <Erro />;
@@ -101,18 +102,18 @@ function Usuarios() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {rest && st === "ativo" && (
-                  <button type="button" onClick={() => acao(() => definirDestaque(u.id, !u.destaque), u.destaque ? "Destaque removido." : "Restaurante em destaque na página inicial.")} className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra">
+                  <button type="button" onClick={() => acao(() => definirDestaque(u, !u.destaque), u.destaque ? "Destaque removido." : "Restaurante em destaque na página inicial.")} className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra">
                     {u.destaque ? "Tirar destaque" : "★ Destacar"}
                   </button>
                 )}
-                {rest && <Link to={`/restaurantes/${u.id}`} className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra">Ver página</Link>}
+                {rest && <Link to={linkRestaurante(u)} className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-terra">Ver página</Link>}
                 {st === "ativo" ? (
                   <>
                     <button type="button" onClick={() => pedirBanimento(u)} className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-red-700 ring-1 ring-red-200 hover:bg-red-50">Banir</button>
-                    <button type="button" onClick={() => window.confirm("Marcar esta conta como excluída?") && acao(() => excluirConta(u.id), "Conta marcada como excluída.")} className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-red-700">Excluir</button>
+                    <button type="button" onClick={() => window.confirm("Marcar esta conta como excluída?") && acao(() => excluirConta(u), "Conta marcada como excluída.")} className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-red-700">Excluir</button>
                   </>
                 ) : (
-                  <button type="button" onClick={() => acao(() => restaurar(u.id), "Conta restaurada.")} className="rounded-full bg-sage/30 px-3 py-1.5 text-xs font-semibold">Restaurar</button>
+                  <button type="button" onClick={() => acao(() => restaurar(u), "Conta restaurada.")} className="rounded-full bg-sage/30 px-3 py-1.5 text-xs font-semibold">Restaurar</button>
                 )}
               </div>
             </li>

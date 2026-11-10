@@ -56,7 +56,7 @@ npm run build          # confere que o app compila
 |---|---|
 | `/cadastro` (`?tipo=restaurante`) | Cadastro com CPF/CNPJ validado, confirmação de senha e aceite LGPD |
 | `/restaurantes?q=…&uf=…` | Catálogo com barra de busca (nome, prato, cozinha, bairro, cidade, estado) e filtro por estado |
-| `/restaurantes/:id` | Avaliações (restaurante e pratos, 1–5 estrelas), resumo por IA que usa as avaliações, resgate de cupom |
+| `/r/:slug` (e `/restaurantes/:id`, endereço antigo) | Página do restaurante pelo slug único: favoritar, avaliações (restaurante e pratos, 1–5 estrelas), resumo por IA que usa as avaliações, resgate de cupom |
 | `/ingresso/:id` | Cupom resgatado: código único + QR Code, versão para imprimir |
 | `/validar/:codigo` | Restaurante valida o QR Code (uso único) |
 | `/pratos/:id`, `/promocoes/:id`, `/eventos/:id` | Páginas individuais (prato com avaliações próprias) |
@@ -66,7 +66,7 @@ npm run build          # confere que o app compila
 | `/esqueci-senha` | Recuperação de senha (mesma resposta exista ou não a conta) |
 | `/ajuda` | Perguntas frequentes, Fale conosco (grava para o suporte) e resumo de privacidade |
 
-Segurança e dados: `firestore.rules` (com testes em `app/tests/regras.test.js`). CPF/CNPJ ficam em `usuarios/{uid}/privado` (só o dono lê); chaves únicas por ID de documento (`documentos/{hash}`, `avaliacoes/{alvo}_{uid}`, `resgates/{cupom}_{uid}`, `codigosResgate/{codigo}`); admin = documento em `admins/{uid}`.
+Segurança e dados: `firestore.rules` (com testes em `app/tests/regras.test.js`). Ficha privada em `usuarios/{uid}` (e-mail, nome, telefone: só o dono e o admin leem) separada da ficha pública do estabelecimento em `restaurantes/{uid}`. CPF/CNPJ ficam em `usuarios/{uid}/privado` (só o dono lê); chaves únicas por ID de documento (`documentos/{hash}`, `slugs/{slug}`, `codigosCupom/{uid}_{CODIGO}`, `favoritos/{uid}_{restaurante}`, `avaliacoes/{alvo}_{uid}`, `resgates/{cupom}_{uid}`, `codigosResgate/{codigo}`); admin = documento em `admins/{uid}`. Promoções têm vigência por datas (status calculado: agendada, ativa, expirada, encerrada).
 
 ### Recomendação com IA (opcional)
 

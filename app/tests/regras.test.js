@@ -36,8 +36,13 @@ beforeEach(async () => {
     const db = ctx.firestore();
     await setDoc(doc(db, "usuarios", CLIENTE), { email: `${CLIENTE}@teste.com`, tipo: "cliente", status: "ativo", nome: "Ana" });
     await setDoc(doc(db, "usuarios", OUTRO_CLIENTE), { email: `${OUTRO_CLIENTE}@teste.com`, tipo: "cliente", status: "ativo", nome: "Bia" });
-    await setDoc(doc(db, "usuarios", RESTAURANTE), { email: `${RESTAURANTE}@teste.com`, tipo: "restaurante", status: "ativo", nomeRestaurante: "Brasa" });
-    await setDoc(doc(db, "usuarios", OUTRO_RESTAURANTE), { email: `${OUTRO_RESTAURANTE}@teste.com`, tipo: "restaurante", status: "ativo", nomeRestaurante: "Sakura" });
+    // Restaurante = ficha privada do responsável (usuarios) + ficha pública (restaurantes) + índice do slug.
+    await setDoc(doc(db, "usuarios", RESTAURANTE), { email: `${RESTAURANTE}@teste.com`, tipo: "restaurante", status: "ativo", nomeResponsavel: "Rui" });
+    await setDoc(doc(db, "restaurantes", RESTAURANTE), { donoUid: RESTAURANTE, slug: "brasa", status: "ativo", nomeRestaurante: "Brasa" });
+    await setDoc(doc(db, "slugs", "brasa"), { restauranteId: RESTAURANTE });
+    await setDoc(doc(db, "usuarios", OUTRO_RESTAURANTE), { email: `${OUTRO_RESTAURANTE}@teste.com`, tipo: "restaurante", status: "ativo", nomeResponsavel: "Yumi" });
+    await setDoc(doc(db, "restaurantes", OUTRO_RESTAURANTE), { donoUid: OUTRO_RESTAURANTE, slug: "sakura", status: "ativo", nomeRestaurante: "Sakura" });
+    await setDoc(doc(db, "slugs", "sakura"), { restauranteId: OUTRO_RESTAURANTE });
     await setDoc(doc(db, "usuarios", ADMIN), { email: `${ADMIN}@teste.com`, tipo: "admin", status: "ativo" });
     await setDoc(doc(db, "admins", ADMIN), { email: `${ADMIN}@teste.com` });
     await setDoc(doc(db, "usuarios", CLIENTE, "privado", "documento"), { cpf: "52998224725" });
@@ -105,14 +110,27 @@ describe("cadastro e chave única do documento", () => {
   });
   it("usuário não muda o próprio tipo nem se dá destaque", async () => {
     await assertFails(updateDoc(doc(como(CLIENTE), "usuarios", CLIENTE), { tipo: "restaurante" }));
-    await assertFails(updateDoc(doc(como(RESTAURANTE), "usuarios", RESTAURANTE), { destaque: true }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "restaurantes", RESTAURANTE), { destaque: true }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "restaurantes", RESTAURANTE), { status: "banido" }));
   });
 });
 
 describe("perfis e administração", () => {
-  it("perfil de cliente não é público; restaurante é", async () => {
+  it("nenhuma ficha privada é pública: nem a do cliente, nem a do responsável pelo restaurante", async () => {
     await assertFails(getDoc(doc(anonimo(), "usuarios", CLIENTE)));
-    await assertSucceeds(getDoc(doc(anonimo(), "usuarios", RESTAURANTE)));
+    await assertFails(getDoc(doc(anonimo(), "usuarios", RESTAURANTE)));
+    await assertFails(getDoc(doc(como(CLIENTE), "usuarios", RESTAURANTE)));
+    await assertFails(getDoc(doc(como(OUTRO_RESTAURANTE), "usuarios", RESTAURANTE)));
+    await assertFails(getDocs(query(collection(anonimo(), "usuarios"), where("tipo", "==", "restaurante"))));
+  });
+  it("a ficha pública do restaurante e o índice do slug são abertos a qualquer visitante", async () => {
+    await assertSucceeds(getDoc(doc(anonimo(), "restaurantes", RESTAURANTE)));
+    await assertSucceeds(getDocs(collection(anonimo(), "restaurantes")));
+    await assertSucceeds(getDoc(doc(anonimo(), "slugs", "brasa")));
+  });
+  it("o próprio responsável e o admin leem a ficha privada", async () => {
+    await assertSucceeds(getDoc(doc(como(RESTAURANTE), "usuarios", RESTAURANTE)));
+    await assertSucceeds(getDoc(doc(como(ADMIN), "usuarios", RESTAURANTE)));
   });
   it("admin (documento em admins) modera; e-mail sozinho não dá poder", async () => {
     await assertSucceeds(updateDoc(doc(como(ADMIN), "usuarios", CLIENTE), { status: "banido" }));
@@ -124,16 +142,19 @@ describe("perfis e administração", () => {
 });
 
 describe("painéis novos", () => {
-  it("restaurante atualiza o próprio perfil (cozinha nova, experiências, cidade)", async () => {
-    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "usuarios", RESTAURANTE), { cozinha: "Nordestina", vibes: ["Alegre", "Familiar"], estado: "PE", cidade: "Recife" }));
+  it("restaurante atualiza a própria ficha pública (cozinha nova, experiências, cidade) e o nome do responsável", async () => {
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "restaurantes", RESTAURANTE), { cozinha: "Nordestina", vibes: ["Alegre", "Familiar"], estado: "PE", cidade: "Recife" }));
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "usuarios", RESTAURANTE), { nomeResponsavel: "Rui Souza" }));
   });
   it("restaurante não escolhe mais de 3 experiências nem edita outro restaurante", async () => {
-    await assertFails(updateDoc(doc(como(RESTAURANTE), "usuarios", RESTAURANTE), { vibes: ["Alegre", "Familiar", "Noturna", "Tranquila"] }));
-    await assertFails(updateDoc(doc(como(RESTAURANTE), "usuarios", OUTRO_RESTAURANTE), { cozinha: "Árabe" }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "restaurantes", RESTAURANTE), { vibes: ["Alegre", "Familiar", "Noturna", "Tranquila"] }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "restaurantes", OUTRO_RESTAURANTE), { cozinha: "Árabe" }));
   });
-  it("admin dá e tira destaque; restaurante e cliente não", async () => {
-    await assertSucceeds(updateDoc(doc(como(ADMIN), "usuarios", RESTAURANTE), { destaque: true }));
-    await assertFails(updateDoc(doc(como(CLIENTE), "usuarios", RESTAURANTE), { destaque: true }));
+  it("admin dá e tira destaque e modera o status público; não muda os dados; restaurante e cliente não", async () => {
+    await assertSucceeds(updateDoc(doc(como(ADMIN), "restaurantes", RESTAURANTE), { destaque: true }));
+    await assertSucceeds(updateDoc(doc(como(ADMIN), "restaurantes", RESTAURANTE), { status: "banido" }));
+    await assertFails(updateDoc(doc(como(ADMIN), "restaurantes", RESTAURANTE), { nomeRestaurante: "Outro nome" }));
+    await assertFails(updateDoc(doc(como(CLIENTE), "restaurantes", RESTAURANTE), { destaque: true }));
   });
   it("restaurante edita o próprio cupom sem mexer no contador", async () => {
     await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "cupons", "cupom1"), { limiteTotal: 10, condicoes: "Só no jantar" }));
@@ -209,6 +230,103 @@ describe("cupom como ingresso (limite e uso único)", () => {
     await resgatar(como(CLIENTE), CLIENTE);
     await assertSucceeds(getDocs(query(collection(como(CLIENTE), "resgates"), where("usuarioId", "==", CLIENTE))));
     await assertFails(getDoc(doc(como(OUTRO_CLIENTE), "resgates", `cupom1_${CLIENTE}`)));
+  });
+});
+
+describe("ficha pública do restaurante e slug (endereço único)", () => {
+  const NOVO = "novo-rest";
+  const perfil = { email: `${NOVO}@teste.com`, tipo: "restaurante", status: "ativo", nomeResponsavel: "Lia", telefone: "(61) 99999-0000" };
+  const ficha = (extra = {}) => ({ donoUid: NOVO, slug: "cantina-nova", status: "ativo", nomeRestaurante: "Cantina Nova", cozinha: "Italiana", vibes: [], ocasioes: [], ...extra });
+  // Como o app faz no cadastro: tudo em uma única gravação.
+  const cadastrar = (dadosFicha, comFicha = true) => {
+    const db = como(NOVO);
+    const lote = writeBatch(db);
+    lote.set(doc(db, "usuarios", NOVO), perfil);
+    lote.set(doc(db, "usuarios", NOVO, "privado", "documento"), { cnpj: "11222333000181" });
+    lote.set(doc(db, "documentos", "hash-cnpj"), { uid: NOVO, tipo: "cnpj" });
+    if (comFicha) {
+      lote.set(doc(db, "restaurantes", NOVO), dadosFicha);
+      lote.set(doc(db, "slugs", dadosFicha.slug), { restauranteId: NOVO });
+    }
+    return lote.commit();
+  };
+
+  it("cadastro de restaurante grava ficha privada, CNPJ, ficha pública e slug juntos", async () => {
+    await assertSucceeds(cadastrar(ficha()));
+  });
+  it("conta de restaurante sem a ficha pública é recusada", async () => {
+    await assertFails(cadastrar(ficha(), false));
+  });
+  it("slug já usado por outro restaurante é recusado (e nada é gravado)", async () => {
+    await assertFails(cadastrar(ficha({ slug: "brasa" })));
+    const perfilGravado = await getDoc(doc(como(NOVO), "usuarios", NOVO));
+    if (perfilGravado.exists()) throw new Error("o cadastro recusado não deveria ter gravado a ficha privada");
+  });
+  it("slug fora do formato é recusado", async () => {
+    await assertFails(cadastrar(ficha({ slug: "Cantina Nova" })));
+    await assertFails(cadastrar(ficha({ slug: "ab" })));
+    await assertFails(cadastrar(ficha({ slug: "cantina--nova" })));
+  });
+  it("a ficha pública não aceita e-mail nem nome do responsável", async () => {
+    await assertFails(cadastrar(ficha({ email: `${NOVO}@teste.com` })));
+    await assertFails(cadastrar(ficha({ nomeResponsavel: "Lia" })));
+  });
+  it("ninguém nasce com destaque, com status diferente de ativo ou como dono de outra ficha", async () => {
+    await assertFails(cadastrar(ficha({ destaque: true })));
+    await assertFails(cadastrar(ficha({ status: "banido" })));
+    await assertFails(cadastrar(ficha({ donoUid: RESTAURANTE })));
+  });
+  it("cliente não cria ficha de restaurante", async () => {
+    const db = como(CLIENTE);
+    const lote = writeBatch(db);
+    lote.set(doc(db, "restaurantes", CLIENTE), ficha({ donoUid: CLIENTE, slug: "do-cliente" }));
+    lote.set(doc(db, "slugs", "do-cliente"), { restauranteId: CLIENTE });
+    await assertFails(lote.commit());
+  });
+  it("trocar o slug ocupa o novo e libera o antigo, tudo junto", async () => {
+    const db = como(RESTAURANTE);
+    const lote = writeBatch(db);
+    lote.update(doc(db, "restaurantes", RESTAURANTE), { slug: "brasa-e-lenha" });
+    lote.set(doc(db, "slugs", "brasa-e-lenha"), { restauranteId: RESTAURANTE });
+    lote.delete(doc(db, "slugs", "brasa"));
+    await assertSucceeds(lote.commit());
+    // O slug antigo ficou livre: outro restaurante pode usar.
+    const db2 = como(OUTRO_RESTAURANTE);
+    const lote2 = writeBatch(db2);
+    lote2.update(doc(db2, "restaurantes", OUTRO_RESTAURANTE), { slug: "brasa" });
+    lote2.set(doc(db2, "slugs", "brasa"), { restauranteId: OUTRO_RESTAURANTE });
+    lote2.delete(doc(db2, "slugs", "sakura"));
+    await assertSucceeds(lote2.commit());
+  });
+  it("trocar o slug sem o índice, ou para o slug de outro restaurante, é recusado", async () => {
+    const db = como(RESTAURANTE);
+    await assertFails(updateDoc(doc(db, "restaurantes", RESTAURANTE), { slug: "sem-indice" }));
+    await assertFails(updateDoc(doc(db, "restaurantes", RESTAURANTE), { slug: "sakura" }));
+    const lote = writeBatch(db);
+    lote.update(doc(db, "restaurantes", RESTAURANTE), { slug: "sakura" });
+    lote.set(doc(db, "slugs", "sakura"), { restauranteId: RESTAURANTE });
+    await assertFails(lote.commit());
+  });
+  it("não dá para apagar o slug em uso nem o slug de outro restaurante", async () => {
+    await assertFails(deleteDoc(doc(como(RESTAURANTE), "slugs", "brasa")));
+    await assertFails(deleteDoc(doc(como(OUTRO_RESTAURANTE), "slugs", "brasa")));
+  });
+});
+
+describe("itens salvos sem dados de contato", () => {
+  const salvo = (extra = {}) => ({ usuarioId: CLIENTE, promocaoId: "p1", titulo: "Jantar a dois", restauranteId: RESTAURANTE, restauranteNome: "Brasa", ...extra });
+  it("cliente salva uma promoção só com o próprio id", async () => {
+    await assertSucceeds(setDoc(doc(como(CLIENTE), "salvos", "s1"), salvo()));
+  });
+  it("salvo com e-mail ou nome do cliente é recusado", async () => {
+    await assertFails(setDoc(doc(como(CLIENTE), "salvos", "s1"), salvo({ usuarioEmail: "ana@teste.com" })));
+    await assertFails(setDoc(doc(como(CLIENTE), "salvos", "s1"), salvo({ usuarioNome: "Ana" })));
+  });
+  it("o restaurante não lê quem salvou as promoções dele; o cliente lê os próprios", async () => {
+    await semRegras((db) => setDoc(doc(db, "salvos", "s1"), salvo()));
+    await assertFails(getDoc(doc(como(RESTAURANTE), "salvos", "s1")));
+    await assertFails(getDocs(query(collection(como(RESTAURANTE), "salvos"), where("restauranteId", "==", RESTAURANTE))));
+    await assertSucceeds(getDocs(query(collection(como(CLIENTE), "salvos"), where("usuarioId", "==", CLIENTE))));
   });
 });
 

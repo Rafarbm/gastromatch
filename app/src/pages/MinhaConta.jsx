@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { useEffect, useState } from "react";
 import BuscaLista, { filtrarPorTexto } from "../components/BuscaLista";
 import { Link, Navigate } from "react-router-dom";
@@ -80,6 +81,8 @@ export default function MinhaConta() {
   // Favoritos: a lista de ids vem do FavoritosContext; os dados vêm do catálogo.
   // Restaurante banido ou excluído some do catálogo e, por isso, também daqui.
   const favoritos = filtrarPorTexto(restaurantes.filter((r) => idsFavoritos.includes(r.id)), texto, (r) => [r.nome, r.cozinha, r.bairro, r.cidade]);
+  // Os itens salvos guardam só o id do restaurante: o endereço com slug vem do catálogo.
+  const linkPorId = (id, ancora) => linkRestaurante(restaurantes.find((r) => r.id === id) || { id }, ancora);
   const cupons = porTipo("cupom");
   const promocoes = porTipo("promocao");
   const eventos = porTipo("evento");
@@ -157,7 +160,7 @@ export default function MinhaConta() {
                   return (
                     <li key={c.id} className={`rounded-[24px] border-2 border-dashed p-5 ${valido ? "border-terra/50 bg-paper" : "border-ink/15 bg-cream opacity-70"}`}>
                       <div className="flex items-start justify-between gap-2">
-                        <Link to={`/restaurantes/${c.restauranteId}#cupons`} className="text-xs font-semibold uppercase tracking-[0.12em] text-terra hover:underline">{c.restauranteNome}</Link>
+                        <Link to={linkPorId(c.restauranteId, "#cupons")} className="text-xs font-semibold uppercase tracking-[0.12em] text-terra hover:underline">{c.restauranteNome}</Link>
                         <BotaoRemover aoRemover={() => remover(c.id)} />
                       </div>
                       <p className="mt-3 text-[11px] font-semibold uppercase text-inksoft">Código</p>
@@ -185,7 +188,7 @@ export default function MinhaConta() {
                     {p.foto && <img src={p.foto} alt="" className="size-20 rounded-2xl object-cover shrink-0" />}
                     <div className="min-w-0 flex-1">
                       <div className="flex justify-between gap-2">
-                        <Link to={`/restaurantes/${p.restauranteId}#promocoes`} className="text-xs font-semibold uppercase tracking-[0.12em] text-terra hover:underline">{p.restauranteNome}</Link>
+                        <Link to={linkPorId(p.restauranteId, "#promocoes")} className="text-xs font-semibold uppercase tracking-[0.12em] text-terra hover:underline">{p.restauranteNome}</Link>
                         <BotaoRemover aoRemover={() => remover(p.id)} />
                       </div>
                       <p className="font-display font-semibold text-lg leading-tight">{p.titulo}</p>

@@ -468,9 +468,16 @@ async function main() {
     const noturno = r.vibes.includes("Noturna");
     const cafe = r.cozinha === "Cafeteria";
 
+    // Ficha PRIVADA do responsável (só ele e o admin leem).
     gravar(`usuarios/${uid[r.chave]}`, {
       email: r.email, tipo: "restaurante", status: "ativo",
       nomeResponsavel: `${escolher(PRIMEIROS)} ${escolher(SOBRENOMES)}`,
+      telefone, criadoEm: agora, aceiteTermosEm: agora,
+    });
+    // Ficha PÚBLICA do estabelecimento + índice do slug (endereço /r/slug, único).
+    const slugRestaurante = r.chave.replace(/^-+|-+$/g, "");
+    gravar(`restaurantes/${uid[r.chave]}`, {
+      donoUid: uid[r.chave], slug: slugRestaurante, status: "ativo",
       nomeRestaurante: r.nome, cozinha: r.cozinha, vibes: r.vibes, ocasioes: r.ocasioes,
       faixaPreco: r.preco, destaque: Boolean(r.destaque),
       estado: local.estado, cidade: local.cidade, bairro: local.bairro, lat: local.lat, lng: local.lng,
@@ -479,8 +486,9 @@ async function main() {
       fotos: r.fotos, foto: r.fotos[0],
       diasSemana: cafe ? "Seg a Sex" : "Ter a Sex", inicioSemana: cafe ? "07:30" : noturno ? "18:00" : "11:30", fimSemana: cafe ? "18:00" : noturno ? "01:00" : "23:00",
       diasFim: "Sáb e Dom", inicioFds: cafe ? "08:00" : "12:00", fimFds: cafe ? "16:00" : noturno ? "02:00" : "23:30",
-      criadoEm: agora, aceiteTermosEm: agora,
+      criadoEm: agora,
     });
+    gravar(`slugs/${slugRestaurante}`, { restauranteId: uid[r.chave] });
     gravar(`usuarios/${uid[r.chave]}/privado/documento`, { cnpj });
     gravar(`documentos/${hashDocumento("cnpj", cnpj)}`, { uid: uid[r.chave], tipo: "cnpj" });
 
@@ -654,7 +662,7 @@ async function main() {
   });
 
   gravar("salvos/salvo-demo", {
-    usuarioId: demo.uid, usuarioEmail: demo.email, usuarioNome: demo.nome,
+    usuarioId: demo.uid,
     promocaoId: "promo-0", titulo: "Jantar a dois", descricao: "Picanha para dois + duas taças de vinho.",
     foto: "/img/churrasco-1.jpg", restauranteId: uid["brasa-lenha"], restauranteNome: "Brasa & Lenha", dataResgate: agora,
   });

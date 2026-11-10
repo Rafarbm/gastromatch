@@ -37,6 +37,8 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="restaurantes" element={<Catalogo />} />
             <Route path="restaurantes/:id" element={<Restaurante />} />
+            {/* Endereço público do restaurante pelo slug (apelido único): /r/pizzaria-do-ze */}
+            <Route path="r/:slug" element={<Restaurante />} />
             <Route path="recomendar" element={<Recomendar />} />
             <Route path="recomendar/conversa" element={<AbrirChat />} />
             <Route path="promocoes" element={<Promocoes />} />

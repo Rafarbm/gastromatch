@@ -1,3 +1,4 @@
+import { linkRestaurante } from "../lib/slug";
 import { Link } from "react-router-dom";
 
 // Lista de recomendações com a explicação de cada uma (✓ atende, – não atende).
@@ -14,7 +15,7 @@ export default function ListaRecomendacoes({ resultado }) {
       <ol className="mt-6 space-y-4">
         {resultado.map((a, i) => (
           <li key={a.restaurante.id}>
-            <Link to={`/restaurantes/${a.restaurante.id}`} className="flex flex-col sm:flex-row gap-4 rounded-[28px] bg-paper p-4 ring-1 ring-ink/5 shadow-clay hover:ring-terra/40 transition">
+            <Link to={linkRestaurante(a.restaurante)} className="flex flex-col sm:flex-row gap-4 rounded-[28px] bg-paper p-4 ring-1 ring-ink/5 shadow-clay hover:ring-terra/40 transition">
               <img src={a.restaurante.fotos[0]} alt="" className="w-full sm:w-40 aspect-[4/3] rounded-2xl object-cover" />
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-3">
