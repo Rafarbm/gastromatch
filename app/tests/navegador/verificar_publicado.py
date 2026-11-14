@@ -144,8 +144,9 @@ with sync_playwright() as p:
     campo(r, "Fim (").fill(time.strftime("%Y-%m-%d", time.localtime(time.time() + 3 * 86400)))
     campo(r, "Descrição", "textarea").fill("Verificação automática após publicação.")
     r.locator("form input[type=file]").first.set_input_files(img)
-    r.wait_for_function("() => [...document.querySelectorAll('form label input[type=url]')].some(e => e.value.startsWith('/api/foto/'))", timeout=90000)
-    url_foto = r.locator("form label input[type=url]").evaluate_all("els => els.map(e => e.value).find(v => v.startsWith('/api/foto/'))")
+    # Sem campo de link: o endereço da foto enviada aparece na prévia ("Prévia da foto").
+    r.wait_for_function("() => { const i = document.querySelector(\"form img[alt='Prévia da foto']\"); return !!i && (i.getAttribute('src') || '').startsWith('/api/foto/'); }", timeout=90000)
+    url_foto = r.locator("form img[alt='Prévia da foto']").first.get_attribute("src")
     r.get_by_role("button", name="Salvar").click()
     r.wait_for_selector(f"text=Teste publicado {T}", timeout=30000)
     st, _ = pedir(BASE + url_foto)
