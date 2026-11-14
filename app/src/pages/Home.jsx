@@ -13,7 +13,7 @@ import { Carregando, Erro, Vazio } from "../components/Estados";
 import { useCarregar } from "../hooks/useCarregar";
 import { useLocalidade } from "../contexts/LocalidadeContext";
 import { useChat } from "../contexts/ChatContext";
-import { listarEventos, listarPromocoes, listarRestaurantes, obterSuperEvento } from "../services/dados";
+import { listarEventos, listarPromocoes, listarRestaurantes, listarSuperEventosAtivos } from "../services/dados";
 import { comDistancia, filtrarRestaurantes, filtrosParaURL } from "../lib/filtros";
 import { OCASIOES, SUGESTOES_EXPERIENCIA } from "../lib/catalogo";
 import { eventoNoIntervalo, isoHoje } from "../lib/formato";
@@ -26,13 +26,13 @@ const FILTROS_DATA = [
 ];
 
 async function carregarHome() {
-  const [restaurantes, promocoes, eventos, superEvento] = await Promise.all([
+  const [restaurantes, promocoes, eventos, superEventos] = await Promise.all([
     listarRestaurantes(),
     listarPromocoes(),
     listarEventos(),
-    obterSuperEvento(),
+    listarSuperEventosAtivos(),
   ]);
-  return { restaurantes, promocoes, eventos, superEvento };
+  return { restaurantes, promocoes, eventos, superEventos };
 }
 
 export default function Home() {
@@ -81,13 +81,14 @@ export default function Home() {
       foto: "/img/vinho-1.jpg",
       cta: { rotulo: "Recomendar com IA", acao: abrirChat, icone: "recomendar" },
     },
-    dados?.superEvento && {
-      selo: "Evento",
-      titulo: dados.superEvento.titulo,
-      descricao: dados.superEvento.subtitulo || dados.superEvento.descricao,
+    // Um quadro do banner para cada super evento que está no período.
+    ...(dados?.superEventos || []).map((ev) => ({
+      selo: "Super evento",
+      titulo: ev.titulo,
+      descricao: ev.subtitulo || ev.descricao,
       foto: "/img/restaurante-2.jpg",
-      cta: { rotulo: "Ver eventos", para: "/eventos" },
-    },
+      cta: { rotulo: "Ver evento", para: `/eventos/${ev.id}` },
+    })),
     {
       titulo: "Vai viajar? Busque em outra cidade",
       descricao: "Sua localização é só um atalho. Explore restaurantes em qualquer cidade atendida.",

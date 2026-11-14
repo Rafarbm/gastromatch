@@ -206,7 +206,7 @@ export function EventoDetalhe() {
       voltar={{ para: "/eventos", rotulo: "Eventos" }}
       foto={ev.foto}
       selo={periodo(ev.inicio, ev.fim)}
-      subtitulo={ev.global ? "Evento da plataforma GastroMatch" : r?.nome}
+      subtitulo={ev.global ? "Super evento GastroMatch" : r?.nome}
       titulo={ev.titulo}
       lateral={
         <>

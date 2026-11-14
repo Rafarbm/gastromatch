@@ -362,13 +362,13 @@ function EventosPlataforma() {
   return (
     <div className="space-y-3">
       {aviso && <p role="status" className="rounded-xl bg-sage/20 px-3 py-2 text-sm font-semibold">{aviso}</p>}
-      {lista.length === 0 && <p className="text-sm text-inksoft">Nenhum evento da plataforma no momento.</p>}
+      {lista.length === 0 && <p className="text-sm text-inksoft">Nenhum super evento no momento.</p>}
       <ul className="grid gap-3 md:grid-cols-2">
         {lista.map((ev) => {
           const participa = (ev.restaurantesParticipantes || []).includes(usuario.uid);
           return (
             <li key={ev.id} className="rounded-[20px] bg-paper p-4 ring-1 ring-ink/5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-terra">{ev.superEvento ? "Destaque da página inicial" : "Evento da plataforma"}</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-terra">Super evento</p>
               <p className="font-semibold">{ev.titulo}</p>
               <p className="text-xs text-inksoft">{periodo(ev.inicio, ev.fim)}</p>
               {participa ? (
@@ -412,7 +412,7 @@ export function AbaEventos() {
         resumo={(e) => ({ titulo: e.titulo, foto: e.foto || e.imagem, selo: (e.fim || e.inicio) < hoje() ? "Encerrado" : "Agendado", linhas: [periodo(e.inicio, e.fim), e.horaInicio && `${e.horaInicio} às ${e.horaFim}`], link: `/eventos/${e.id}` })}
       />
       <section>
-        <h3 className="font-display font-semibold text-xl mb-3">Eventos da plataforma GastroMatch</h3>
+        <h3 className="font-display font-semibold text-xl mb-3">Super eventos GastroMatch</h3>
         <EventosPlataforma />
       </section>
     </div>

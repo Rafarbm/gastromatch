@@ -337,14 +337,21 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['restauranteId', 'restauranteNome', 'cozinha', 'titulo', 'foto', 'imagem', 'inicio', 'fim', 'diasValidos', 'horaInicio', 'horaFim', 'descricao', 'criadoEm'])
         && texto(request.resource.data.titulo, 120) && textoOpc(request.resource.data, 'descricao', 1000);
       allow update: if restaurante() && resource.data.get('tipoEvento', '') == 'geral_plataforma' && soSeAcrescentou();
-      allow create, update, delete: if admin();
+      // Super eventos (tipoEvento 'geral_plataforma'): só o administrador cria e edita, com lista
+      // fechada de campos; o criador fica registrado em criadoPor e não pode ser trocado depois.
+      allow create: if admin() && superEventoValido(request.resource.data) && request.resource.data.criadoPor == meuUid();
+      allow update: if admin() && superEventoValido(request.resource.data)
+        && request.resource.data.get('criadoPor', null) == resource.data.get('criadoPor', null);
+      allow delete: if admin();
       allow delete: if donoAtual();
     }
-
-    match /configuracoes/{id} {
-      allow read: if true;
-      allow write: if admin();
-      allow update: if restaurante() && id == 'super_evento' && soSeAcrescentou();
+    function superEventoValido(d) {
+      return d.keys().hasOnly(['titulo', 'subtitulo', 'tipo', 'cozinha', 'imagem', 'inicio', 'fim', 'horaInicio', 'horaFim',
+              'diasValidos', 'descricao', 'mostrarAviso', 'tipoEvento', 'origem', 'vibes', 'restaurantesParticipantes',
+              'criadoPor', 'criadoEm', 'atualizadoEm'])
+        && d.tipoEvento == 'geral_plataforma'
+        && texto(d.titulo, 120) && textoOpc(d, 'subtitulo', 200) && textoOpc(d, 'tipo', 60) && textoOpc(d, 'descricao', 1000)
+        && d.get('mostrarAviso', false) is bool;
     }
 
     // ============================================================ ações dos clientes
@@ -355,6 +362,8 @@ service cloud.firestore {
       allow create: if cliente()
         && request.resource.data.usuarioId == meuUid()
         && request.resource.data.keys().hasOnly(['usuarioId', 'promocaoId', 'eventoId', 'titulo', 'descricao', 'foto', 'restauranteId', 'restauranteNome', 'dataResgate', 'valor', 'inicio', 'fim'])
+        // Cada item salvo aponta para uma promoção OU para um evento: exatamente um dos dois.
+        && (('promocaoId' in request.resource.data) != ('eventoId' in request.resource.data))
         && texto(request.resource.data.titulo, 200) && textoOpc(request.resource.data, 'descricao', 1000)
         && textoOpc(request.resource.data, 'restauranteNome', 120);
       allow delete: if logado() && (resource.data.usuarioId == meuUid() || admin());

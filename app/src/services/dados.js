@@ -167,12 +167,14 @@ export async function listarPromocoes() {
   return snap.docs.map((d) => normalizarPromocao(d.id, d.data())).filter((p) => p.status === "ativa");
 }
 
-export async function obterSuperEvento() {
-  const snap = await getDoc(doc(db, "configuracoes", "super_evento"));
-  if (!snap.exists()) return null;
-  const ev = normalizarEvento(snap.id, snap.data());
+// Super eventos (criados pela equipe) que estão no período: vão para o banner da página inicial.
+export async function listarSuperEventosAtivos() {
+  const snap = await getDocs(query(collection(db, "eventos"), where("tipoEvento", "==", "geral_plataforma")));
   const hoje = hojeISO();
-  return ev.fim >= hoje ? { ...ev, subtitulo: snap.data().subtitulo || "" } : null;
+  return snap.docs
+    .map((d) => ({ ...normalizarEvento(d.id, d.data()), subtitulo: d.data().subtitulo || "" }))
+    .filter((ev) => ev.inicio && ev.inicio <= hoje && (!ev.fim || ev.fim >= hoje))
+    .sort((a, b) => a.inicio.localeCompare(b.inicio));
 }
 
 export async function listarEventos() {

@@ -9,7 +9,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { listarResgatesDoRestaurante } from "../services/resgates";
 import { baixarModelo, importarPratos, lerPlanilha, titulosDoCardapio } from "../services/cardapio";
 import { CATEGORIAS, COLUNAS, validarPlanilha } from "../lib/planilha";
-import { moeda } from "../lib/formato";
+import { isoHoje, moeda, periodo } from "../lib/formato";
+import { listarEventosPlataforma } from "../services/painelRestaurante";
 import { formatarCodigo } from "./Ingresso";
 
 function Cartao({ titulo, children, acao }) {
@@ -195,6 +196,32 @@ const ABAS = [
 
 // Painel do restaurante (substitui o painel antigo): dados, cardápio, cupons, promoções,
 // eventos, resgates e validação de cupons, tudo no mesmo visual do site.
+// Convite para os super eventos marcados com "Mostrar aviso aos restaurantes", enquanto não
+// terminaram e o restaurante ainda não participa. Se a consulta falhar, o aviso só não aparece.
+function AvisoSuperEventos({ usuario, irParaEventos }) {
+  const [lista, setLista] = useState([]);
+  useEffect(() => {
+    listarEventosPlataforma()
+      .then((eventos) => setLista(eventos.filter((ev) => ev.mostrarAviso && (ev.fim || ev.inicio) >= isoHoje() && !(ev.restaurantesParticipantes || []).includes(usuario.uid))))
+      .catch(() => setLista([]));
+  }, [usuario.uid]);
+  if (lista.length === 0) return null;
+  return (
+    <div className="space-y-3" aria-label="Convites para super eventos">
+      {lista.map((ev) => (
+        <div key={ev.id} role="note" className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-sage/20 p-5 ring-1 ring-sage/40">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-terra">Super evento</p>
+            <p className="font-semibold">{ev.titulo}</p>
+            <p className="text-xs text-inksoft">{periodo(ev.inicio, ev.fim)} · Seu restaurante ainda não participa.</p>
+          </div>
+          <button type="button" onClick={irParaEventos} className="rounded-full bg-terra text-cream px-4 py-2 text-sm font-semibold">Ver e participar</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AreaRestaurante() {
   const { usuario, carregando } = useAuth();
   const [params, setParams] = useSearchParams();
@@ -228,6 +255,7 @@ export default function AreaRestaurante() {
 
       {aba === "inicio" && (
         <>
+          <AvisoSuperEventos usuario={usuario} irParaEventos={() => setParams({ aba: "eventos" })} />
           <div className="grid sm:grid-cols-2 gap-4">
             <Link to="/validar" className="rounded-[24px] bg-terra text-cream p-5 hover:bg-terradeep">
               <Icone nome="qr" className="size-7" />

@@ -219,7 +219,7 @@ const ABAS = [
   { id: "usuarios", rotulo: "Usuários e restaurantes" },
   { id: "mensagens", rotulo: "Mensagens" },
   { id: "avaliacoes", rotulo: "Avaliações" },
-  { id: "eventos", rotulo: "Eventos da plataforma" },
+  { id: "eventos", rotulo: "Super eventos" },
 ];
 
 export default function PainelSuporte() {

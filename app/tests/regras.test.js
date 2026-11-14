@@ -184,11 +184,36 @@ describe("conta do cliente e eventos da plataforma", () => {
     await assertSucceeds(updateDoc(doc(como(CLIENTE), "usuarios", CLIENTE), { nome: "Ana Paula", telefone: "(61) 99999-0000" }));
     await assertFails(updateDoc(doc(como(CLIENTE), "usuarios", CLIENTE), { nome: "<b>Ana</b>" }));
   });
-  it("só o admin cria evento da plataforma e configura o super evento", async () => {
-    const ev = { titulo: "Festival", tipoEvento: "geral_plataforma", inicio: "2026-11-01", fim: "2026-11-10" };
-    await assertSucceeds(setDoc(doc(como(ADMIN), "eventos", "geral1"), ev));
-    await assertFails(setDoc(doc(como(RESTAURANTE), "eventos", "geral2"), { ...ev, restauranteId: RESTAURANTE }));
-    await assertSucceeds(setDoc(doc(como(ADMIN), "configuracoes", "super_evento"), { titulo: "Super" }, { merge: true }));
+});
+
+describe("super eventos (criados pelo administrador)", () => {
+  const superEv = (extra = {}) => ({
+    titulo: "Festival", subtitulo: "Menus especiais", tipoEvento: "geral_plataforma", inicio: "2026-11-01", fim: "2026-11-10",
+    mostrarAviso: true, restaurantesParticipantes: [], criadoPor: ADMIN, ...extra,
+  });
+  it("só o admin cria super evento, registrado como criador", async () => {
+    await assertSucceeds(setDoc(doc(como(ADMIN), "eventos", "geral1"), superEv()));
+    await assertFails(setDoc(doc(como(RESTAURANTE), "eventos", "geral2"), { ...superEv({ criadoPor: RESTAURANTE }), restauranteId: RESTAURANTE }));
+  });
+  it("super evento sem criador, com outro criador ou com campo fora da lista é recusado", async () => {
+    const { criadoPor: _c, ...semCriador } = superEv();
+    await assertFails(setDoc(doc(como(ADMIN), "eventos", "geral1"), semCriador));
+    await assertFails(setDoc(doc(como(ADMIN), "eventos", "geral1"), superEv({ criadoPor: "outro-admin" })));
+    await assertFails(setDoc(doc(como(ADMIN), "eventos", "geral1"), superEv({ email: "x@y.com" })));
+    await assertFails(setDoc(doc(como(ADMIN), "eventos", "geral1"), superEv({ mostrarAviso: "sim" })));
+  });
+  it("o admin edita o super evento, mas não troca o criador", async () => {
+    await semRegras((db) => setDoc(doc(db, "eventos", "geral1"), superEv()));
+    await assertSucceeds(updateDoc(doc(como(ADMIN), "eventos", "geral1"), { subtitulo: "Novo subtítulo", mostrarAviso: false }));
+    await assertFails(updateDoc(doc(como(ADMIN), "eventos", "geral1"), { criadoPor: "outro-admin" }));
+  });
+  it("o restaurante só se acrescenta aos participantes", async () => {
+    await semRegras((db) => setDoc(doc(db, "eventos", "geral1"), superEv()));
+    await assertSucceeds(updateDoc(doc(como(RESTAURANTE), "eventos", "geral1"), { restaurantesParticipantes: [RESTAURANTE] }));
+    await assertFails(updateDoc(doc(como(RESTAURANTE), "eventos", "geral1"), { titulo: "Meu festival" }));
+  });
+  it("a antiga configuração do super evento (configuracoes) não aceita mais gravação", async () => {
+    await assertFails(setDoc(doc(como(ADMIN), "configuracoes", "super_evento"), { titulo: "Super" }, { merge: true }));
     await assertFails(setDoc(doc(como(RESTAURANTE), "configuracoes", "super_evento"), { titulo: "Meu" }, { merge: true }));
   });
 });
@@ -317,6 +342,15 @@ describe("itens salvos sem dados de contato", () => {
   const salvo = (extra = {}) => ({ usuarioId: CLIENTE, promocaoId: "p1", titulo: "Jantar a dois", restauranteId: RESTAURANTE, restauranteNome: "Brasa", ...extra });
   it("cliente salva uma promoção só com o próprio id", async () => {
     await assertSucceeds(setDoc(doc(como(CLIENTE), "salvos", "s1"), salvo()));
+  });
+  it("cliente salva um evento (só eventoId)", async () => {
+    const evento = { usuarioId: CLIENTE, eventoId: "e1", titulo: "Noite do Jazz", restauranteId: "", restauranteNome: "GastroMatch", inicio: "2026-11-20", fim: "2026-11-21" };
+    await assertSucceeds(setDoc(doc(como(CLIENTE), "salvos", "s2"), evento));
+  });
+  it("item salvo precisa apontar para exatamente uma promoção ou um evento", async () => {
+    await assertFails(setDoc(doc(como(CLIENTE), "salvos", "s1"), salvo({ eventoId: "e1" })));
+    const { promocaoId: _p, ...semNenhum } = salvo();
+    await assertFails(setDoc(doc(como(CLIENTE), "salvos", "s1"), semNenhum));
   });
   it("salvo com e-mail ou nome do cliente é recusado", async () => {
     await assertFails(setDoc(doc(como(CLIENTE), "salvos", "s1"), salvo({ usuarioEmail: "ana@teste.com" })));

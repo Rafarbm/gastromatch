@@ -101,15 +101,10 @@ export async function excluirCupom(uid, cupom) {
   await lote.commit();
 }
 
-// Eventos criados pela plataforma (suporte) e o "super evento" da Home.
+// Super eventos criados pela equipe (suporte), dos quais o restaurante pode participar.
 export async function listarEventosPlataforma() {
-  const [snap, superSnap] = await Promise.all([
-    getDocs(query(collection(db, "eventos"), where("tipoEvento", "==", "geral_plataforma"))),
-    getDoc(doc(db, "configuracoes", "super_evento")),
-  ]);
-  const lista = snap.docs.map((d) => ({ id: d.id, caminho: ["eventos", d.id], ...d.data() }));
-  if (superSnap.exists() && superSnap.data().titulo) lista.unshift({ id: "super_evento", caminho: ["configuracoes", "super_evento"], superEvento: true, ...superSnap.data() });
-  return lista;
+  const snap = await getDocs(query(collection(db, "eventos"), where("tipoEvento", "==", "geral_plataforma")));
+  return snap.docs.map((d) => ({ id: d.id, caminho: ["eventos", d.id], ...d.data() }));
 }
 
 // O restaurante só pode se ACRESCENTAR na lista de participantes (regra do Firestore).

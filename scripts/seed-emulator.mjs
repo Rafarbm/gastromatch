@@ -666,19 +666,16 @@ async function main() {
     });
   }
 
+  // Super evento (criado pela equipe; antes havia também um "super evento" separado em
+  // configuracoes/super_evento, que foi unificado aqui).
   gravar("eventos/evento-global", {
-    titulo: "Festival GastroMatch de Primavera", tipo: "Evento GastroMatch", cozinha: "Geral",
+    titulo: "Festival GastroMatch de Primavera", subtitulo: "Menus especiais por tempo limitado",
+    tipo: "Evento GastroMatch", cozinha: "Geral",
     vibes: [], diasValidos: ["Sexta", "Sábado"], horaInicio: "18:00", horaFim: "23:00",
     origem: "Plataforma GastroMatch", inicio: dataRelativa(0), fim: dataRelativa(14),
     imagem: "/img/vinho-1.jpg", descricao: "Menus especiais com preço fixo nos restaurantes participantes.",
-    tipoEvento: "geral_plataforma",
+    tipoEvento: "geral_plataforma", mostrarAviso: true, criadoPor: uidAdmin,
     restaurantesParticipantes: [uid["brasa-lenha"], uid["osteria-aurora"], uid["sakura-zen"]], criadoEm: agora,
-  });
-
-  gravar("configuracoes/super_evento", {
-    titulo: "Festival GastroMatch de Primavera", subtitulo: "Menus especiais por tempo limitado",
-    inicio: dataRelativa(0), fim: dataRelativa(14), cozinha: "Geral", vibes: [],
-    mostrarAviso: true, restaurantesParticipantes: [uid["brasa-lenha"]], atualizadoEm: agora,
   });
 
   gravar("salvos/salvo-demo", {

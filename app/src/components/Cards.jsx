@@ -28,7 +28,7 @@ export function CardEvento({ evento: ev, className = "" }) {
         {ev.global && <span className="absolute top-3 right-3 rounded-full bg-terra text-cream px-3 py-1 text-[11px] font-semibold">GastroMatch</span>}
       </div>
       <div className="mt-3 px-1 pb-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-terra">{ev.global ? "Evento da plataforma" : ev.restauranteNome}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-terra">{ev.global ? "Super evento GastroMatch" : ev.restauranteNome}</p>
         <h3 className="mt-1 font-display font-semibold text-xl leading-tight">{ev.titulo}</h3>
         <p className="mt-1 text-sm text-inksoft line-clamp-2">{ev.descricao}</p>
         {ev.horaInicio && <p className="mt-2 text-xs font-semibold text-inksoft">{ev.horaInicio}{ev.horaFim && ` às ${ev.horaFim}`}</p>}
