@@ -32,7 +32,7 @@ Para refazer: `app/tests/navegador/capturas_tcc.py` (ver o cabeçalho do arquivo
 | Tela 19 – Painel: Eventos | tela-19-painel-eventos, tela-19-painel-eventos-formulario | Restaurante |
 | Tela 20 – Validar Cupom | tela-20-validar-cupom (ingresso resgatado na Tela 13) | Restaurante |
 | Tela 21 – Suporte: Usuários e Restaurantes | tela-21-suporte-usuarios-e-restaurantes | Administrador |
-| Tela 22 – Suporte: Mensagens, Avaliações e Eventos | tela-22-suporte-mensagens, tela-22-suporte-avaliacoes, tela-22-suporte-eventos-da-plataforma | Administrador |
+| Tela 22 – Suporte: Mensagens, Avaliações e Super Eventos | tela-22-suporte-mensagens, tela-22-suporte-avaliacoes, tela-22-suporte-super-eventos | Administrador |
 | Tela 23 – Ajuda e Fale Conosco | tela-23-ajuda-e-fale-conosco, tela-23-fale-conosco | Visitante |
 
 Observações:

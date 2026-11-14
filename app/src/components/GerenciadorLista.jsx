@@ -179,7 +179,8 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
                     );
                   })}
                 </span>
-              ) : (
+              ) : c.upload ? null : (
+                // Campos de foto (upload) não têm caixa de texto: a foto só entra pelo envio do aparelho.
                 <input
                   type={{ numero: "number", data: "date", hora: "time", url: "url" }[c.tipo] || "text"}
                   step={c.tipo === "numero" ? "0.01" : undefined}
@@ -193,7 +194,12 @@ export default function GerenciadorLista({ nomeItem, campos, carregar, salvar, e
               {c.upload && (
                 <>
                   <EnviarFoto aoEnviar={(url) => { enviadas.current.push(url); mudar(c.nome, url); }} />
-                  {valores[c.nome] && <img src={valores[c.nome]} alt="Prévia da foto" className="mt-2 h-24 w-36 rounded-xl object-cover ring-1 ring-ink/10" />}
+                  {valores[c.nome] && (
+                    <span className="mt-2 flex items-end gap-3">
+                      <img src={valores[c.nome]} alt="Prévia da foto" className="h-24 w-36 rounded-xl object-cover ring-1 ring-ink/10" />
+                      <button type="button" onClick={(e) => { e.preventDefault(); mudar(c.nome, ""); }} className="rounded-full bg-paper px-3 py-1.5 text-xs font-semibold ring-1 ring-ink/10 hover:text-red-700">Remover foto</button>
+                    </span>
+                  )}
                 </>
               )}
             </label>

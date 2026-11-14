@@ -59,10 +59,11 @@ def enviar(pg, arquivo, ancora="form"):
 
 
 def esperar_url_foto(pg, diferente_de=""):
+    # Sem campo de link: o endereço da foto aparece na prévia (img "Prévia da foto").
     pg.wait_for_function(
-        "(antigo) => { const i = [...document.querySelectorAll('form label input[type=url]')].find(e => e.value.startsWith('/api/foto/')); return i && i.value !== antigo; }",
+        "(antigo) => { const i = document.querySelector(\"form img[alt='Prévia da foto']\"); const v = i && i.getAttribute('src'); return !!v && v.startsWith('/api/foto/') && v !== antigo; }",
         arg=diferente_de, timeout=60000)
-    return pg.locator("form label input[type=url]").evaluate_all("els => els.map(e => e.value).find(v => v.startsWith('/api/foto/'))")
+    return pg.locator("form img[alt='Prévia da foto']").first.get_attribute("src")
 
 
 with sync_playwright() as p:
@@ -128,13 +129,15 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     passo("foto enviada numa edição cancelada é apagada (não sobra arquivo perdido)", banco(f"fotos/{id_de(url3)}")[0] == 404 and banco(f"fotos/{id_de(url2)}")[0] == 200)
 
-    # ---------- o campo de link continua funcionando ----------
+    # ---------- não há campo de link; "Remover foto" volta para a imagem padrão ----------
     item.get_by_role("button", name="Editar").click()
-    campo(pg, "Foto").fill("/img/vinho-1.jpg")
+    pg.wait_for_selector("form img[alt='Prévia da foto']", timeout=15000)
+    passo("o formulário não tem campo para colar link de foto", pg.locator("form input[type=url]").count() == 0)
+    pg.get_by_role("button", name="Remover foto").click()
     pg.get_by_role("button", name="Salvar").click()
     pg.wait_for_selector("text=atualizado(a) com sucesso", timeout=15000)
     pg.wait_for_timeout(1500)
-    passo("colar um link no lugar da foto enviada funciona e apaga a foto que saiu", banco(f"fotos/{id_de(url2)}")[0] == 404)
+    passo("remover a foto e salvar apaga a foto do banco (fica a imagem padrão)", banco(f"fotos/{id_de(url2)}")[0] == 404)
 
     # ---------- arquivos recusados ----------
     item.get_by_role("button", name="Editar").click()
@@ -160,10 +163,12 @@ with sync_playwright() as p:
     # ---------- fotos do restaurante (lista) ----------
     pg.goto(BASE + "/restaurante?aba=dados")
     pg.wait_for_selector("text=Adicionar foto do aparelho", timeout=30000)
+    passo("a aba Dados não tem caixa para colar links de foto", pg.locator("textarea.font-mono").count() == 0)
     pg.locator("input[type=file]").first.set_input_files(FOTO_B)
-    pg.wait_for_function("() => /\\/api\\/foto\\//.test(document.querySelector('textarea.font-mono').value)", timeout=60000)
-    url5 = [l for l in pg.locator("textarea.font-mono").input_value().split() if l.startswith("/api/foto/")][0]
-    passo("'Adicionar foto do aparelho' acrescenta a foto à lista do restaurante", True, url5)
+    galeria = "ul[aria-label='Fotos do restaurante'] img[src^='/api/foto/']"
+    pg.wait_for_selector(galeria, timeout=60000)
+    url5 = pg.locator(galeria).last.get_attribute("src")
+    passo("'Adicionar foto do aparelho' acrescenta a foto à galeria do restaurante", url5.startswith("/api/foto/"), url5)
     pg.get_by_role("button", name="Salvar dados").click()
     pg.wait_for_selector("text=Dados salvos", timeout=20000)
     pg.goto(BASE + "/r/brasa-lenha")
@@ -171,8 +176,7 @@ with sync_playwright() as p:
     passo("a foto enviada entra na galeria da página pública", pg.locator(f"img[src='{url5}']").count() >= 1)
     pg.goto(BASE + "/restaurante?aba=dados")
     pg.wait_for_selector("text=Adicionar foto do aparelho", timeout=30000)
-    caixa = pg.locator("textarea.font-mono")
-    caixa.fill("\n".join(l for l in caixa.input_value().split() if l != url5))
+    pg.locator("ul[aria-label='Fotos do restaurante'] li", has=pg.locator(f"img[src='{url5}']")).get_by_role("button", name="Remover").first.click()
     pg.get_by_role("button", name="Salvar dados").click()
     pg.wait_for_selector("text=Dados salvos", timeout=20000)
     pg.wait_for_timeout(1500)

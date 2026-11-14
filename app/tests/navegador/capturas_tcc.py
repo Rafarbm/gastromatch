@@ -313,7 +313,7 @@ with sync_playwright() as p:
     tentar("tela-21", t21)
 
     def t22():
-        for aba, nome in [("mensagens", "tela-22-suporte-mensagens"), ("avaliacoes", "tela-22-suporte-avaliacoes"), ("eventos", "tela-22-suporte-eventos-da-plataforma")]:
+        for aba, nome in [("mensagens", "tela-22-suporte-mensagens"), ("avaliacoes", "tela-22-suporte-avaliacoes"), ("eventos", "tela-22-suporte-super-eventos")]:
             pa.goto(BASE + "/suporte?aba=" + aba)
             pa.wait_for_timeout(2500)
             foto(pa, nome)

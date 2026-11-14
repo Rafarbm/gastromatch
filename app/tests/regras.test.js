@@ -735,6 +735,10 @@ describe("fotos enviadas (guardadas no Firestore)", () => {
     await assertFails(setDoc(doc(db, "fotos", "f1"), foto({ donoUid: OUTRO_RESTAURANTE })));
     await assertFails(setDoc(doc(db, "fotos", "f1"), foto({ dados: "texto no lugar da imagem" })));
   });
+  it("o administrador envia foto (super eventos), só em nome próprio", async () => {
+    await assertSucceeds(setDoc(doc(como(ADMIN), "fotos", "fa"), foto({ donoUid: ADMIN })));
+    await assertFails(setDoc(doc(como(ADMIN), "fotos", "fb"), foto({ donoUid: RESTAURANTE })));
+  });
   it("cliente e visitante não enviam fotos", async () => {
     await assertFails(setDoc(doc(como(CLIENTE), "fotos", "f1"), foto({ donoUid: CLIENTE })));
     await assertFails(setDoc(doc(anonimo(), "fotos", "f1"), foto()));

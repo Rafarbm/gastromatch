@@ -12,8 +12,8 @@ termina com `RESULTADO: TUDO PASSOU` ou `RESULTADO: HOUVE FALHA`.
 | `slug_privacidade.py` | Endereço `/r/slug`, cadastro e troca de slug, leitura direta do banco sem login (ficha privada negada), moderação pelo suporte. |
 | `ia.py` | Assistente com IA só para quem está logado; resumo e datas especiais pedem só identificadores ao servidor. |
 | `conta.py` | Mensagem neutra no cadastro, troca de e-mail com confirmação, troca de senha e exclusão de conta (cliente e restaurante), termos e política de privacidade. |
-| `fotos.py` | Envio de foto do aparelho (redução e WebP até 500 KB), entrega com cache, troca/cancelamento/exclusão apagando a foto antiga, campo de link, arquivos recusados. Gera as imagens de teste na hora (precisa do Pillow: `pip install pillow`). |
-| `super_eventos.py` | Super eventos: o suporte cria (criador registrado, aviso ligado), o banner da página inicial mostra os que estão no período, o restaurante vê o convite no painel e participa, edição mantém o criador, exclusão tira do banner. |
+| `fotos.py` | Envio de foto do aparelho (redução e WebP até 500 KB), entrega com cache, troca/cancelamento/exclusão apagando a foto antiga, sem campo de link (só envio do aparelho), arquivos recusados. Gera as imagens de teste na hora (precisa do Pillow: `pip install pillow`). |
+| `super_eventos.py` | Super eventos: o suporte cria (criador registrado, aviso ligado, foto enviada do aparelho), o banner da página inicial mostra os que estão no período, o restaurante vê o convite no painel e participa, edição mantém o criador, exclusão tira do banner. |
 | `catalogo.py` | Listagem paginada no banco (12 por vez), filtros, busca por prato, nota média gravada e atualizada junto com a avaliação. |
 | `medir_desempenho.py` | Tempo de carregamento (mediana de 3 aberturas, cache limpo) em duas velocidades de rede simuladas. |
 

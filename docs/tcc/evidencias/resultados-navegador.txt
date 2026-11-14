@@ -1,4 +1,4 @@
-===== favoritos (13/11/2026)
+===== favoritos (14/11/2026)
 PASSOU visitante vê o coração nos cartões | 12 corações
 PASSOU visitante que toca no coração vai para o login | http://127.0.0.1:5173/entrar?voltar=%2Frestaurantes
 PASSOU depois do login volta para o catálogo | http://127.0.0.1:5173/restaurantes
@@ -11,7 +11,7 @@ PASSOU sem rolagem horizontal no celular | 390
 PASSOU conta de restaurante não vê o coração
 PASSOU sem erros no console do navegador
 RESULTADO: TUDO PASSOU
-===== promocoes (13/11/2026)
+===== promocoes (14/11/2026)
 PASSOU painel mostra os quatro status calculados pelas datas | {'Jantar a dois': 'ATIVA', 'Festival da costela': 'AGENDADA', 'Semana do churrasco': 'ENCERRADA', 'Especial de inverno': 'EXPIRADA'}
 PASSOU página pública mostra só a promoção ativa
 PASSOU cupom vinculado aparece com o nome da promoção; cupom de promoção encerrada não aparece
@@ -27,20 +27,20 @@ PASSOU reativar devolve o status Ativa | ATIVA
 PASSOU promoção expirada não oferece Encerrar nem Reativar
 PASSOU excluir promoção com cupom vinculado é bloqueado | Não é possível excluir "Jantar a dois": o cupom BRASA15 está vinculado a ela. Desvincule ou exclua o cupom antes, ou use Encerrar. | Não sab
 PASSOU a promoção bloqueada continua na lista
-PASSOU lista de cupons mostra a promoção vinculada | BRASA15 · 15% /  / ATIVO /  / 08/11 a 13/12 /  / Resgates: 6 de 30 /  / Promoção: Jantar a dois /  / Editar / Excluir / 
+PASSOU lista de cupons mostra a promoção vinculada | BRASA15 · 15% /  / ATIVO /  / 09/11 a 14/12 /  / Resgates: 6 de 30 /  / Promoção: Jantar a dois /  / Editar / Excluir / 
 PASSOU cupom de promoção encerrada aparece como 'Promoção inativa' | PROMOÇÃO INATIVA
-PASSOU código de cupom repetido é recusado | Você já tem um cupom com o código BRASA15. Escolha outro código. | Não sabe onde comer?
+PASSOU código de cupom repetido é recusado | Você já tem um cupom com o código BRASA15. Escolha outro código.
 PASSOU código com espaço é recusado | Código: use só letras, números, hífen ou sublinhado, sem espaços (3 a 30 caracteres). | Não sabe ond
-PASSOU cupom novo é criado já vinculado à promoção | TESTE20 · 5% /  / ATIVO /  / 13/11 a 23/11 /  / Resgates: 0 (sem limite) /  / Promoção: Teste imediata /  / Editar / Exc
+PASSOU cupom novo é criado já vinculado à promoção | TESTE20 · 5% /  / ATIVO /  / 14/11 a 24/11 /  / Resgates: 0 (sem limite) /  / Promoção: Teste imediata /  / Editar / Exc
 PASSOU promoção salva pelo cliente aparece como Indisponível depois de encerrada
 PASSOU com a promoção encerrada, o cupom vinculado some da página do restaurante
 PASSOU página da promoção encerrada avisa e não deixa salvar
-PASSOU com a promoção reativada, o cliente resgata o cupom vinculado | cupom-0_xkCP9KGrBTxB
+PASSOU com a promoção reativada, o cliente resgata o cupom vinculado | cupom-0_UdPAsRc658aS
 PASSOU excluir promoção sem cupom apaga o registro
 PASSOU painel de promoções sem rolagem horizontal no celular | 390
 PASSOU sem erros no console do navegador | []
 RESULTADO: TUDO PASSOU
-===== slug_privacidade (13/11/2026)
+===== slug_privacidade (14/11/2026)
 PASSOU os cartões do catálogo apontam para /r/slug | 12 cartões
 PASSOU /r/brasa-lenha abre a página do restaurante | Brasa & Lenha
 PASSOU o endereço antigo por id continua funcionando
@@ -53,7 +53,7 @@ PASSOU item salvo do cliente é negado para terceiros | 403
 PASSOU o slug é sugerido a partir do nome | cantina-teste-e2e
 PASSOU o campo do slug converte para minúsculas e hífens ao digitar | brasa-lenha
 PASSOU cadastro com slug de outro restaurante é recusado | Este endereço de página já está em uso por outro restaurante. Escolha outro.
-PASSOU slug curto demais é recusado | O endereço da página precisa ter pelo menos 3 caracteres. | Corrija os campos destacados. | Não sabe onde comer?
+PASSOU slug curto demais é recusado | O endereço da página precisa ter pelo menos 3 caracteres. | Corrija os campos destacados.
 PASSOU cadastro concluído; o painel aponta para /r/cantina-teste-e2e | /r/cantina-teste-e2e
 PASSOU o cabeçalho mostra o nome do restaurante (lido da ficha pública) | Cantina Teste E2E
 PASSOU a página pública do restaurante novo abre pelo slug
@@ -61,24 +61,24 @@ PASSOU a ficha pública do restaurante novo não tem o e-mail nem o nome do resp
 PASSOU trocar para o slug de outro restaurante é recusado | Este endereço de página já está em uso por outro restaurante. Escolha outro.
 PASSOU depois da troca, a página abre no slug novo
 PASSOU o slug antigo deixa de funcionar (fica livre)
-PASSOU painel de suporte lista o restaurante com e-mail (ficha privada) e cidade (ficha pública) | Cantina Teste E2E / RESTAURANTE /  / e2e1794594938@teste.com · Italiana · Brasília/DF /  / ★ Destacar / Ver pá
+PASSOU painel de suporte lista o restaurante com e-mail (ficha privada) e cidade (ficha pública) | Cantina Teste E2E / RESTAURANTE /  / e2e1794689891@teste.com · Italiana · Brasília/DF /  / ★ Destacar / Ver pá
 PASSOU destaque dado pelo admin fica gravado na ficha pública
 PASSOU restaurante banido some do site
 PASSOU restaurante restaurado volta ao site
 PASSOU sem erros no console do navegador | []
 RESULTADO: TUDO PASSOU
-===== ia (13/11/2026)
+===== ia (14/11/2026)
 PASSOU visitante recebe o aviso de que a IA exige login | e ajudando pelo modo rápido.  Assistente: Quanto você pretende gastar por pessoa, mais ou menos? Pode ser um valor, como R$ 100.  Até R$ 60 por pessoa R$ 60 a R$ 120 R$ 120 a R$ 200 Acima de R$ 200 Tanto faz Sua mensagem
 PASSOU visitante NÃO dispara chamada à IA (modo rápido) | []
 PASSOU o modo rápido continua respondendo ao visitante
 PASSOU cliente logado dispara a chamada à IA com o comprovante de login | [('ia', 200)]
 PASSOU o servidor aceita o login e a IA responde (200) ou está sem cota (429/503) | 200
 PASSOU cliente logado não vê o aviso de login
-PASSOU o pedido de resumo leva só o id do restaurante | {"restauranteId":"X7njt7sYHSdCGLj5zrCo5X6GXW6Z"}
+PASSOU o pedido de resumo leva só o id do restaurante | {"restauranteId":"LgzJPbdv88GVD5ksEGAW1Wa0ZApy"}
 PASSOU a página mostra o resumo e informa a origem | GERADO POR IA
-PASSOU o pedido das datas especiais leva só identificadores (sem nomes) | {"estado":"","datas":[{"id":"natal","restauranteIds":["EDZiTKixE9ufIcUGg5lGb31rH2bU","GZFF4qXYo9DCrAMKs9oud6XZyGe6","dIK
+PASSOU o pedido das datas especiais leva só identificadores (sem nomes) | {"estado":"","datas":[{"id":"natal","restauranteIds":["1KfYO7LKMlbhjMOdKJs9puebeqF6","34Z1XrylHXM45Q9wVR5YPSQqr39Q","P3C
 RESULTADO: TUDO PASSOU
-===== conta (13/11/2026)
+===== conta (14/11/2026)
 PASSOU cliente novo se cadastra (identificador do CPF calculado no servidor)
 PASSOU e-mail já cadastrado: mensagem neutra | Não foi possível criar a conta com esses dados. Se você já tem cadastro, use Entrar ou Esqueci a senha.
 PASSOU CPF já cadastrado: a MESMA mensagem neutra | Não foi possível criar a conta com esses dados. Se você já tem cadastro, use Entrar ou Esqueci a senha.
@@ -99,7 +99,7 @@ PASSOU o CNPJ e o slug ficam livres para um novo cadastro
 PASSOU a página de ajuda traz os Termos de uso e a Política de privacidade completos
 PASSOU sem erros no console do navegador | []
 RESULTADO: TUDO PASSOU
-===== catalogo (13/11/2026)
+===== catalogo (14/11/2026)
 PASSOU a listagem mostra 12 restaurantes por vez | 12
 PASSOU o cabeçalho avisa que há mais resultados | Mostrando 12 restaurantes (há mais)
 PASSOU 'Ver mais restaurantes' traz os próximos 12 | 24
@@ -115,8 +115,8 @@ PASSOU remover a avaliação desconta (volta ao valor original) | (64.0, 14.0)
 PASSOU sem rolagem horizontal no celular
 PASSOU sem erros no console do navegador | []
 RESULTADO: TUDO PASSOU
-===== fotos (13/11/2026)
-PASSOU a foto é enviada e o campo recebe o endereço /api/foto/... | /api/foto/SNpfXxwdYbXPGtbwt7CY
+===== fotos (14/11/2026)
+PASSOU a foto é enviada e o campo recebe o endereço /api/foto/... | /api/foto/I2IDK8gAhv5elM2wXoaV
 PASSOU a prévia da foto aparece no formulário
 PASSOU a foto foi reduzida e comprimida antes de ir para o banco (até 500 KB e 1600 px) | original 4019 KB → 445 KB, 1600 px de largura
 PASSOU o formato guardado é WebP | {'stringValue': 'image/webp'}
@@ -124,22 +124,26 @@ PASSOU o servidor entrega a foto como imagem, com cache de 1 ano | (200, 'image/
 PASSOU a foto aparece na página pública da promoção
 PASSOU trocar a foto apaga a antiga do banco e mantém a nova
 PASSOU foto enviada numa edição cancelada é apagada (não sobra arquivo perdido)
-PASSOU colar um link no lugar da foto enviada funciona e apaga a foto que saiu
+PASSOU o formulário não tem campo para colar link de foto
+PASSOU remover a foto e salvar apaga a foto do banco (fica a imagem padrão)
 PASSOU formato não aceito (GIF) é recusado com mensagem clara
 PASSOU arquivo acima de 10 MB é recusado com mensagem clara
 PASSOU excluir a promoção apaga a foto dela
-PASSOU 'Adicionar foto do aparelho' acrescenta a foto à lista do restaurante | /api/foto/clZOQwvAu0gEeI86X0Th
+PASSOU a aba Dados não tem caixa para colar links de foto
+PASSOU 'Adicionar foto do aparelho' acrescenta a foto à galeria do restaurante | /api/foto/GiDuk2nddY3tIegdIMPA
 PASSOU a foto enviada entra na galeria da página pública
 PASSOU tirar a foto da lista e salvar apaga a foto do banco
 PASSOU sem erros no console do navegador | []
 RESULTADO: TUDO PASSOU
-===== super_eventos (13/11/2026)
+===== super_eventos (14/11/2026)
 PASSOU a aba do painel de suporte se chama "Super eventos"
 PASSOU a tela do suporte tem uma seção só, "Super eventos" (sem o super evento separado)
+PASSOU o formulário do super evento não tem campo para colar link de foto
 PASSOU o super evento novo aparece na lista do suporte
 PASSOU o super evento futuro aparece como Agendado | Festival de Inverno Teste
-PASSOU no banco, o super evento guarda quem criou (o administrador) | {'stringValue': 'KYQAZqUUfl3T9OgzhCSIwPP3gZuX'}
+PASSOU no banco, o super evento guarda quem criou (o administrador) | {'stringValue': 'mSOeNUmNd0jrzBf1kZ3pVJigc3Op'}
 PASSOU no banco, o aviso aos restaurantes ficou ligado (verdadeiro/falso, não texto) | {'booleanValue': True}
+PASSOU o administrador enviou a foto do super evento do aparelho (guardada como /api/foto/...) | {'stringValue': '/api/foto/xs0gxjFpHhDOq3Dio17l'}
 PASSOU a antiga configuração do super evento não existe mais
 PASSOU o banner mostra os dois super eventos no período (o do seed e o novo) | NovoEscolha o restaurante pela experiênciaRomântico, alegre, tranquilo ou sofisticado: diga o clima e a gente encontra a mesa certa.Recomendar com IASuper eventoSemana do Risoto TesteRisotos com preço
 PASSOU o banner mostra o subtítulo do super evento novo
@@ -149,7 +153,7 @@ PASSOU não há convite para o festival do qual o restaurante já participa
 PASSOU não há convite para o super evento sem aviso ligado
 PASSOU na aba Eventos, o cartão diz "Super evento"
 PASSOU o restaurante confirma a participação
-PASSOU no banco, o restaurante entrou na lista de participantes | ['KoyaLRiCCdXZZ0jLwRQnTzVfTU2j']
+PASSOU no banco, o restaurante entrou na lista de participantes | ['4NQfoxwTfSwqU6iuG4QFDGe8zCvM']
 PASSOU depois de participar, o convite some do painel
 PASSOU a página do restaurante mostra o super evento de que ele participa
 PASSOU editar mantém o criador e os participantes

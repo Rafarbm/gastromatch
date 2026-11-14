@@ -311,7 +311,8 @@ service cloud.firestore {
     // WebP (ou JPEG em navegadores sem WebP), até 500 KB. Só o dono envia e apaga.
     match /fotos/{id} {
       allow read: if true;
-      allow create: if restaurante()
+      // Restaurantes (fotos do estabelecimento, pratos, promoções e eventos) e o administrador (super eventos).
+      allow create: if (restaurante() || admin())
         && request.resource.data.keys().hasOnly(['donoUid', 'dados', 'tipo', 'largura', 'altura', 'tamanho', 'criadoEm'])
         && request.resource.data.donoUid == meuUid()
         && request.resource.data.dados is bytes

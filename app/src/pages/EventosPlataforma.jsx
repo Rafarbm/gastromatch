@@ -43,7 +43,7 @@ export default function EventosPlataforma() {
             { nome: "subtitulo", rotulo: "Subtítulo", tipo: "texto", max: 200, ajuda: "Frase curta mostrada no banner da página inicial." },
             { nome: "tipo", rotulo: "Tipo", tipo: "texto", max: 60, ajuda: "Ex.: Festival, Semana temática" },
             { nome: "cozinha", rotulo: "Cozinha", tipo: "select", opcoes: ["Geral", ...COZINHAS], obrigatorio: true },
-            { nome: "imagem", rotulo: "Foto (endereço)", tipo: "url" },
+            { nome: "imagem", rotulo: "Foto", tipo: "url", upload: true, ajuda: "Opcional. Envie uma foto do aparelho; sem foto, usamos uma imagem padrão." },
             { nome: "inicio", rotulo: "Início", tipo: "data", obrigatorio: true },
             { nome: "fim", rotulo: "Fim", tipo: "data", obrigatorio: true },
             { nome: "horaInicio", rotulo: "Das", tipo: "hora" },

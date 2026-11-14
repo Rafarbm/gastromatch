@@ -73,7 +73,7 @@ export function AbaDados() {
     if (!COZINHAS.includes(f.cozinha)) return setEstado({ salvando: false, erro: "Escolha o tipo de cozinha.", ok: "" });
     if (!ESTADOS[f.estado]) return setEstado({ salvando: false, erro: "Escolha o estado.", ok: "" });
     const fotos = f.fotos.split(/\s+/).filter(Boolean);
-    if (fotos.length > 10 || fotos.some((u) => !urlValida(u))) return setEstado({ salvando: false, erro: "Fotos: até 10 endereços, um por linha, começando com https://", ok: "" });
+    if (fotos.length > 10 || fotos.some((u) => !urlValida(u))) return setEstado({ salvando: false, erro: "Fotos: no máximo 10, enviadas do aparelho.", ok: "" });
     setEstado({ salvando: true, erro: "", ok: "" });
     try {
       const { fotos: _texto, faixaPreco, ...resto } = f;
@@ -159,14 +159,27 @@ export function AbaDados() {
         <label><span className="text-xs">Fecha</span><input type="time" value={f.fimFds} onChange={mudar("fimFds")} className={cls} /></label>
       </fieldset>
       <div className="sm:col-span-2">
-        <label><span className="font-semibold">Fotos (uma por linha; a primeira é a capa; até 10)</span>
-          <textarea rows={3} value={f.fotos} onChange={mudar("fotos")} className={`${cls} font-mono text-xs`} placeholder="https://..." />
-        </label>
-        <EnviarFoto aoEnviar={(url) => setF((x) => ({ ...x, fotos: [x.fotos.trim(), url].filter(Boolean).join("\n") }))} rotulo="Adicionar foto do aparelho" />
+        <p className="font-semibold">Fotos (até 10; a primeira é a capa)</p>
+        <p className="text-xs text-inksoft">As fotos são enviadas do aparelho e devem mostrar o ambiente e os pratos reais do restaurante.</p>
+        {listaFotos(f.fotos).length < 10 && (
+          <EnviarFoto aoEnviar={(url) => setF((x) => ({ ...x, fotos: [...listaFotos(x.fotos), url].join("\n") }))} rotulo="Adicionar foto do aparelho" />
+        )}
         {listaFotos(f.fotos).length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-2" aria-label="Prévia das fotos">
+          <ul className="mt-2 flex flex-wrap gap-3" aria-label="Fotos do restaurante">
             {listaFotos(f.fotos).map((u, i) => (
-              <li key={u + i}><img src={u} alt={i === 0 ? "Foto de capa" : `Foto ${i + 1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-ink/10" /></li>
+              <li key={u + i} className="flex flex-col items-start gap-1">
+                <img src={u} alt={i === 0 ? "Foto de capa" : `Foto ${i + 1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-ink/10" />
+                <span className="flex gap-2 text-[11px] font-semibold">
+                  {i === 0 ? <span className="text-terra">Capa</span> : (
+                    <button type="button" onClick={() => setF((x) => { const l = listaFotos(x.fotos).filter((v) => v !== u); return { ...x, fotos: [u, ...l].join("\n") }; })} className="hover:text-terra">Tornar capa</button>
+                  )}
+                  <button type="button" aria-label={`Remover foto ${i + 1}`} onClick={() => {
+                    // Foto enviada agora e removida antes de salvar: apaga do banco (não fica arquivo perdido).
+                    if (!fotosSalvas.includes(u) && u.startsWith("/api/foto/")) apagarFotoPorUrl(u);
+                    setF((x) => ({ ...x, fotos: listaFotos(x.fotos).filter((v) => v !== u).join("\n") }));
+                  }} className="text-inksoft hover:text-red-700">Remover</button>
+                </span>
+              </li>
             ))}
           </ul>
         )}
@@ -194,7 +207,7 @@ export function AbaCardapio({ extra }) {
         { nome: "titulo", rotulo: "Nome do prato", tipo: "texto", obrigatorio: true, min: 2, max: 120 },
         { nome: "categoria", rotulo: "Categoria", tipo: "select", opcoes: CATEGORIAS, obrigatorio: true },
         { nome: "preco", rotulo: "Preço (R$)", tipo: "numero", obrigatorio: true, min: 0.01, max: 100000 },
-        { nome: "imagem", rotulo: "Foto", tipo: "url", upload: true, ajuda: "Opcional. Envie do aparelho ou cole um endereço (https://...)." },
+        { nome: "imagem", rotulo: "Foto", tipo: "url", upload: true, ajuda: "Opcional. Envie uma foto do aparelho." },
         { nome: "descricao", rotulo: "Descrição", tipo: "textarea", max: 1000 },
       ]}
       paraFormulario={(m) => ({ titulo: m?.titulo || "", categoria: m?.categoria || "", preco: m?.preco ?? "", imagem: m?.imagem || "", descricao: m?.descricao || "" })}
@@ -305,7 +318,7 @@ export function AbaPromocoes() {
         { nome: "titulo", rotulo: "Título", tipo: "texto", obrigatorio: true, min: 3, max: 120 },
         { nome: "valorPromocional", rotulo: "Valor", tipo: "texto", max: 60, ajuda: "Ex.: R$ 49,90" },
         { nome: "prato", rotulo: "Prato", tipo: "texto", max: 120 },
-        { nome: "foto", rotulo: "Foto", tipo: "url", upload: true, ajuda: "Envie do aparelho ou cole um endereço (https://...)." },
+        { nome: "foto", rotulo: "Foto", tipo: "url", upload: true, ajuda: "Opcional. Envie uma foto do aparelho; sem foto, usamos uma imagem padrão." },
         { nome: "inicio", rotulo: "Início (entra no site)", tipo: "data", obrigatorio: true, ajuda: "Hoje = publica agora. Data futura = fica agendada e entra no site sozinha nesse dia." },
         { nome: "fim", rotulo: "Fim (último dia)", tipo: "data", obrigatorio: true, ajuda: "Depois desse dia a promoção sai do site." },
         { nome: "horaInicio", rotulo: "Das", tipo: "hora" },
@@ -397,7 +410,7 @@ export function AbaEventos() {
         buscarEm={(e) => [e.titulo, e.descricao]}
         campos={[
           { nome: "titulo", rotulo: "Título", tipo: "texto", obrigatorio: true, min: 3, max: 120 },
-          { nome: "foto", rotulo: "Foto", tipo: "url", upload: true, ajuda: "Envie do aparelho ou cole um endereço (https://...)." },
+          { nome: "foto", rotulo: "Foto", tipo: "url", upload: true, ajuda: "Opcional. Envie uma foto do aparelho; sem foto, usamos uma imagem padrão." },
           { nome: "inicio", rotulo: "Início", tipo: "data", obrigatorio: true },
           { nome: "fim", rotulo: "Fim", tipo: "data", obrigatorio: true },
           { nome: "horaInicio", rotulo: "Das", tipo: "hora" },

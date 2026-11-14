@@ -85,6 +85,12 @@ with sync_playwright() as p:
     campo(a, "Fim").fill(dia(7))
     campo(a, "Descrição", "textarea").fill("Super evento criado pelo teste automático.")
     campo(a, "Mostrar aviso aos restaurantes", "select").select_option(label="Sim")
+    passo("o formulário do super evento não tem campo para colar link de foto", a.locator("form input[type=url]").count() == 0)
+    from PIL import Image
+    arq_foto = os.path.join(OUT, "foto-super-evento.jpg")
+    Image.new("RGB", (1200, 800), (180, 90, 60)).save(arq_foto, "JPEG")
+    a.locator("form input[type=file]").first.set_input_files(arq_foto)
+    a.wait_for_function("() => { const i = document.querySelector(\"form img[alt='Prévia da foto']\"); return i && (i.getAttribute('src') || '').startsWith('/api/foto/'); }", timeout=60000)
     a.get_by_role("button", name="Salvar").click()
     a.wait_for_selector(f"text={NOVO}", timeout=20000)
     a.screenshot(path=os.path.join(OUT, "super-1-suporte.png"), full_page=True)
@@ -107,6 +113,8 @@ with sync_playwright() as p:
     f = novos[0]["fields"] if novos else {}
     passo("no banco, o super evento guarda quem criou (o administrador)", f.get("criadoPor", {}).get("stringValue") in admins and admins, f.get("criadoPor"))
     passo("no banco, o aviso aos restaurantes ficou ligado (verdadeiro/falso, não texto)", f.get("mostrarAviso", {}).get("booleanValue") is True, f.get("mostrarAviso"))
+    passo("o administrador enviou a foto do super evento do aparelho (guardada como /api/foto/...)",
+          f.get("imagem", {}).get("stringValue", "").startswith("/api/foto/"), f.get("imagem"))
     passo("a antiga configuração do super evento não existe mais", not banco("configuracoes?pageSize=10").get("documents"))
 
     # ---------- banner da página inicial ----------
