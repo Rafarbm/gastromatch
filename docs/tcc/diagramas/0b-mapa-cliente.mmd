@@ -1,0 +1,14 @@
+flowchart LR
+  Cliente
+  Restaurante
+  Prato
+  Promocao["Promoção"]
+  Evento
+  Cupom
+
+  Cliente -- "favorita  →  Favorito" --> Restaurante
+  Cliente -- "avalia  →  Avaliação" --> Restaurante
+  Cliente -- "avalia  →  Avaliação" --> Prato
+  Cliente -- "salva  →  Item salvo" --> Promocao
+  Cliente -- "salva  →  Item salvo" --> Evento
+  Cliente -- "resgata  →  Resgate (ingresso)" --> Cupom

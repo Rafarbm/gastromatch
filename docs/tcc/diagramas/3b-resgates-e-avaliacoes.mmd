@@ -1,0 +1,45 @@
+%%{init: {"class": {"useMaxWidth": false}}}%%
+classDiagram
+direction LR
+class Cliente
+class Resgate {
+  +String id «cupom + cliente»
+  +String codigo «único, 10 caracteres»
+  +StatusResgate status
+  +String nomeCliente «só o primeiro nome»
+  +Date validadeFim
+  +DateTime criadoEm
+  +DateTime usadoEm
+  +validar()
+  +qrCode() Imagem
+}
+class Avaliacao {
+  +String id «alvo + cliente»
+  +AlvoAvaliacao alvo
+  +int nota «1 a 5»
+  +String comentario «até 500»
+  +String nomeExibicao
+  +DateTime atualizadoEm
+  +editar(nota, comentario)
+  +remover()
+}
+class Cupom
+class Restaurante
+class Prato
+class StatusResgate {
+  <<enumeração>>
+  ATIVO
+  USADO
+}
+class AlvoAvaliacao {
+  <<enumeração>>
+  RESTAURANTE
+  PRATO
+}
+Cliente "1" -- "0..*" Resgate : resgata
+Resgate "0..*" -- "1" Cupom : de um
+Resgate ..> StatusResgate
+Cliente "1" -- "0..*" Avaliacao : escreve
+Avaliacao "0..*" -- "1" Restaurante : sobre
+Avaliacao "0..*" -- "0..1" Prato : ou sobre um
+Avaliacao ..> AlvoAvaliacao

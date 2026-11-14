@@ -1,0 +1,39 @@
+{
+  "base": "https://gastromatch-demo.netlify.app",
+  "data": "2026-11-10 10:44",
+  "repeticoes": 3,
+  "resultados": [
+    {
+      "perfil": "média velocidade (10 Mbit/s, 40 ms)",
+      "pagina": "Página inicial",
+      "conteudo_principal_s": 3.08,
+      "carregamento_completo_s": 0.98,
+      "primeiro_restaurante_s": 2.47,
+      "transferido_kb": 1939
+    },
+    {
+      "perfil": "média velocidade (10 Mbit/s, 40 ms)",
+      "pagina": "Restaurantes",
+      "conteudo_principal_s": 2.9,
+      "carregamento_completo_s": 0.97,
+      "primeiro_restaurante_s": 1.88,
+      "transferido_kb": 619
+    },
+    {
+      "perfil": "lenta, tipo 4G fraco (1,6 Mbit/s, 150 ms)",
+      "pagina": "Página inicial",
+      "conteudo_principal_s": 4.78,
+      "carregamento_completo_s": 2.19,
+      "primeiro_restaurante_s": 6.17,
+      "transferido_kb": 666
+    },
+    {
+      "perfil": "lenta, tipo 4G fraco (1,6 Mbit/s, 150 ms)",
+      "pagina": "Restaurantes",
+      "conteudo_principal_s": 2.24,
+      "carregamento_completo_s": 2.16,
+      "primeiro_restaurante_s": 4.15,
+      "transferido_kb": 399
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+flowchart TB
+  Usuario["Usuário"]
+  Cliente
+  Responsavel["Responsável"]
+  Administrador
+  Restaurante
+  Prato
+  Foto
+  Promocao["Promoção"]
+  Cupom
+  Evento
+
+  Cliente -. "é um" .-> Usuario
+  Responsavel -. "é um" .-> Usuario
+  Administrador -. "é um" .-> Usuario
+
+  Responsavel -- "gerencia (1 : 1)" --> Restaurante
+  Restaurante -- "tem" --> Prato
+  Restaurante -- "envia" --> Foto
+  Restaurante -- "publica" --> Promocao
+  Restaurante -- "emite" --> Cupom
+  Restaurante -- "organiza" --> Evento
+  Promocao -- "pode ter" --> Cupom
+  Administrador -- "cria da plataforma" --> Evento

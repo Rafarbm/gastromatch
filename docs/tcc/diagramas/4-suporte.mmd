@@ -1,0 +1,21 @@
+%%{init: {"class": {"useMaxWidth": false}}}%%
+classDiagram
+direction LR
+class Administrador
+class Usuario
+class Restaurante
+class Avaliacao
+class Evento
+class MensagemSuporte {
+  +String nome
+  +String email
+  +String assunto
+  +String mensagem
+  +DateTime criadoEm
+}
+Administrador "1" -- "0..*" Usuario : bane e restaura
+Administrador "1" -- "0..*" Restaurante : destaca
+Administrador "1" -- "0..*" Avaliacao : remove
+Administrador "1" -- "0..*" Evento : cria da plataforma
+Administrador "1" -- "0..*" MensagemSuporte : lê
+Usuario "0..1" -- "0..*" MensagemSuporte : envia

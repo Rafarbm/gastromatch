@@ -1,0 +1,23 @@
+%%{init: {"class": {"useMaxWidth": false}}}%%
+classDiagram
+direction LR
+class Cliente
+class Favorito {
+  +String id «cliente + restaurante»
+  +DateTime criadoEm
+}
+class ItemSalvo {
+  +String titulo
+  +String foto
+  +DateTime dataSalvo
+  +disponivel() boolean
+  +remover()
+}
+class Restaurante
+class Promocao
+class Evento
+Cliente "1" -- "0..*" Favorito : marca
+Favorito "0..*" -- "1" Restaurante : de um
+Cliente "1" -- "0..*" ItemSalvo : guarda
+ItemSalvo "0..*" -- "0..1" Promocao : de uma
+ItemSalvo "0..*" -- "0..1" Evento : ou de um

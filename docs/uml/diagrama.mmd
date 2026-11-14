@@ -1,0 +1,276 @@
+classDiagram
+direction TB
+
+class Usuario {
+  <<abstract>>
+  +String uid
+  +String email
+  +TipoUsuario tipo
+  +StatusConta status
+  +String telefone
+  +Timestamp criadoEm
+  +Timestamp aceiteTermosEm
+  +Timestamp atualizadoEm
+  +Timestamp banidoEm
+  +String motivoBanimento
+  +Timestamp excluidoEm
+  +cadastrar(dados)$
+  +atualizarMeusDados(nome, telefone)
+  +trocarSenha(senhaAtual, novaSenha)
+  +enviarRecuperacaoSenha(email)
+  +excluirMinhaConta(senhaAtual)
+}
+
+class Cliente {
+  +String nome
+  +resgatarCupom(cupom) Resgate
+  +listarMeusResgates() List~Resgate~
+  +salvarItem(item) Salvo
+  +listarSalvos() List~Salvo~
+  +removerSalvo(id)
+  +salvarAvaliacao(alvo, nota, comentario) Avaliacao
+  +excluirAvaliacao(id)
+}
+
+class Restaurante {
+  +String nomeRestaurante
+  +String nomeResponsavel
+  +String cozinha
+  +List~String~ vibes
+  +List~String~ ocasioes
+  +Integer faixaPreco
+  +String estado
+  +String cidade
+  +String bairro
+  +String endereco
+  +Number lat
+  +Number lng
+  +String whatsapp
+  +String descricao
+  +List~String~ fotos
+  +String diasSemana
+  +String inicioSemana
+  +String fimSemana
+  +String diasFim
+  +String inicioFds
+  +String fimFds
+  +Boolean destaque
+  +atualizarPerfil(dados)
+  +salvarItem(colecao, id, dados)
+  +excluirItem(colecao, id)
+  +importarPratos(itens)
+  +participarEvento(eventoId)
+  +listarResgatesDoRestaurante() List~Resgate~
+  +buscarResgatePorCodigo(codigo) Resgate
+  +validarResgate(resgateId)
+}
+
+class DadosPrivados {
+  +String cpf
+  +String cnpj
+}
+
+class DocumentoUnico {
+  +String hash
+  +String uid
+  +String tipo
+}
+
+class Administrador {
+  +String uid
+  +listarUsuarios() List~Usuario~
+  +banir(uid, motivo)
+  +restaurar(uid)
+  +excluirConta(uid)
+  +definirDestaque(uid, destaque)
+  +listarContatos() List~ContatoSuporte~
+  +excluirContato(id)
+  +excluirAvaliacaoAdmin(id)
+}
+
+class Prato {
+  +String id
+  +String restauranteId
+  +String titulo
+  +String categoria
+  +Number preco
+  +String descricao
+  +String imagem
+  +Timestamp criadoEm
+  +Timestamp importadoEm
+  +/String restaurante
+  +/String cozinha
+}
+
+class Promocao {
+  +String id
+  +String restauranteId
+  +String titulo
+  +String descricao
+  +String prato
+  +String valorPromocional
+  +String evento
+  +List~String~ diasValidos
+  +String horaInicio
+  +String horaFim
+  +String foto
+  +Timestamp criadoEm
+  +/String restaurante
+}
+
+class Cupom {
+  +String id
+  +String restauranteId
+  +String codigo
+  +String desconto
+  +Date validadeInicio
+  +Date validadeFim
+  +List~String~ diasValidos
+  +String horaInicio
+  +String horaFim
+  +String condicoes
+  +String prato
+  +Integer limiteTotal
+  +Integer resgatados
+  +Timestamp criadoEm
+  +cupomValido(hoje) Boolean
+}
+
+class Evento {
+  +String id
+  +String restauranteId
+  +String tipoEvento
+  +String titulo
+  +String descricao
+  +String cozinha
+  +Date inicio
+  +Date fim
+  +List~String~ diasValidos
+  +String horaInicio
+  +String horaFim
+  +String imagem
+  +List~String~ restaurantesParticipantes
+  +Timestamp criadoEm
+  +eventoVigente(hoje) Boolean
+}
+
+class SuperEvento {
+  +String titulo
+  +String subtitulo
+  +Date inicio
+  +Date fim
+  +String cozinha
+  +Boolean mostrarAviso
+  +List~String~ restaurantesParticipantes
+  +Timestamp atualizadoEm
+}
+
+class Resgate {
+  +String id
+  +String cupomId
+  +String usuarioId
+  +String restauranteId
+  +String codigo
+  +StatusResgate status
+  +Timestamp criadoEm
+  +Timestamp usadoEm
+  +/String codigoCupom
+  +/String desconto
+  +/Date validadeFim
+  +gerarCodigo(tamanho)$ String
+}
+
+class CodigoResgate {
+  +String codigo
+  +String resgateId
+}
+
+class Avaliacao {
+  +String id
+  +AlvoAvaliacao alvo
+  +String alvoId
+  +String restauranteId
+  +String usuarioId
+  +String nomeExibicao
+  +Integer nota
+  +String comentario
+  +Timestamp criadoEm
+  +Timestamp atualizadoEm
+  +calcularNotas(avaliacoes)$ Number
+}
+
+class Salvo {
+  +String id
+  +String usuarioId
+  +String restauranteId
+  +String promocaoId
+  +String eventoId
+  +Timestamp dataResgate
+  +/String titulo
+  +tipoDoSalvo() String
+}
+
+class ContatoSuporte {
+  +String id
+  +String nome
+  +String email
+  +String assunto
+  +String mensagem
+  +String usuarioId
+  +Timestamp criadoEm
+  +enviarContato(dados)$
+}
+
+class TipoUsuario {
+  <<enumeration>>
+  cliente
+  restaurante
+}
+
+class StatusConta {
+  <<enumeration>>
+  ativo
+  banido
+  excluido
+}
+
+class StatusResgate {
+  <<enumeration>>
+  ativo
+  usado
+}
+
+class AlvoAvaliacao {
+  <<enumeration>>
+  restaurante
+  prato
+}
+
+Usuario <|-- Cliente
+Usuario <|-- Restaurante
+Usuario "1" *-- "1" DadosPrivados : privado
+DocumentoUnico "0..1" --> "1" Usuario : identifica
+Administrador ..> Usuario : modera
+Administrador ..> ContatoSuporte : atende
+
+Restaurante "1" -- "0..*" Prato : oferece
+Restaurante "1" -- "0..*" Promocao : publica
+Restaurante "1" -- "0..*" Cupom : emite
+Restaurante "0..1" -- "0..*" Evento : organiza
+Restaurante "0..*" -- "0..*" Evento : participa
+Restaurante "0..*" -- "0..*" SuperEvento : participa
+
+Cliente "1" -- "0..*" Resgate : realiza
+Cupom "1" -- "0..*" Resgate : gera
+Restaurante "1" -- "0..*" Resgate : valida
+Resgate "1" -- "1" CodigoResgate : indexado por
+
+Cliente "1" -- "0..*" Avaliacao : escreve
+Avaliacao "0..*" -- "1" Restaurante : avalia
+Avaliacao "0..*" -- "0..1" Prato : avalia
+
+Cliente "1" -- "0..*" Salvo : guarda
+Salvo "0..*" -- "0..1" Promocao : refere
+Salvo "0..*" -- "0..1" Evento : refere
+
+ContatoSuporte "0..*" -- "0..1" Usuario : enviado por

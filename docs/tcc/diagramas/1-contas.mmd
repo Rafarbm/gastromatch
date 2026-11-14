@@ -1,0 +1,55 @@
+%%{init: {"class": {"useMaxWidth": false}}}%%
+classDiagram
+direction TB
+class Usuario {
+  <<abstrata>>
+  +String uid
+  +String email «único»
+  +String telefone
+  +StatusConta status
+  +DateTime criadoEm
+  +DateTime aceiteTermosEm
+  +entrar(email, senha)
+  +sair()
+  +recuperarSenha(email)
+  +trocarSenha(senhaAtual, novaSenha)
+  +trocarEmail(senhaAtual, novoEmail)
+  +excluirConta(senhaAtual)
+}
+class Cliente {
+  +String nome
+  -String cpf «único, privado»
+  +favoritar(restaurante)
+  +desfavoritar(restaurante)
+  +salvar(promocaoOuEvento)
+  +resgatarCupom(cupom) Resgate
+  +avaliar(alvo, nota, comentario)
+  +conversarComAssistente(mensagem)
+}
+class Responsavel {
+  +String nomeResponsavel
+  -String cnpj «único, privado»
+  +cadastrarRestaurante(dados, slug)
+  +validarIngresso(codigo)
+}
+class Administrador {
+  +banir(usuario, motivo)
+  +restaurar(usuario)
+  +destacar(restaurante)
+  +removerAvaliacao(avaliacao)
+  +criarEventoPlataforma(dados)
+  +definirEventoDestaque(dados)
+  +lerMensagens()
+}
+class Restaurante
+class StatusConta {
+  <<enumeração>>
+  ATIVO
+  BANIDO
+  EXCLUIDO
+}
+Usuario <|-- Cliente
+Usuario <|-- Responsavel
+Usuario <|-- Administrador
+Usuario ..> StatusConta : usa
+Responsavel "1" -- "1" Restaurante : gerencia

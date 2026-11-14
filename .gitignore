@@ -33,3 +33,9 @@ chave-*.json
 
 # Local Netlify folder
 .netlify
+
+# Documentos internos do TCC (ficam só no computador; não vão para o GitHub)
+docs/tcc/TCC - GastroMatch.pdf
+docs/tcc/comentarios-orientador.md
+docs/tcc/relatorio-tcc.md
+docs/tcc/notas-referencias.md

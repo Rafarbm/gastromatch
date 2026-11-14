@@ -1,0 +1,39 @@
+{
+  "base": "http://127.0.0.1:4173",
+  "data": "2026-11-10 10:42",
+  "repeticoes": 3,
+  "resultados": [
+    {
+      "perfil": "média velocidade (10 Mbit/s, 40 ms)",
+      "pagina": "Página inicial",
+      "conteudo_principal_s": 1.0,
+      "carregamento_completo_s": 0.5,
+      "primeiro_restaurante_s": 1.99,
+      "transferido_kb": 2518
+    },
+    {
+      "perfil": "média velocidade (10 Mbit/s, 40 ms)",
+      "pagina": "Restaurantes",
+      "conteudo_principal_s": 2.06,
+      "carregamento_completo_s": 0.51,
+      "primeiro_restaurante_s": 1.45,
+      "transferido_kb": 2243
+    },
+    {
+      "perfil": "lenta, tipo 4G fraco (1,6 Mbit/s, 150 ms)",
+      "pagina": "Página inicial",
+      "conteudo_principal_s": 4.79,
+      "carregamento_completo_s": 2.11,
+      "primeiro_restaurante_s": 8.14,
+      "transferido_kb": 980
+    },
+    {
+      "perfil": "lenta, tipo 4G fraco (1,6 Mbit/s, 150 ms)",
+      "pagina": "Restaurantes",
+      "conteudo_principal_s": 2.25,
+      "carregamento_completo_s": 2.15,
+      "primeiro_restaurante_s": 5.09,
+      "transferido_kb": 411
+    }
+  ]
+}

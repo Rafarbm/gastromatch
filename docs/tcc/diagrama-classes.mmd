@@ -1,0 +1,258 @@
+%%{init: {"class": {"useMaxWidth": false}}}%%
+classDiagram
+direction TB
+
+%% ================= Contas e papéis =================
+class Usuario {
+  <<abstrata>>
+  +String uid
+  +String email «único»
+  +String telefone
+  +StatusConta status
+  +DateTime criadoEm
+  +DateTime aceiteTermosEm
+  +entrar(email, senha)
+  +sair()
+  +recuperarSenha(email)
+  +trocarSenha(senhaAtual, novaSenha)
+  +trocarEmail(senhaAtual, novoEmail)
+  +excluirConta(senhaAtual)
+}
+class Cliente {
+  +String nome
+  -String cpf «único, privado»
+  +favoritar(restaurante) Favorito
+  +desfavoritar(restaurante)
+  +salvar(promocaoOuEvento) ItemSalvo
+  +resgatarCupom(cupom) Resgate
+  +avaliar(alvo, nota, comentario) Avaliacao
+  +conversarComAssistente(mensagem)
+}
+class Responsavel {
+  +String nomeResponsavel
+  -String cnpj «único, privado»
+  +cadastrarRestaurante(dados, slug) Restaurante
+  +validarIngresso(codigo)
+}
+class Administrador {
+  +banir(usuario, motivo)
+  +restaurar(usuario)
+  +destacar(restaurante)
+  +removerAvaliacao(avaliacao)
+  +criarEventoPlataforma(dados) Evento
+  +definirEventoDestaque(dados)
+  +lerMensagens() List~MensagemSuporte~
+}
+
+%% ================= Restaurante e o que ele publica =================
+class Restaurante {
+  +String id «= uid do responsável»
+  +String slug «único»
+  +String nome
+  +String cozinha
+  +List~String~ experiencias «até 3»
+  +List~String~ ocasioes
+  +int faixaPreco «1 a 4»
+  +String estado
+  +String cidade
+  +String bairro
+  +String endereco
+  +String telefone
+  +String whatsapp
+  +String descricao
+  +List~String~ fotos «até 10»
+  +String horarios
+  +boolean destaque
+  +StatusConta status
+  +int somaNotas
+  +int totalAvaliacoes
+  +double notaMedia
+  +editarDados(dados)
+  +trocarSlug(novoSlug)
+  +cadastrarPrato(dados) Prato
+  +importarCardapio(planilha)
+  +criarPromocao(dados) Promocao
+  +criarCupom(dados) Cupom
+  +criarEvento(dados) Evento
+  +participarEvento(evento)
+  +linkReserva() String
+}
+class Prato {
+  +String id
+  +String titulo
+  +CategoriaPrato categoria
+  +double preco
+  +String descricao
+  +String foto
+  +editar(dados)
+  +excluir()
+}
+class Promocao {
+  +String id
+  +String titulo
+  +String descricao
+  +String prato
+  +String valor
+  +List~String~ diasValidos
+  +String horaInicio
+  +String horaFim
+  +String foto
+  +Date inicio
+  +Date fim
+  +DateTime encerradaEm
+  +status() StatusPromocao
+  +encerrar()
+  +reativar()
+  +excluir()
+}
+class Cupom {
+  +String id
+  +String codigo «único no restaurante»
+  +String beneficio
+  +Date validadeInicio
+  +Date validadeFim
+  +int limiteTotal «opcional»
+  +int resgatados
+  +String condicoes
+  +status() StatusCupom
+  +podeSerResgatado() boolean
+  +editar(dados)
+  +excluir()
+}
+class Evento {
+  +String id
+  +String titulo
+  +String descricao
+  +Date inicio
+  +Date fim
+  +String horaInicio
+  +String horaFim
+  +String foto
+  +OrigemEvento origem
+  +boolean destaqueHome «no máximo 1»
+  +estaVigente() boolean
+}
+class Foto {
+  +String id
+  +bytes imagem «WebP até 500 KB»
+  +int largura
+  +int altura
+  +String endereco «/api/foto/id»
+  +apagar()
+}
+
+%% ================= Interações do cliente =================
+class Resgate {
+  +String id «cupom + cliente»
+  +String codigo «único, 10 caracteres»
+  +StatusResgate status
+  +String nomeCliente «só o primeiro nome»
+  +Date validadeFim
+  +DateTime criadoEm
+  +DateTime usadoEm
+  +validar()
+  +qrCode() Imagem
+}
+class Avaliacao {
+  +String id «alvo + cliente»
+  +AlvoAvaliacao alvo
+  +int nota «1 a 5»
+  +String comentario «até 500»
+  +String nomeExibicao
+  +DateTime criadoEm
+  +DateTime atualizadoEm
+  +editar(nota, comentario)
+  +remover()
+}
+class Favorito {
+  +String id «cliente + restaurante»
+  +DateTime criadoEm
+}
+class ItemSalvo {
+  +String id
+  +String titulo
+  +String foto
+  +DateTime dataSalvo
+  +disponivel() boolean
+  +remover()
+}
+class MensagemSuporte {
+  +String nome
+  +String email
+  +String assunto
+  +String mensagem
+  +DateTime criadoEm
+}
+
+%% ================= Enumerações =================
+class StatusConta {
+  <<enumeração>>
+  ATIVO
+  BANIDO
+  EXCLUIDO
+}
+class StatusPromocao {
+  <<enumeração>>
+  AGENDADA
+  ATIVA
+  EXPIRADA
+  ENCERRADA
+}
+class StatusCupom {
+  <<enumeração>>
+  ATIVO
+  VENCIDO
+  ESGOTADO
+  PROMOCAO_INATIVA
+}
+class StatusResgate {
+  <<enumeração>>
+  ATIVO
+  USADO
+}
+class CategoriaPrato {
+  <<enumeração>>
+  ENTRADA
+  PRATO_PRINCIPAL
+  SOBREMESA
+  BEBIDA
+  ACOMPANHAMENTO
+}
+class AlvoAvaliacao {
+  <<enumeração>>
+  RESTAURANTE
+  PRATO
+}
+class OrigemEvento {
+  <<enumeração>>
+  RESTAURANTE
+  PLATAFORMA
+}
+
+%% ================= Relacionamentos =================
+Usuario <|-- Cliente
+Usuario <|-- Responsavel
+Usuario <|-- Administrador
+
+Responsavel "1" -- "1" Restaurante : gerencia
+Restaurante "1" *-- "0..*" Prato : cardápio
+Restaurante "1" *-- "0..*" Promocao : publica
+Restaurante "1" *-- "0..*" Cupom : emite
+Restaurante "1" *-- "0..*" Evento : organiza
+Restaurante "0..*" -- "0..*" Evento : participa
+Restaurante "1" *-- "0..*" Foto : envia
+Promocao "0..1" -- "0..*" Cupom : vincula
+
+Cliente "1" -- "0..*" Resgate : faz
+Cupom "1" -- "0..*" Resgate : gera
+Cliente "1" -- "0..*" Favorito : marca
+Favorito "0..*" -- "1" Restaurante : aponta
+Cliente "1" -- "0..*" ItemSalvo : guarda
+ItemSalvo "0..*" -- "0..1" Promocao : refere
+ItemSalvo "0..*" -- "0..1" Evento : refere
+Cliente "1" -- "0..*" Avaliacao : escreve
+Avaliacao "0..*" -- "1" Restaurante : sobre
+Avaliacao "0..*" -- "0..1" Prato : sobre o prato
+
+Administrador "1" -- "0..*" Evento : cria da plataforma
+Usuario "0..1" -- "0..*" MensagemSuporte : envia

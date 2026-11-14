@@ -1,0 +1,125 @@
+%%{init: {"class": {"useMaxWidth": false}}}%%
+classDiagram
+direction TB
+class Restaurante {
+  +String id «= uid do responsável»
+  +String slug «único»
+  +String nome
+  +String cozinha
+  +List~String~ experiencias «até 3»
+  +List~String~ ocasioes
+  +int faixaPreco «1 a 4»
+  +String estado
+  +String cidade
+  +String bairro
+  +String endereco
+  +String telefone
+  +String whatsapp
+  +String descricao
+  +List~String~ fotos «até 10»
+  +String horarios
+  +boolean destaque
+  +int somaNotas
+  +int totalAvaliacoes
+  +double notaMedia
+  +editarDados(dados)
+  +trocarSlug(novoSlug)
+  +cadastrarPrato(dados)
+  +importarCardapio(planilha)
+  +criarPromocao(dados)
+  +criarCupom(dados)
+  +criarEvento(dados)
+  +participarEvento(evento)
+  +linkReserva() String
+}
+class Prato {
+  +String titulo
+  +CategoriaPrato categoria
+  +double preco
+  +String descricao
+  +String foto
+  +editar(dados)
+  +excluir()
+}
+class Promocao {
+  +String titulo
+  +String descricao
+  +String valor
+  +List~String~ diasValidos
+  +Date inicio
+  +Date fim
+  +DateTime encerradaEm
+  +String foto
+  +status() StatusPromocao
+  +encerrar()
+  +reativar()
+  +excluir()
+}
+class Cupom {
+  +String codigo «único no restaurante»
+  +String beneficio
+  +Date validadeInicio
+  +Date validadeFim
+  +int limiteTotal «opcional»
+  +int resgatados
+  +String condicoes
+  +status() StatusCupom
+  +podeSerResgatado() boolean
+  +editar(dados)
+  +excluir()
+}
+class Evento {
+  +String titulo
+  +String descricao
+  +Date inicio
+  +Date fim
+  +String foto
+  +OrigemEvento origem
+  +boolean destaqueHome «no máximo 1»
+  +estaVigente() boolean
+}
+class Foto {
+  +bytes imagem «WebP até 500 KB»
+  +int largura
+  +int altura
+  +String endereco
+  +apagar()
+}
+class CategoriaPrato {
+  <<enumeração>>
+  ENTRADA
+  PRATO_PRINCIPAL
+  SOBREMESA
+  BEBIDA
+  ACOMPANHAMENTO
+}
+class StatusPromocao {
+  <<enumeração>>
+  AGENDADA
+  ATIVA
+  EXPIRADA
+  ENCERRADA
+}
+class StatusCupom {
+  <<enumeração>>
+  ATIVO
+  VENCIDO
+  ESGOTADO
+  PROMOCAO_INATIVA
+}
+class OrigemEvento {
+  <<enumeração>>
+  RESTAURANTE
+  PLATAFORMA
+}
+Restaurante "1" *-- "0..*" Prato : tem
+Restaurante "1" *-- "0..*" Promocao : publica
+Restaurante "1" *-- "0..*" Cupom : emite
+Restaurante "1" *-- "0..*" Evento : organiza
+Restaurante "1" *-- "0..*" Foto : envia
+Restaurante "0..*" -- "0..*" Evento : participa
+Promocao "0..1" -- "0..*" Cupom : vincula
+Prato ..> CategoriaPrato
+Promocao ..> StatusPromocao
+Cupom ..> StatusCupom
+Evento ..> OrigemEvento
